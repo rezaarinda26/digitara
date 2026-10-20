@@ -1,0 +1,117 @@
+import React from 'react';
+import { useCMS } from '../context/CMSContext';
+import { Logo } from './Logo';
+import { ArrowUpRight, ArrowUp } from 'lucide-react';
+import { EditableText } from './editorial/Editable';
+
+export const Footer: React.FC = () => {
+  const { data } = useCMS();
+  const { config } = data;
+
+  const scrollToTop = () => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const socialLinks = [
+    { id: 'instagram', label: 'Instagram', href: config.socials.instagram },
+    { id: 'twitter', label: 'Twitter / X', href: config.socials.twitter },
+    { id: 'linkedin', label: 'LinkedIn', href: config.socials.linkedin },
+    { id: 'facebook', label: 'Facebook', href: config.socials.facebook },
+    { id: 'github', label: 'GitHub', href: config.socials.github },
+  ];
+
+  return (
+    <footer className="relative bg-[#060606] text-white border-t border-white/[0.08] pt-20 pb-12 px-4 sm:px-6 lg:px-8 overflow-hidden">
+      {/* Background radial glow matching theme accent color */}
+      <div
+        className="absolute bottom-0 left-1/2 -translate-x-1/2 w-[900px] h-[350px] blur-[150px] pointer-events-none transition-all duration-700 opacity-20"
+        style={{ backgroundColor: data.theme.accentColor || '#6B5CE7' }}
+      />
+
+      <div className="max-w-7xl mx-auto relative z-10">
+        {/* Top Callout Banner */}
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 pb-16 border-b border-white/[0.08]">
+          <div>
+            <h3 className="text-2xl sm:text-3xl font-bold tracking-tight">
+              <EditableText as="span" value="Let's make it happen together." overrideKey="footer.headline" label="Judul footer" />
+            </h3>
+            <p className="text-neutral-400 text-sm font-light mt-1">
+              <EditableText
+                as="span"
+                value="Currently accepting selected clients for Q1/Q2 2026."
+                overrideKey="footer.subline"
+                label="Subjudul footer"
+              />
+            </p>
+          </div>
+
+          <div className="flex items-center gap-4">
+            <a
+              href="#contact"
+              className="px-7 py-3.5 rounded-full text-xs font-semibold hover:brightness-110 transition-all flex items-center gap-2 shadow-xl active:scale-95"
+              style={{
+                backgroundColor: data.theme.accentColor || '#FFFFFF',
+                color: data.theme.accentColor === '#FFFFFF' ? '#000000' : '#FFFFFF',
+                boxShadow: `0 8px 25px ${data.theme.accentColor || '#6B5CE7'}35`,
+              }}
+            >
+              <EditableText as="span" value="Start A Conversation" overrideKey="footer.cta" label="Teks CTA footer" />
+              <ArrowUpRight className="w-3.5 h-3.5" />
+            </a>
+
+            <button
+              onClick={scrollToTop}
+              className="w-10 h-10 rounded-full border border-white/10 hover:border-white text-neutral-400 hover:text-white flex items-center justify-center transition-colors"
+              aria-label="Back to Top"
+            >
+              <ArrowUp className="w-4 h-4" />
+            </button>
+          </div>
+        </div>
+
+        {/* Social Links Row */}
+        <div className="py-10 border-b border-white/[0.08] flex flex-wrap items-center justify-between gap-4">
+          <div className="flex flex-wrap items-center gap-6 sm:gap-10 text-sm font-medium">
+            {socialLinks.map((s) => (
+              <a
+                key={s.label}
+                href={s.href}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="group flex items-center gap-1.5 text-neutral-400 hover:text-white transition-colors"
+              >
+                <EditableText as="span" value={s.label} overrideKey={`footer.social.${s.id}`} label="Label sosial" />
+                <ArrowUpRight className="w-3.5 h-3.5 opacity-50 group-hover:opacity-100 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-all" />
+              </a>
+            ))}
+          </div>
+
+          <div className="text-xs font-mono text-neutral-500">
+            <EditableText as="span" value="Jakarta GMT+7 · Worldwide" overrideKey="footer.location" label="Lokasi footer" />
+          </div>
+        </div>
+
+        {/* Massive Aesthetic Graphic Typography */}
+        <div className="py-12 sm:py-16 select-none overflow-hidden text-center">
+          <span className="block text-5xl sm:text-7xl md:text-9xl font-extrabold tracking-tighter text-white/[0.07] hover:text-white/[0.12] transition-colors duration-500 uppercase whitespace-nowrap">
+            {config.name}
+          </span>
+        </div>
+
+        {/* Bottom Legal Row */}
+        <div className="pt-8 border-t border-white/[0.06] flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-neutral-500">
+          <div className="flex items-center gap-3">
+            <Logo size="sm" showSubtext={false} />
+            <span>© {new Date().getFullYear()} {config.name} ({config.subtext}). All Rights Reserved.</span>
+          </div>
+
+          <div className="flex items-center gap-6 font-mono text-[11px]">
+            <EditableText as="span" value="Crafted with Precision & Passion" overrideKey="footer.crafted" label="Teks footer 1" />
+            <span>·</span>
+            <EditableText as="span" value="Made with Figma + Code" overrideKey="footer.madeWith" label="Teks footer 2" />
+          </div>
+        </div>
+      </div>
+    </footer>
+  );
+};
