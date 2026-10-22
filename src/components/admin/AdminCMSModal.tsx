@@ -888,7 +888,6 @@ export const AdminCMSModal: React.FC = () => {
                       <option value="xs">Small (1xl - 4xl)</option>
                       <option value="sm">Medium (4xl - 7xl) — Default</option>
                       <option value="md">Large (5xl - 9xl)</option>
-                      <option value="lg">Extra Large (6xl - 11rem)</option>
                     </select>
                   </div>
 
