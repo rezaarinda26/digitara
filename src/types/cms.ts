@@ -52,7 +52,7 @@ export interface SectionMeta {
   order: number;
 }
 
-export type HeroTextSize = 'xs' | 'sm' | 'md' | 'lg' | 'xl' | '2xl';
+export type HeroTextSize = 'xs' | 'sm' | 'md' | 'lg';
 export type HeroEditorialSize = 'sm' | 'md' | 'lg' | 'xl';
 
 export interface HeroData {

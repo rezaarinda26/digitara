@@ -11,8 +11,6 @@ const headlineSizeClasses: Record<HeroTextSize, string> = {
   sm: 'text-4xl sm:text-5xl md:text-6xl lg:text-7xl',
   md: 'text-5xl sm:text-7xl md:text-8xl lg:text-9xl',
   lg: 'text-6xl sm:text-8xl md:text-9xl lg:text-[11rem]',
-  xl: 'text-7xl sm:text-9xl md:text-[10rem] lg:text-[13rem]',
-  '2xl': 'text-8xl sm:text-[11rem] md:text-[13rem] lg:text-[15rem]',
 };
 
 const editorialSizeClasses: Record<HeroEditorialSize, string> = {
@@ -71,7 +69,9 @@ export const Hero: React.FC = () => {
     { targetRef: sectionRef, smoothing: reduced ? 1 : 0.14 }
   );
 
-  const headlineSize = headlineSizeClasses[hero.headlineSize || 'sm'];
+  // Fall back gracefully if a legacy stored value is no longer offered.
+  const headlineSize =
+    headlineSizeClasses[hero.headlineSize || 'sm'] ?? headlineSizeClasses.md;
   const editorialSize = editorialSizeClasses[hero.editorialSize || 'md'];
 
   return (
