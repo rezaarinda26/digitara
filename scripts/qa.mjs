@@ -31,10 +31,15 @@ const height = Number(process.argv[6] || 900);
 const waitMs = Number(process.argv[7] || 4000);
 const preScriptRaw = process.argv[8] && process.argv[8] !== 'none' ? process.argv[8] : '';
 const postScriptRaw = process.argv[9] && process.argv[9] !== 'none' ? process.argv[9] : '';
+const phase = process.argv[10] || '';
 import { readFileSync } from 'node:fs';
 const loadScript = (s) => (s.startsWith('@') ? readFileSync(s.slice(1), 'utf8') : s);
 const preScript = loadScript(preScriptRaw);
-const postScript = loadScript(postScriptRaw);
+const postScript = phase
+  ? `(async () => { window.__QA_PHASE = ${JSON.stringify(phase)}; return await ${loadScript(
+      postScriptRaw
+    )}; })()`
+  : loadScript(postScriptRaw);
 
 const PORT = 9333;
 const profile = `${tmpdir()}\\opencode-qa-chrome`;

@@ -13,6 +13,20 @@ const headlineSizeClasses: Record<HeroTextSize, string> = {
   xl: 'text-7xl sm:text-9xl md:text-[10rem] lg:text-[13rem]',
 };
 
+/**
+ * Headlines are authored in the CMS, so their length is not predictable.
+ * Short lines keep the chosen display size; longer ones step down so the
+ * text always fits the column instead of spilling out of the viewport.
+ */
+const autoHeadlineSize = (text: string): string | null => {
+  const n = (text || '').trim().length;
+  if (n <= 14) return null;
+  if (n <= 22) return 'text-4xl sm:text-6xl md:text-7xl lg:text-8xl';
+  if (n <= 34) return 'text-3xl sm:text-5xl md:text-6xl lg:text-7xl';
+  if (n <= 52) return 'text-2xl sm:text-4xl md:text-5xl lg:text-6xl';
+  return 'text-xl sm:text-2xl md:text-3xl lg:text-4xl';
+};
+
 const editorialSizeClasses: Record<HeroTextSize, string> = {
   sm: 'text-xs sm:text-sm',
   md: 'text-sm sm:text-base',
@@ -256,9 +270,9 @@ export const Hero: React.FC = () => {
             value={hero.headlineMain}
             onChange={(v) => updateHero({ headlineMain: v })}
             label="Headline utama"
-            className={`${headlineSize} font-extrabold tracking-tighter uppercase select-none leading-[0.9] ${introClass(2)} ${
-              isLight ? 'text-neutral-950' : 'text-white'
-            }`}
+            className={`${autoHeadlineSize(hero.headlineMain) || headlineSize} font-extrabold tracking-tighter uppercase select-none leading-[0.9] break-words ${introClass(
+              2
+            )} ${isLight ? 'text-neutral-950' : 'text-white'}`}
           />
 
           {/* Bottom Line "DIGITAL" with vibrant luminous accent gradient */}
@@ -268,9 +282,9 @@ export const Hero: React.FC = () => {
               value={hero.headlineAccent}
               onChange={(v) => updateHero({ headlineAccent: v })}
               label="Headline accent"
-              className={`${headlineSize} font-extrabold tracking-tighter uppercase select-none leading-[0.9] ${introClass(3)} ${
-                isLight ? 'text-neutral-950' : 'text-transparent bg-clip-text dg-shimmer'
-              }`}
+              className={`${autoHeadlineSize(hero.headlineAccent) || headlineSize} font-extrabold tracking-tighter uppercase select-none leading-[0.9] break-words ${introClass(
+                3
+              )} ${isLight ? 'text-neutral-950' : 'text-transparent bg-clip-text dg-shimmer'}`}
               editStyle={
                 isLight
                   ? { color: '#0A0A0A', backgroundImage: 'none' }
