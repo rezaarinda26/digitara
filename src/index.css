@@ -276,6 +276,41 @@
   100% { background-position: -20% 50%; }
 }
 
+/* Hero entrance: staggered fade-up that plays once on first paint. */.dg-hero-in {
+  opacity: 0;
+  transform: translate3d(0, 28px, 0);
+  transition:
+    opacity 900ms cubic-bezier(0.16, 1, 0.3, 1),
+    transform 900ms cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: opacity, transform;
+  transition-delay: var(--hero-delay, 0ms);
+}
+.dg-hero-in.is-in {
+  opacity: 1;
+  transform: translate3d(0, 0, 0);
+}
+.dg-hero-in-1 { --hero-delay: 60ms; }
+.dg-hero-in-2 { --hero-delay: 160ms; }
+.dg-hero-in-3 { --hero-delay: 280ms; }
+.dg-hero-in-4 { --hero-delay: 420ms; }
+
+/* Ken Burns: very slow, continuous push-in on the hero artwork, with the
+   same gentle opacity breathing the design already had. */
+.dg-kenburns {
+  animation:
+    dg-kenburns 26s ease-in-out infinite alternate,
+    dg-breathe 8s ease-in-out infinite;
+  will-change: transform, opacity;
+}
+@keyframes dg-kenburns {
+  from { transform: scale(1.03); }
+  to { transform: scale(1.15); }
+}
+@keyframes dg-breathe {
+  0%, 100% { opacity: 0.55; }
+  50% { opacity: 1; }
+}
+
 /* Accent underline that grows from the left on hover. */
 .dg-underline {
   position: relative;
@@ -472,5 +507,16 @@
 
   .dg-shimmer {
     animation: none !important;
+  }
+
+  .dg-hero-in {
+    opacity: 1 !important;
+    transform: none !important;
+    transition: none !important;
+  }
+
+  .dg-kenburns {
+    animation: none !important;
+    transform: none !important;
   }
 }

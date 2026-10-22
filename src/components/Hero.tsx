@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { useCMS } from '../context/CMSContext';
 import { ArrowUpRight } from 'lucide-react';
 import { HeroTextSize } from '../types/cms';
@@ -25,10 +25,30 @@ export const Hero: React.FC = () => {
   const { hero, theme } = data;
   const isLight = isSectionLight('hero');
   const [imageError, setImageError] = useState(false);
+  const [intro, setIntro] = useState(false);
   const sectionRef = useRef<HTMLElement>(null);
   const bgRef = useRef<HTMLDivElement>(null);
   const contentRef = useRef<HTMLDivElement>(null);
   const reduced = useReducedMotion();
+
+  // Play the staggered entrance once, right after the first paint.
+  useEffect(() => {
+    if (reduced) {
+      setIntro(true);
+      return;
+    }
+    let raf2 = 0;
+    const raf1 = requestAnimationFrame(() => {
+      raf2 = requestAnimationFrame(() => setIntro(true));
+    });
+    return () => {
+      cancelAnimationFrame(raf1);
+      cancelAnimationFrame(raf2);
+    };
+  }, [reduced]);
+
+  const introClass = (step: 1 | 2 | 3 | 4) =>
+    `dg-hero-in dg-hero-in-${step} ${intro ? 'is-in' : ''}`;
 
   // Parallax: the cinematic background drifts slower than the page scroll
   // while the headline eases out of view.
@@ -81,10 +101,10 @@ export const Hero: React.FC = () => {
               alt="Cinematic digital agency background"
               priority
               onError={() => setImageError(true)}
-              className={`w-full h-full object-cover object-center ${
-                isLight ? 'opacity-10' : 'opacity-45 motion-safe:animate-pulse duration-1000'
+              className={`w-full h-full object-cover object-center dg-kenburns ${
+                isLight ? 'opacity-10' : 'opacity-45'
               }`}
-              style={isLight ? undefined : { animationDuration: '8s' }}
+              style={isLight ? undefined : { animationDuration: '26s, 8s' }}
             />
           </div>
         ) : (
@@ -113,7 +133,9 @@ export const Hero: React.FC = () => {
       </div>
 
       {/* Top Floating Row: Corner Showcase Card & Right Chapter Index */}
-      <div className="relative z-10 max-w-7xl mx-auto w-full flex flex-col sm:flex-row items-start justify-between gap-6 pt-4">
+      <div
+        className={`relative z-10 max-w-7xl mx-auto w-full flex flex-col sm:flex-row items-start justify-between gap-6 pt-4 ${introClass(1)}`}
+      >
         {/* Floating Showcase Card */}
         {hero.floatingCard && (
           <DraggableBox
@@ -232,7 +254,7 @@ export const Hero: React.FC = () => {
             value={hero.headlineMain}
             onChange={(v) => updateHero({ headlineMain: v })}
             label="Headline utama"
-            className={`${headlineSize} font-extrabold tracking-tighter uppercase select-none leading-[0.9] ${
+            className={`${headlineSize} font-extrabold tracking-tighter uppercase select-none leading-[0.9] ${introClass(2)} ${
               isLight ? 'text-neutral-950' : 'text-white'
             }`}
           />
@@ -244,7 +266,7 @@ export const Hero: React.FC = () => {
               value={hero.headlineAccent}
               onChange={(v) => updateHero({ headlineAccent: v })}
               label="Headline accent"
-              className={`${headlineSize} font-extrabold tracking-tighter uppercase select-none leading-[0.9] ${
+              className={`${headlineSize} font-extrabold tracking-tighter uppercase select-none leading-[0.9] ${introClass(3)} ${
                 isLight ? 'text-neutral-950' : 'text-transparent bg-clip-text dg-shimmer'
               }`}
               editStyle={
@@ -267,7 +289,9 @@ export const Hero: React.FC = () => {
       </div>
 
       {/* Bottom Row: Editorial Description & High-Impact CTA */}
-      <div className={`relative z-10 max-w-7xl mx-auto w-full border-t pt-6 flex flex-col md:flex-row md:items-end justify-between gap-6 ${isLight ? 'border-neutral-200' : 'border-white/10'}`}>
+      <div
+        className={`relative z-10 max-w-7xl mx-auto w-full border-t pt-6 flex flex-col md:flex-row md:items-end justify-between gap-6 ${introClass(4)} ${isLight ? 'border-neutral-200' : 'border-white/10'}`}
+      >
         <EditableText
           as="p"
           value={hero.editorialLead}
