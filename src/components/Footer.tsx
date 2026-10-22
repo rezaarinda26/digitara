@@ -98,7 +98,7 @@ export const Footer: React.FC = () => {
             ))}
           </div>
 
-          <div className="text-xs font-mono text-neutral-500">
+          <div className={`text-xs font-mono ${isLight ? 'text-neutral-500' : 'text-neutral-400'}`}>
             <EditableText as="span" value="Jakarta GMT+7 · Worldwide" overrideKey="footer.location" label="Lokasi footer" />
           </div>
         </div>
@@ -113,7 +113,11 @@ export const Footer: React.FC = () => {
         </div>
 
         {/* Bottom Legal Row */}
-        <div className={`pt-8 border-t flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-neutral-500 ${isLight ? 'border-neutral-200' : 'border-white/[0.06]'}`}>
+        <div
+          className={`pt-8 border-t flex flex-col sm:flex-row items-center justify-between gap-4 text-xs ${
+            isLight ? 'text-neutral-500 border-neutral-200' : 'text-neutral-400 border-white/[0.06]'
+          }`}
+        >
           <div className="flex items-center gap-3">
             {isLight ? (
               <Logo size="sm" showSubtext={false} textColor="#0A0A0A" />

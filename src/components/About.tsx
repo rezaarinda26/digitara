@@ -122,7 +122,7 @@ export const About: React.FC = () => {
               }}
             >
               <div>
-                <p className="text-xs font-mono uppercase tracking-wider text-neutral-500">
+                <p className={`text-xs font-mono uppercase tracking-wider ${isLight ? 'text-neutral-500' : 'text-neutral-400'}`}>
                   <EditableText as="span" value="Philosophy" overrideKey="about.philosophyKicker" label="Kicker Philosophy" />
                 </p>
                 <EditableText
@@ -165,7 +165,7 @@ export const About: React.FC = () => {
                 value={about.mainHeadlineMuted}
                 onChange={(v) => updateAbout({ mainHeadlineMuted: v })}
                 label="Headline About (muted)"
-                className={isLight ? 'text-neutral-400 font-normal' : 'text-neutral-500 font-normal'}
+                className={isLight ? 'text-neutral-400 font-normal' : 'text-neutral-400 font-normal'}
               />
             </h2>
 
@@ -202,7 +202,7 @@ export const About: React.FC = () => {
                   value="Founder & Creative Director"
                   overrideKey="about.founderRole"
                   label="Jabatan founder"
-                  className="text-[11px] font-mono uppercase tracking-wider text-neutral-500"
+                  className={`text-[11px] font-mono uppercase tracking-wider ${isLight ? 'text-neutral-500' : 'text-neutral-400'}`}
                 />
               </div>
             </div>

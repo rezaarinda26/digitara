@@ -21,6 +21,19 @@ import { DEFAULT_CMS_DATA } from '../data/defaultCMS';
 
 const STORAGE_KEY = 'digitara_headless_cms_v1';
 
+/** Mixes a hex colour towards white. `amount` 0 = unchanged, 1 = white. */
+const lightenHex = (hex: string, amount: number): string => {
+  const m = (hex || '').replace('#', '').trim();
+  if (m.length !== 6) return hex;
+  const n = parseInt(m, 16);
+  if (Number.isNaN(n)) return hex;
+  const mix = (v: number) => Math.round(v * (1 - amount) + 255 * amount);
+  const r = mix((n >> 16) & 255);
+  const g = mix((n >> 8) & 255);
+  const b = mix(n & 255);
+  return `#${((r << 16) | (g << 8) | b).toString(16).padStart(6, '0')}`;
+};
+
 interface CMSContextType {
   data: CMSData;
   isAdminOpen: boolean;
@@ -40,6 +53,8 @@ interface CMSContextType {
   isSectionLight: (sectionKey: SectionKey) => boolean;
   darkBg: string;
   accentContrast: string;
+  /** Lighter accent variant for text placed on dark surfaces. */
+  accentText: string;
 
   updateConfig: (config: Partial<AgencyConfig>) => void;
   updateTheme: (theme: Partial<ThemeConfig>) => void;
@@ -339,6 +354,11 @@ export const CMSProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   // Text/icon color that reads well on top of the accent color.
   const accentContrast = data.theme.accentColor === '#FFFFFF' ? '#000000' : '#FFFFFF';
 
+  // A slightly lighter variant of the accent, used whenever accent-coloured
+  // TEXT sits on a dark surface. The raw brand accent only reaches ~4.1:1 on
+  // near-black, which is just under the WCAG AA 4.5:1 threshold.
+  const accentText = lightenHex(data.theme.accentColor || '#6B5CE7', 0.2);
+
   // Sync with localStorage
   useEffect(() => {
     try {
@@ -595,6 +615,7 @@ export const CMSProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         isSectionLight,
         darkBg,
         accentContrast,
+        accentText,
         updateConfig,
         updateTheme,
         updateSections,

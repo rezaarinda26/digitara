@@ -6,7 +6,7 @@ import { EditableText, DraggableBox } from './editorial/Editable';
 import { Reveal } from './common/Reveal';
 
 export const Services: React.FC = () => {
-  const { data, isSectionLight, updateServices, editorialMode, darkBg } = useCMS();
+  const { data, isSectionLight, updateServices, editorialMode, darkBg, accentText } = useCMS();
   const { services, theme } = data;
   const isLight = isSectionLight('services');
 
@@ -99,7 +99,7 @@ export const Services: React.FC = () => {
             <a
               href="#about"
               className="mt-4 inline-flex items-center gap-2 text-xs font-semibold transition-colors"
-              style={{ color: theme.accentColor || (isLight ? '#000000' : '#FFFFFF') }}
+              style={{ color: isLight ? theme.accentColor : accentText }}
             >
               <EditableText
                 as="span"
@@ -162,7 +162,7 @@ export const Services: React.FC = () => {
                       onChange={(v) => patchItem({ number: v })}
                       label="Nomor service"
                       className="font-mono text-sm sm:text-base font-bold transition-transform duration-200 group-hover:scale-110"
-                      style={{ color: theme.accentColor || '#6B5CE7' }}
+                      style={{ color: isLight ? theme.accentColor : accentText }}
                     />
                     <EditableText
                       as="h3"
@@ -202,7 +202,7 @@ export const Services: React.FC = () => {
                   <div className="lg:col-span-3 flex items-center justify-between lg:justify-end gap-6">
                     <div className="text-left lg:text-right">
                       <span
-                        className={`block text-xs font-mono ${isLight ? 'text-neutral-400' : 'text-neutral-500'
+                        className={`block text-xs font-mono ${isLight ? 'text-neutral-400' : 'text-neutral-300'
                           }`}
                       >
                         <EditableText as="span" value="From" overrideKey={`services.from.${item.id}`} label="Label harga" />

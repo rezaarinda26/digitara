@@ -5,7 +5,7 @@ import { EditableText, DraggableBox } from './editorial/Editable';
 import { Reveal } from './common/Reveal';
 
 export const Contact: React.FC = () => {
-  const { data, addInquiry, isSectionLight, updateContact, updateConfig, darkBg } = useCMS();
+  const { data, addInquiry, isSectionLight, updateContact, updateConfig, darkBg, accentText } = useCMS();
   const { contact, config, theme } = data;
   const isLight = isSectionLight('contact');
 
@@ -164,7 +164,7 @@ export const Contact: React.FC = () => {
               <div className="flex items-start gap-3">
                 <MapPin className={`w-4 h-4 mt-0.5 shrink-0 ${isLight ? 'text-neutral-500' : 'text-neutral-400'}`} />
                 <div>
-                  <span className={`text-xs font-mono block ${isLight ? 'text-neutral-400' : 'text-neutral-500'}`}>
+                  <span className={`text-xs font-mono block ${isLight ? 'text-neutral-400' : 'text-neutral-300'}`}>
                     <EditableText as="span" value="Headquarters" overrideKey="contact.hqLabel" label="Label HQ" />
                   </span>
                   <EditableText
@@ -182,7 +182,7 @@ export const Contact: React.FC = () => {
               <div className="flex items-start gap-3">
                 <Clock className={`w-4 h-4 mt-0.5 shrink-0 ${isLight ? 'text-neutral-500' : 'text-neutral-400'}`} />
                 <div>
-                  <span className={`text-xs font-mono block ${isLight ? 'text-neutral-400' : 'text-neutral-500'}`}>
+                  <span className={`text-xs font-mono block ${isLight ? 'text-neutral-400' : 'text-neutral-300'}`}>
                     <EditableText as="span" value="Availability" overrideKey="contact.availLabel" label="Label availability" />
                   </span>
                   <EditableText
@@ -200,7 +200,7 @@ export const Contact: React.FC = () => {
               <div className="flex items-start gap-3">
                 <Mail className={`w-4 h-4 mt-0.5 shrink-0 ${isLight ? 'text-neutral-500' : 'text-neutral-400'}`} />
                 <div>
-                  <span className={`text-xs font-mono block ${isLight ? 'text-neutral-400' : 'text-neutral-500'}`}>
+                  <span className={`text-xs font-mono block ${isLight ? 'text-neutral-400' : 'text-neutral-300'}`}>
                     <EditableText as="span" value="Direct Inquiries" overrideKey="contact.inquiriesLabel" label="Label inquiries" />
                   </span>
                   <DraggableBox
@@ -209,7 +209,7 @@ export const Contact: React.FC = () => {
                     label="Email link"
                     href={`mailto:${config.email}`}
                     className="inline-block font-mono text-xs sm:text-sm hover:underline font-bold"
-                    style={{ color: theme.accentColor }}
+                    style={{ color: isLight ? theme.accentColor : accentText }}
                   >
                     <EditableText
                       as="span"

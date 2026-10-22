@@ -104,7 +104,7 @@ export const Clients: React.FC = () => {
                     </span>
                     <span
                       className={`text-[10px] sm:text-[11px] font-mono uppercase tracking-wider transition-colors duration-300 ${
-                        isLight ? 'text-neutral-500' : 'text-neutral-600'
+                        isLight ? 'text-neutral-500' : 'text-neutral-400'
                       }`}
                     >
                       <EditableText

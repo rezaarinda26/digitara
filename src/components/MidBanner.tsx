@@ -5,7 +5,7 @@ import { EditableText, EditableImage, DraggableBox } from './editorial/Editable'
 import { Reveal } from './common/Reveal';
 
 export const MidBanner: React.FC = () => {
-  const { data, updateMidBanner, editorialMode, isSectionLight, darkBg } = useCMS();
+  const { data, updateMidBanner, editorialMode, isSectionLight, darkBg, accentText } = useCMS();
   const { midBanner, theme } = data;
   const isLight = isSectionLight('midBanner');
 
@@ -95,7 +95,7 @@ export const MidBanner: React.FC = () => {
             onChange={(v) => updateMidBanner({ bottomLabel: v })}
             label="Label bawah"
             className="text-xs font-mono uppercase tracking-widest font-semibold"
-            style={{ color: `${theme.accentColor}` }}
+            style={{ color: isLight ? theme.accentColor : accentText }}
           />
 
           <DraggableBox

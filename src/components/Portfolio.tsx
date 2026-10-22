@@ -9,7 +9,7 @@ import { useFocusTrap } from '../hooks/useFocusTrap';
 import { Reveal } from './common/Reveal';
 
 export const Portfolio: React.FC = () => {
-  const { data, activeProjectModal, setActiveProjectModal, isSectionLight, updatePortfolio, editorialMode, darkBg } = useCMS();
+  const { data, activeProjectModal, setActiveProjectModal, isSectionLight, updatePortfolio, editorialMode, darkBg, accentText } = useCMS();
   const { portfolio, theme } = data;
   const isLight = isSectionLight('portfolio');
   const isModalLight = data.theme.bgMode === 'light-minimal';
@@ -350,7 +350,7 @@ export const Portfolio: React.FC = () => {
                   </div>
                   <span
                     className="font-mono text-xs uppercase shrink-0 font-bold tracking-wide"
-                    style={{ color: theme.accentColor || (isLight ? '#0A0A0A' : '#FFFFFF') }}
+                    style={{ color: isLight ? theme.accentColor : accentText }}
                   >
                     <EditableText as="span" value="Case Study →" overrideKey={`portfolio.caseStudyCta.${project.id}`} label="Teks Case Study" />
                   </span>
@@ -561,7 +561,7 @@ export const Portfolio: React.FC = () => {
                   value={modalProject.category}
                   onChange={(v) => patchActiveProject({ category: v })}
                   label="Kategori project"
-                  style={{ color: theme.accentColor }}
+                  style={{ color: isModalLight ? theme.accentColor : accentText }}
                   className="font-semibold"
                 />
                 <span>·</span>
@@ -620,7 +620,7 @@ export const Portfolio: React.FC = () => {
                       onChange={(v) => patchActiveProject({ metrics: v })}
                       label="Metric project"
                       className="font-semibold"
-                      style={{ color: theme.accentColor }}
+                      style={{ color: isModalLight ? theme.accentColor : accentText }}
                     />
                   </div>
                 )}

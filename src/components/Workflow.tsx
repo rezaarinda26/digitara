@@ -7,7 +7,7 @@ import { useAnimatedScroll } from '../hooks/useAnimatedScroll';
 import { useReducedMotion } from '../hooks/useReducedMotion';
 
 export const Workflow: React.FC = () => {
-  const { data, isSectionLight, updateWorkflow, darkBg } = useCMS();
+  const { data, isSectionLight, updateWorkflow, darkBg, accentText } = useCMS();
   const { workflow, theme } = data;
   const isLight = isSectionLight('workflow');
   const gridRef = useRef<HTMLDivElement>(null);
@@ -141,7 +141,7 @@ export const Workflow: React.FC = () => {
                 </div>
                 <span
                   className="text-sm font-mono font-bold transition-colors"
-                  style={{ color: theme.accentColor || '#6B5CE7' }}
+                  style={{ color: isLight ? theme.accentColor : accentText }}
                 >
                   0{idx + 1}
                 </span>
@@ -181,7 +181,7 @@ export const Workflow: React.FC = () => {
               {/* Bottom Subtle Indicator */}
               <div
                 className={`mt-6 pt-4 border-t flex items-center justify-between text-[11px] font-mono ${
-                  isLight ? 'border-neutral-200/70 text-neutral-400' : 'border-white/[0.04] text-neutral-500'
+                  isLight ? 'border-neutral-200/70 text-neutral-400' : 'border-white/[0.04] text-neutral-300'
                 }`}
               >
                 <span>
@@ -189,7 +189,7 @@ export const Workflow: React.FC = () => {
                 </span>
                 <span
                   className="font-bold tracking-wide"
-                  style={{ color: theme.accentColor || (isLight ? '#0A0A0A' : '#FFFFFF') }}
+                  style={{ color: isLight ? theme.accentColor : accentText }}
                 >
                   <EditableText as="span" value="Execution →" overrideKey={`workflow.execution.${step.id}`} label="Teks execution" />
                 </span>

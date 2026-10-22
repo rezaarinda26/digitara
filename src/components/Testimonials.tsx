@@ -7,7 +7,7 @@ import { StatNumber } from './common/StatNumber';
 import { useReducedMotion } from '../hooks/useReducedMotion';
 
 export const Testimonials: React.FC = () => {
-  const { data, isSectionLight, updateTestimonials, darkBg } = useCMS();
+  const { data, isSectionLight, updateTestimonials, darkBg, accentText } = useCMS();
   const { testimonials, theme } = data;
   const isLight = isSectionLight('testimonials');
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -281,14 +281,14 @@ export const Testimonials: React.FC = () => {
                 <div className="flex items-center gap-3">
                   <span
                     className="text-3xl font-extrabold font-mono tabular-nums"
-                    style={{ color: theme.accentColor || (isLight ? '#0A0A0A' : '#FFFFFF') }}
+                    style={{ color: isLight ? theme.accentColor : accentText }}
                   >
                     <StatNumber
                       value={testimonials.customerSatisfactionScore}
                       onChange={(v) => updateTestimonials({ customerSatisfactionScore: v })}
                       label="Skor kepuasan"
                     />
-                    <span className={isLight ? 'text-neutral-400 text-lg font-normal' : 'text-neutral-500 text-lg font-normal'}>
+                    <span className={isLight ? 'text-neutral-400 text-lg font-normal' : 'text-neutral-300 text-lg font-normal'}>
                       <EditableText as="span" value="/5" overrideKey="testimonials.scoreDenominator" label="Denominator skor" />
                     </span>
                   </span>

@@ -21,7 +21,7 @@ const editorialSizeClasses: Record<HeroTextSize, string> = {
 };
 
 export const Hero: React.FC = () => {
-  const { data, editorialMode, updateHero, isSectionLight, darkBg } = useCMS();
+  const { data, editorialMode, updateHero, isSectionLight, darkBg, accentText } = useCMS();
   const { hero, theme } = data;
   const isLight = isSectionLight('hero');
   const [imageError, setImageError] = useState(false);
@@ -167,9 +167,9 @@ export const Hero: React.FC = () => {
                     updateHero({ floatingCard: { ...hero.floatingCard, category: v } })
                   }
                   label="Kategori kartu"
-                  style={{ color: `${theme.accentColor}` }}
+                  style={{ color: isLight ? theme.accentColor : accentText }}
                 />
-                <span className={isLight ? 'text-neutral-300' : 'text-neutral-600'}>·</span>
+                <span className={isLight ? 'text-neutral-300' : 'text-neutral-400'}>·</span>
                 <EditableText
                   as="span"
                   value={hero.floatingCard.year}
@@ -192,7 +192,7 @@ export const Hero: React.FC = () => {
             >
               <span
                 className="font-mono text-[11px] transition-colors"
-                style={{ color: `${theme.accentColor}CC` }}
+                style={{ color: isLight ? `${theme.accentColor}CC` : `${accentText}CC` }}
               >
                 <EditableText
                   as="span"
