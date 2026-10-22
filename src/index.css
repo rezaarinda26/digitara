@@ -236,13 +236,16 @@
 .reveal-fade { transform: none; }
 .reveal-zoom { transform: scale(0.92); }
 
-/* Mask reveal: a curtain overlay slides away to uncover the content.
-   NOTE: the target element itself must never be clipped, because Chrome
+/* Mask reveal: a curtain overlay collapses away to uncover the content.
+   NOTE 1: the target element itself must never be clipped, because Chrome
    computes IntersectionObserver ratios from the clipped area - a fully
-   clipped element would never intersect and stay hidden forever. */
+   clipped element would never intersect and stay hidden forever.
+   NOTE 2: the curtain is collapsed with scaleY() instead of translateY(),
+   so it never spills over the content above it (e.g. marquee strips). */
 .reveal-mask {
   transform: none;
   position: relative;
+  isolation: isolate;
   transition-property: opacity;
   transition-duration: 700ms;
   will-change: opacity;
@@ -254,11 +257,12 @@
   z-index: 2;
   pointer-events: none;
   background-color: var(--reveal-curtain, #0a0a0a);
-  transform: translateY(0);
+  transform: scaleY(1);
+  transform-origin: bottom center;
   transition: transform 900ms cubic-bezier(0.16, 1, 0.3, 1);
 }
 .reveal-mask.is-visible::after {
-  transform: translateY(-101%);
+  transform: scaleY(0);
 }
 
 /* Text shimmer: a soft accent light sweeping across the glyphs. */
@@ -384,6 +388,13 @@
 .light-section .text-neutral-600 { color: #3f3f46; }
 .light-section .text-white\/60 { color: rgba(0, 0, 0, 0.6); }
 .light-section .placeholder\:text-neutral-500::placeholder { color: #6b6b73; }
+
+/* Dark surfaces nested inside a light section keep their own muted colours
+   (e.g. the portfolio marquee ribbon is near-black even in light mode). */
+.light-section .dark-surface .text-neutral-300 { color: #d4d4d8; }
+.light-section .dark-surface .text-neutral-400 { color: #a3a3a3; }
+.light-section .dark-surface .text-neutral-500 { color: #a3a3a3; }
+.light-section .dark-surface .text-neutral-600 { color: #d4d4d8; }
 
 /* ------------------------------------------------------------------ */
 /* Custom theme: remap hardcoded dark surfaces to user-defined colors */

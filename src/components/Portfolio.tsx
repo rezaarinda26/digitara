@@ -364,12 +364,21 @@ export const Portfolio: React.FC = () => {
       </div>
 
       {/* Ribbon Marquee under Portfolio matching reference with accent icons */}
-      <div className={`mt-24 -mx-8 py-5 border-y overflow-hidden flex items-center ${
-        isLight ? 'bg-neutral-950 text-white border-neutral-900' : 'bg-black/60 border-white/[0.08]'
-      }`}>
+      {/* NOTE: this ribbon keeps a DARK background in light mode, so its text
+          must not inherit the light-section muted-text remap (text-neutral-*). */}
+      <div
+        className={`dark-surface mt-24 -mx-8 py-5 border-y overflow-hidden flex items-center ${
+          isLight ? 'bg-neutral-950 text-white border-neutral-900' : 'bg-black/60 border-white/[0.08]'
+        }`}
+      >
         <div className="animate-marquee flex items-center gap-12 whitespace-nowrap">
           {[...clientMarquee, ...clientMarquee, ...clientMarquee].map((partner, idx) => (
-            <div key={idx} className="flex items-center gap-10 text-neutral-300 hover:text-white transition-colors cursor-default">
+            <div
+              key={idx}
+              className={`flex items-center gap-10 transition-colors cursor-default ${
+                isLight ? 'text-white/70 hover:text-white' : 'text-neutral-300 hover:text-white'
+              }`}
+            >
               <span className="text-xs font-semibold tracking-wide font-heading uppercase">
                 <EditableText as="span" value={partner} overrideKey={`portfolio.client.${idx % clientMarquee.length}`} label="Nama klien marquee" />
               </span>
