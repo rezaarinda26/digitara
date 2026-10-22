@@ -71,7 +71,7 @@ export const Hero: React.FC = () => {
     { targetRef: sectionRef, smoothing: reduced ? 1 : 0.14 }
   );
 
-  const headlineSize = headlineSizeClasses[hero.headlineSize || 'md'];
+  const headlineSize = headlineSizeClasses[hero.headlineSize || 'sm'];
   const editorialSize = editorialSizeClasses[hero.editorialSize || 'md'];
 
   return (

@@ -44,7 +44,7 @@ export const DEFAULT_CMS_DATA: CMSData = {
   hero: {
     headlineMain: 'WE MAKE',
     headlineAccent: 'DIGITAL',
-    headlineSize: 'md',
+    headlineSize: 'sm',
     editorialLead:
       'We craft timeless websites, memorable brands, and modern digital products inspired by the creativity of the past and built for the future.',
     editorialSize: 'md',

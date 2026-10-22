@@ -881,16 +881,16 @@ export const AdminCMSModal: React.FC = () => {
                       Headline Text Size
                     </label>
                     <select
-                      value={data.hero.headlineSize || 'md'}
+                      value={data.hero.headlineSize || 'sm'}
                       onChange={(e) => updateHero({ headlineSize: e.target.value as any })}
                       className="w-full px-4 py-2.5 rounded-xl bg-black/60 border border-white/15 text-sm text-white focus:outline-none"
                     >
-                      <option value="xs">Extra Small (2xl - 5xl) — untuk headline panjang</option>
-                      <option value="sm">Small (4xl - 7xl)</option>
-                      <option value="md">Medium (5xl - 9xl) — Default</option>
-                      <option value="lg">Large (6xl - 11rem)</option>
-                      <option value="xl">Extra Large (7xl - 13rem)</option>
-                      <option value="2xl">Maximum (8xl - 15rem)</option>
+                      <option value="xs">Extra Small (2xl - 5xl)</option>
+                      <option value="sm">Medium (4xl - 7xl) — Default</option>
+                      <option value="md">Large (5xl - 9xl)</option>
+                      <option value="lg">Extra Large (6xl - 11rem)</option>
+                      <option value="xl">Maximum (7xl - 13rem)</option>
+                      <option value="2xl">Ultra (8xl - 15rem)</option>
                     </select>
                   </div>
 
