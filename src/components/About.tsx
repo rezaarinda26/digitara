@@ -3,7 +3,6 @@ import { useCMS } from '../context/CMSContext';
 import { ArrowUpRight } from 'lucide-react';
 import { EditableText, EditableImage, DraggableBox } from './editorial/Editable';
 import { Reveal } from './common/Reveal';
-import { StatNumber } from './common/StatNumber';
 
 export const About: React.FC = () => {
   const { data, isSectionLight, updateAbout, darkBg } = useCMS();
@@ -246,7 +245,8 @@ export const About: React.FC = () => {
               {about.stats.map((stat, sIdx) => (
                 <Reveal key={stat.id} variant="up" delay={(sIdx % 3) * 80} className="flex">
                   <div className="w-full flex flex-col group">
-                    <StatNumber
+                    <EditableText
+                      as="span"
                       value={stat.number}
                       onChange={(v) => {
                         const next = [...about.stats];

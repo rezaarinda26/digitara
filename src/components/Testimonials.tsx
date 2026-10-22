@@ -3,7 +3,6 @@ import { useCMS } from '../context/CMSContext';
 import { Star, ArrowLeft, ArrowRight, Quote, Pause, Play } from 'lucide-react';
 import { EditableText, EditableImage } from './editorial/Editable';
 import { Reveal } from './common/Reveal';
-import { StatNumber } from './common/StatNumber';
 import { useReducedMotion } from '../hooks/useReducedMotion';
 
 export const Testimonials: React.FC = () => {
@@ -283,7 +282,8 @@ export const Testimonials: React.FC = () => {
                     className="text-3xl font-extrabold font-mono tabular-nums"
                     style={{ color: isLight ? theme.accentColor : accentText }}
                   >
-                    <StatNumber
+                    <EditableText
+                      as="span"
                       value={testimonials.customerSatisfactionScore}
                       onChange={(v) => updateTestimonials({ customerSatisfactionScore: v })}
                       label="Skor kepuasan"
