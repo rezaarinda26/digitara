@@ -3,7 +3,6 @@ import { useCMS } from '../context/CMSContext';
 import { ArrowUpRight } from 'lucide-react';
 import { HeroTextSize } from '../types/cms';
 import { EditableText, EditableImage, DraggableBox } from './editorial/Editable';
-import { Reveal } from './common/Reveal';
 import { useReducedMotion } from '../hooks/useReducedMotion';
 import { useAnimatedScroll } from '../hooks/useAnimatedScroll';
 
@@ -26,6 +25,7 @@ export const Hero: React.FC = () => {
   const { hero, theme } = data;
   const isLight = isSectionLight('hero');
   const [imageError, setImageError] = useState(false);
+  const [heroImgLoaded, setHeroImgLoaded] = useState(false);
   const [intro, setIntro] = useState(false);
   const sectionRef = useRef<HTMLElement>(null);
   const bgRef = useRef<HTMLDivElement>(null);
@@ -94,28 +94,24 @@ export const Hero: React.FC = () => {
       {/* Cinematic Background Image Container with Gradient Scrim */}
       <div className={`absolute inset-0 z-0 overflow-hidden select-none ${editorialMode ? 'pointer-events-auto' : 'pointer-events-none'}`}>
         {!imageError && hero.bgImageUrl ? (
-          <Reveal
-            variant="mask"
-            curtain={isLight ? '#FFFFFF' : darkBg}
-            delay={80}
-            threshold={0}
-            className="h-full w-full"
+          <div
+            ref={bgRef}
+            className={`w-full h-full will-change-transform transition-[filter] duration-[1200ms] ease-out ${
+              isLight ? 'opacity-10' : 'opacity-50'
+            } ${heroImgLoaded ? 'blur-0' : 'blur-lg'}`}
           >
-            <div className={`w-full h-full ${isLight ? 'opacity-10' : 'opacity-45'}`}>
-              <div ref={bgRef} className="w-full h-full will-change-transform">
-                <EditableImage
-                  value={hero.bgImageUrl}
-                  onChange={(v) => updateHero({ bgImageUrl: v })}
-                  label="Background Hero"
-                  alt="Cinematic digital agency background"
-                  priority
-                  onError={() => setImageError(true)}
-                  className="w-full h-full object-cover object-center dg-kenburns"
-                  style={isLight ? undefined : { animationDuration: '20s' }}
-                />
-              </div>
-            </div>
-          </Reveal>
+            <EditableImage
+              value={hero.bgImageUrl}
+              onChange={(v) => updateHero({ bgImageUrl: v })}
+              label="Background Hero"
+              alt="Cinematic digital agency background"
+              priority
+              onLoad={() => setHeroImgLoaded(true)}
+              onError={() => setImageError(true)}
+              className="w-full h-full object-cover object-center dg-kenburns"
+              style={isLight ? undefined : { animationDuration: '20s' }}
+            />
+          </div>
         ) : (
           <div
             className={`w-full h-full ${
