@@ -172,8 +172,10 @@ const MainContent: React.FC = () => {
         </ErrorBoundary>
       )}
 
-      {/* Floating CMS Studio Launcher at Bottom-Right */}
-      <div className="fixed bottom-6 right-6 z-40">
+      {/* Floating CMS Studio Launcher at Bottom-Right.
+          On small screens it sits above the sticky mobile CTA bar so the two
+          never overlap. */}
+      <div className="fixed bottom-24 right-4 z-40 sm:bottom-6 sm:right-6">
         <button
           onClick={() => setIsAdminOpen(true)}
           className="group flex items-center gap-2.5 px-4 py-2.5 rounded-full bg-[#141419]/90 hover:bg-[#1E1E24] text-white border border-white/15 hover:border-white/30 shadow-2xl backdrop-blur-md transition-all duration-300 hover:scale-105 active:scale-95"
@@ -194,7 +196,7 @@ const MainContent: React.FC = () => {
 
       {/* Live System Toast Notification */}
       {toastMessage && (
-        <div className="fixed bottom-6 left-6 z-50 animate-slide-in-bottom">
+        <div className="fixed bottom-24 left-4 z-50 animate-slide-in-bottom sm:bottom-6 sm:left-6">
           <div className="flex items-center gap-2.5 px-4 py-3 rounded-xl bg-[#141419]/95 border border-white/20 text-white text-xs shadow-2xl backdrop-blur-xl">
             <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
             <span className="font-medium">{toastMessage}</span>

@@ -41,7 +41,7 @@ export const BackToTop: React.FC = () => {
       type="button"
       onClick={() => window.scrollTo({ top: 0, behavior: reduced ? 'auto' : 'smooth' })}
       aria-label="Kembali ke atas"
-      className={`fixed bottom-6 left-6 z-40 w-12 h-12 rounded-full flex items-center justify-center transition-all duration-300 ease-out group ${
+      className={`fixed bottom-24 left-4 z-40 w-12 h-12 rounded-full flex items-center justify-center transition-all duration-300 ease-out group sm:bottom-6 sm:left-6 ${
         visible ? 'opacity-100 translate-y-0 pointer-events-auto' : 'opacity-0 translate-y-4 pointer-events-none'
       } ${
         isLight
