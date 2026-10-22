@@ -885,7 +885,7 @@ export const AdminCMSModal: React.FC = () => {
                       onChange={(e) => updateHero({ headlineSize: e.target.value as any })}
                       className="w-full px-4 py-2.5 rounded-xl bg-black/60 border border-white/15 text-sm text-white focus:outline-none"
                     >
-                      <option value="xs">Extra Small (2xl - 5xl)</option>
+                      <option value="xs">Small (1xl - 4xl)</option>
                       <option value="sm">Medium (4xl - 7xl) — Default</option>
                       <option value="md">Large (5xl - 9xl)</option>
                       <option value="lg">Extra Large (6xl - 11rem)</option>
