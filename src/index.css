@@ -295,19 +295,6 @@
 .dg-hero-in-3 { --hero-delay: 280ms; }
 .dg-hero-in-4 { --hero-delay: 420ms; }
 
-/* Ken Burns: very slow, continuous push-in on the hero artwork.
-   IMPORTANT: this must only animate `transform`. Animating `opacity` here
-   would override the image's own fade-in transition (opacity-0 -> opacity-100)
-   and make the hero photo pop in with no animation at all. */
-.dg-kenburns {
-  animation: dg-kenburns 20s ease-in-out infinite alternate;
-  will-change: transform;
-}
-@keyframes dg-kenburns {
-  from { transform: scale(1.04); }
-  to { transform: scale(1.14); }
-}
-
 /* Accent underline that grows from the left on hover. */
 .dg-underline {
   position: relative;
@@ -510,10 +497,5 @@
     opacity: 1 !important;
     transform: none !important;
     transition: none !important;
-  }
-
-  .dg-kenburns {
-    animation: none !important;
-    transform: none !important;
   }
 }

@@ -25,7 +25,6 @@ export const Hero: React.FC = () => {
   const { hero, theme } = data;
   const isLight = isSectionLight('hero');
   const [imageError, setImageError] = useState(false);
-  const [heroImgLoaded, setHeroImgLoaded] = useState(false);
   const [intro, setIntro] = useState(false);
   const sectionRef = useRef<HTMLElement>(null);
   const bgRef = useRef<HTMLDivElement>(null);
@@ -96,9 +95,9 @@ export const Hero: React.FC = () => {
         {!imageError && hero.bgImageUrl ? (
           <div
             ref={bgRef}
-            className={`w-full h-full will-change-transform transition-[filter] duration-[1200ms] ease-out ${
+            className={`w-full h-full will-change-transform ${
               isLight ? 'opacity-10' : 'opacity-50'
-            } ${heroImgLoaded ? 'blur-0' : 'blur-lg'}`}
+            }`}
           >
             <EditableImage
               value={hero.bgImageUrl}
@@ -106,10 +105,8 @@ export const Hero: React.FC = () => {
               label="Background Hero"
               alt="Cinematic digital agency background"
               priority
-              onLoad={() => setHeroImgLoaded(true)}
               onError={() => setImageError(true)}
-              className="w-full h-full object-cover object-center dg-kenburns"
-              style={isLight ? undefined : { animationDuration: '20s' }}
+              className="w-full h-full object-cover object-center scale-105 transform"
             />
           </div>
         ) : (
