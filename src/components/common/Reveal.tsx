@@ -46,6 +46,7 @@ export const Reveal: React.FC<RevealProps> = ({
         {
           transitionDelay: `${delay}ms`,
           ...(curtain ? ({ ['--reveal-curtain']: curtain } as React.CSSProperties) : {}),
+          ...(delay ? ({ ['--reveal-delay']: `${delay}ms` } as React.CSSProperties) : {}),
           ...style,
         }
       }

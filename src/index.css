@@ -260,6 +260,7 @@
   transform: scaleY(1);
   transform-origin: bottom center;
   transition: transform 900ms cubic-bezier(0.16, 1, 0.3, 1);
+  transition-delay: var(--reveal-delay, 0ms);
 }
 .reveal-mask.is-visible::after {
   transform: scaleY(0);
