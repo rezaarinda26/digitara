@@ -25,6 +25,7 @@ export const Hero: React.FC = () => {
   const { hero, theme } = data;
   const isLight = isSectionLight('hero');
   const [imageError, setImageError] = useState(false);
+  const [heroImgLoaded, setHeroImgLoaded] = useState(false);
   const [intro, setIntro] = useState(false);
   const sectionRef = useRef<HTMLElement>(null);
   const bgRef = useRef<HTMLDivElement>(null);
@@ -93,18 +94,22 @@ export const Hero: React.FC = () => {
       {/* Cinematic Background Image Container with Gradient Scrim */}
       <div className={`absolute inset-0 z-0 overflow-hidden select-none ${editorialMode ? 'pointer-events-auto' : 'pointer-events-none'}`}>
         {!imageError && hero.bgImageUrl ? (
-          <div ref={bgRef} className="w-full h-full will-change-transform">
+          <div
+            ref={bgRef}
+            className={`w-full h-full will-change-transform transition-[filter] duration-[1200ms] ease-out ${
+              isLight ? 'opacity-10' : 'opacity-50'
+            } ${heroImgLoaded ? 'blur-0' : 'blur-lg'}`}
+          >
             <EditableImage
               value={hero.bgImageUrl}
               onChange={(v) => updateHero({ bgImageUrl: v })}
               label="Background Hero"
               alt="Cinematic digital agency background"
               priority
+              onLoad={() => setHeroImgLoaded(true)}
               onError={() => setImageError(true)}
-              className={`w-full h-full object-cover object-center dg-kenburns ${
-                isLight ? 'opacity-10' : 'opacity-45'
-              }`}
-              style={isLight ? undefined : { animationDuration: '26s, 8s' }}
+              className="w-full h-full object-cover object-center dg-kenburns"
+              style={isLight ? undefined : { animationDuration: '20s' }}
             />
           </div>
         ) : (

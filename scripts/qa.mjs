@@ -159,7 +159,7 @@ try {
     });
     if (res?.result?.value !== undefined) console.log(`post: ${res.result.value}`);
     else if (res) console.log(`post(raw): ${JSON.stringify(res).slice(0, 400)}`);
-    await sleep(1500);
+    await sleep(Math.max(200, Math.min(1500, waitMs)));
   }
 
   // Collect console errors for diagnostics
