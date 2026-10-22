@@ -15,7 +15,7 @@ export const Clients: React.FC = () => {
   return (
     <section
       id="clients"
-      className={`relative py-20 sm:py-28 px-4 sm:px-6 lg:px-8 transition-colors duration-500 border-t ${
+      className={`relative overflow-hidden py-20 sm:py-28 px-4 sm:px-6 lg:px-8 transition-colors duration-500 border-t ${
         isLight
           ? 'bg-[#FAFAFA] text-black border-neutral-200'
           : 'text-white border-white/[0.06]'

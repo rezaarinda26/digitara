@@ -52,14 +52,15 @@ export interface SectionMeta {
   order: number;
 }
 
-export type HeroTextSize = 'sm' | 'md' | 'lg' | 'xl';
+export type HeroTextSize = 'xs' | 'sm' | 'md' | 'lg' | 'xl' | '2xl';
+export type HeroEditorialSize = 'sm' | 'md' | 'lg' | 'xl';
 
 export interface HeroData {
   headlineMain: string;
   headlineAccent: string;
   headlineSize: HeroTextSize;
   editorialLead: string;
-  editorialSize: HeroTextSize;
+  editorialSize: HeroEditorialSize;
   ctaText: string;
   ctaLink: string;
   bgImageUrl: string;

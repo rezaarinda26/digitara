@@ -89,7 +89,7 @@ export const Testimonials: React.FC = () => {
 
   return (
     <section
-      className={`relative py-24 sm:py-32 px-4 sm:px-6 lg:px-8 transition-colors duration-500 ${
+      className={`relative overflow-hidden py-24 sm:py-32 px-4 sm:px-6 lg:px-8 transition-colors duration-500 ${
         isLight
           ? 'bg-white text-black border-t border-neutral-200'
           : 'text-white border-t border-white/[0.06]'

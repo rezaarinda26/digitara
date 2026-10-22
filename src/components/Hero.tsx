@@ -1,33 +1,21 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useCMS } from '../context/CMSContext';
 import { ArrowUpRight } from 'lucide-react';
-import { HeroTextSize } from '../types/cms';
+import { HeroTextSize, HeroEditorialSize } from '../types/cms';
 import { EditableText, EditableImage, DraggableBox } from './editorial/Editable';
 import { useReducedMotion } from '../hooks/useReducedMotion';
 import { useAnimatedScroll } from '../hooks/useAnimatedScroll';
 
 const headlineSizeClasses: Record<HeroTextSize, string> = {
+  xs: 'text-2xl sm:text-3xl md:text-4xl lg:text-5xl',
   sm: 'text-4xl sm:text-5xl md:text-6xl lg:text-7xl',
   md: 'text-5xl sm:text-7xl md:text-8xl lg:text-9xl',
   lg: 'text-6xl sm:text-8xl md:text-9xl lg:text-[11rem]',
   xl: 'text-7xl sm:text-9xl md:text-[10rem] lg:text-[13rem]',
+  '2xl': 'text-8xl sm:text-[11rem] md:text-[13rem] lg:text-[15rem]',
 };
 
-/**
- * Headlines are authored in the CMS, so their length is not predictable.
- * Short lines keep the chosen display size; longer ones step down so the
- * text always fits the column instead of spilling out of the viewport.
- */
-const autoHeadlineSize = (text: string): string | null => {
-  const n = (text || '').trim().length;
-  if (n <= 14) return null;
-  if (n <= 22) return 'text-4xl sm:text-6xl md:text-7xl lg:text-8xl';
-  if (n <= 34) return 'text-3xl sm:text-5xl md:text-6xl lg:text-7xl';
-  if (n <= 52) return 'text-2xl sm:text-4xl md:text-5xl lg:text-6xl';
-  return 'text-xl sm:text-2xl md:text-3xl lg:text-4xl';
-};
-
-const editorialSizeClasses: Record<HeroTextSize, string> = {
+const editorialSizeClasses: Record<HeroEditorialSize, string> = {
   sm: 'text-xs sm:text-sm',
   md: 'text-sm sm:text-base',
   lg: 'text-base sm:text-lg',
@@ -263,14 +251,14 @@ export const Hero: React.FC = () => {
         ref={contentRef}
         className="relative z-10 max-w-7xl mx-auto w-full my-auto py-12 will-change-transform"
       >
-        <div className="flex flex-col">
+        <div className="flex flex-col min-w-0">
           {/* Top Line "WE MAKE" */}
           <EditableText
             as="h1"
             value={hero.headlineMain}
             onChange={(v) => updateHero({ headlineMain: v })}
             label="Headline utama"
-            className={`${autoHeadlineSize(hero.headlineMain) || headlineSize} font-extrabold tracking-tighter uppercase select-none leading-[0.9] break-words ${introClass(
+            className={`${headlineSize} min-w-0 font-extrabold tracking-tighter uppercase select-none leading-[0.9] break-words ${introClass(
               2
             )} ${isLight ? 'text-neutral-950' : 'text-white'}`}
           />
@@ -282,7 +270,7 @@ export const Hero: React.FC = () => {
               value={hero.headlineAccent}
               onChange={(v) => updateHero({ headlineAccent: v })}
               label="Headline accent"
-              className={`${autoHeadlineSize(hero.headlineAccent) || headlineSize} font-extrabold tracking-tighter uppercase select-none leading-[0.9] break-words ${introClass(
+              className={`${headlineSize} min-w-0 font-extrabold tracking-tighter uppercase select-none leading-[0.9] break-words ${introClass(
                 3
               )} ${isLight ? 'text-neutral-950' : 'text-transparent bg-clip-text dg-shimmer'}`}
               editStyle={
