@@ -90,7 +90,7 @@ export const About: React.FC = () => {
                 onChange={(v) => updateAbout({ imageUrl: v })}
                 label="Foto About"
                 alt="Creative agency workspace"
-                className="w-full h-full object-cover grayscale contrast-110 group-hover:scale-105 group-hover:grayscale-0 transition-all duration-700"
+                className="w-full h-full object-cover grayscale contrast-105 group-hover:scale-[1.04] group-hover:grayscale-0 group-hover:contrast-100"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent pointer-events-none" />
               <div className="absolute bottom-5 left-5 right-5 flex items-center justify-between text-xs text-white">

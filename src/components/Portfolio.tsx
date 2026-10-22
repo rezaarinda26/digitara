@@ -246,7 +246,7 @@ export const Portfolio: React.FC = () => {
                   onChange={(v) => patchProject({ imageUrl: v })}
                   label="Foto project"
                   alt={project.title}
-                  className="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-105 filter brightness-95 group-hover:brightness-100"
+                  className="w-full h-full object-cover group-hover:scale-[1.04] filter brightness-95 group-hover:brightness-100"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-80 group-hover:opacity-30 transition-opacity duration-300 pointer-events-none" />
 

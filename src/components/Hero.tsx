@@ -162,7 +162,7 @@ export const Hero: React.FC = () => {
                 }
                 label="Foto kartu showcase"
                 alt={hero.floatingCard.title}
-                className="w-full h-full object-cover grayscale contrast-125 group-hover:scale-110 transition-transform duration-500"
+                className="w-full h-full object-cover grayscale contrast-125 group-hover:scale-105"
               />
               <div className="absolute inset-0 bg-black/20 pointer-events-none" />
             </div>

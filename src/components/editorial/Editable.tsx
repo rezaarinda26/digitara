@@ -127,7 +127,28 @@ interface EditableImageProps extends Omit<React.ImgHTMLAttributes<HTMLImageEleme
   label?: string;
   /** Eager-load with high priority (use for LCP images such as the hero). */
   priority?: boolean;
+  /**
+   * CSS transition shorthand. Set inline so it always wins over the utility
+   * classes, otherwise a `transition-opacity` class would silently kill
+   * hover transitions on transform/filter.
+   */
+  transition?: string;
 }
+
+/**
+ * Default transition for editable images: the load fade plus transform, scale
+ * and filter changes (hover zoom, grayscale -> colour, brightness).
+ *
+ * Uses longhands rather than the `transition` shorthand so that a browser
+ * which does not support one of the properties (e.g. `scale`) only drops
+ * that single declaration instead of invalidating the whole rule.
+ */
+const IMAGE_TRANSITION = {
+  transitionProperty: 'opacity, transform, scale, filter',
+  transitionDuration: '700ms, 700ms, 700ms, 700ms',
+  transitionTimingFunction:
+    'ease-out, cubic-bezier(0.16, 1, 0.3, 1), cubic-bezier(0.16, 1, 0.3, 1), cubic-bezier(0.16, 1, 0.3, 1)',
+};
 
 export const EditableImage: React.FC<EditableImageProps> = ({
   value,
@@ -135,6 +156,8 @@ export const EditableImage: React.FC<EditableImageProps> = ({
   className = '',
   label,
   priority = false,
+  transition,
+  style,
   ...rest
 }) => {
   const { editorialMode, showToast } = useCMS();
@@ -166,6 +189,12 @@ export const EditableImage: React.FC<EditableImageProps> = ({
     decoding: 'async' as const,
     ...(priority ? { fetchPriority: 'high' as const } : {}),
     referrerPolicy: 'no-referrer' as const,
+    style: {
+      ...(style as React.CSSProperties),
+      ...(transition
+        ? ({ transition } as React.CSSProperties)
+        : (IMAGE_TRANSITION as React.CSSProperties)),
+    },
     onLoad: (e: React.SyntheticEvent<HTMLImageElement>) => {
       setLoaded(true);
       (rest as any).onLoad?.(e);
@@ -177,9 +206,7 @@ export const EditableImage: React.FC<EditableImageProps> = ({
       <img
         {...imgProps}
         ref={imgRef}
-        className={`${className} transition-opacity duration-700 ease-out ${
-          loaded ? 'opacity-100' : 'opacity-0'
-        }`}
+        className={`${className} ${loaded ? 'opacity-100' : 'opacity-0'}`}
       />
     );
   }
