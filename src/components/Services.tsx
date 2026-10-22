@@ -361,7 +361,7 @@ export const Services: React.FC = () => {
             referrerPolicy="no-referrer"
             className="w-full h-full object-cover grayscale contrast-125 scale-105"
           />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent flex items-end p-3">
+          <div className="dark-surface absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent flex items-end p-3">
             <span className="text-xs font-semibold text-white drop-shadow flex items-center gap-1.5">
               <span className="w-2 h-2 rounded-full" style={{ backgroundColor: theme.accentColor }} />
               {hoveredService.name}

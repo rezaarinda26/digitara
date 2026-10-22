@@ -155,7 +155,7 @@ export const Testimonials: React.FC = () => {
                 className="w-full h-full object-cover grayscale contrast-115 transition-all duration-700"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent pointer-events-none" />
-              <div className="absolute bottom-6 left-6 right-6 flex items-center justify-between text-white">
+              <div className="dark-surface absolute bottom-6 left-6 right-6 flex items-center justify-between text-white">
                 <div>
                   <EditableText
                     as="h4"

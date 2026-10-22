@@ -93,7 +93,7 @@ export const About: React.FC = () => {
                 className="w-full h-full object-cover grayscale contrast-105 group-hover:scale-[1.04] group-hover:grayscale-0 group-hover:contrast-100"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent pointer-events-none" />
-              <div className="absolute bottom-5 left-5 right-5 flex items-center justify-between text-xs text-white">
+              <div className="dark-surface absolute bottom-5 left-5 right-5 flex items-center justify-between text-xs text-white">
                 <span className="font-semibold tracking-wide flex items-center gap-2">
                   <span
                     className="w-2 h-2 rounded-full"
