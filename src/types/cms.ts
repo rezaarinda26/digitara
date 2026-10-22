@@ -15,7 +15,14 @@ export interface AgencyConfig {
   };
 }
 
-export type ThemeMode = 'reference-hybrid' | 'dark-obsidian' | 'light-minimal' | 'midnight';
+export type ThemeMode = 'reference-hybrid' | 'dark-obsidian' | 'light-minimal' | 'midnight' | 'custom';
+
+export interface CustomThemeColors {
+  primary: string;   // Main background
+  secondary: string; // Section / panel background
+  tertiary: string;  // Card / surface background
+  accent: string;    // Accent / CTA color
+}
 
 export interface ThemeConfig {
   bgMode: ThemeMode;
@@ -23,6 +30,7 @@ export interface ThemeConfig {
   headingFont: 'Plus Jakarta Sans' | 'Syne' | 'Outfit' | 'Space Grotesk';
   bodyFont: 'Plus Jakarta Sans' | 'Manrope' | 'JetBrains Mono';
   surfaceOpacity: number;
+  customColors?: CustomThemeColors;
 }
 
 export type SectionKey =
@@ -33,7 +41,9 @@ export type SectionKey =
   | 'portfolio'
   | 'workflow'
   | 'testimonials'
-  | 'contact';
+  | 'contact'
+  | 'clients'
+  | 'footer';
 
 export interface SectionMeta {
   id: SectionKey;
@@ -188,6 +198,19 @@ export interface ContactInquiry {
   status: 'new' | 'contacted' | 'archived';
 }
 
+export interface ClientLogoItem {
+  id: string;
+  name: string;
+  tagline: string;
+  url: string;
+}
+
+export interface ClientsData {
+  badge: string;
+  headline: string;
+  items: ClientLogoItem[];
+}
+
 export interface EditorialOffset {
   x: number;
   y: number;
@@ -210,6 +233,7 @@ export interface CMSData {
   workflow: WorkflowData;
   testimonials: TestimonialsData;
   contact: ContactData;
+  clients: ClientsData;
   inquiries: ContactInquiry[];
   editorial: EditorialData;
 }

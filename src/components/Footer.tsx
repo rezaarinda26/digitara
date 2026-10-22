@@ -5,8 +5,9 @@ import { ArrowUpRight, ArrowUp } from 'lucide-react';
 import { EditableText } from './editorial/Editable';
 
 export const Footer: React.FC = () => {
-  const { data } = useCMS();
+  const { data, isSectionLight, darkBg } = useCMS();
   const { config } = data;
+  const isLight = isSectionLight('footer');
 
   const scrollToTop = () => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -21,7 +22,12 @@ export const Footer: React.FC = () => {
   ];
 
   return (
-    <footer className="relative bg-[#060606] text-white border-t border-white/[0.08] pt-20 pb-12 px-4 sm:px-6 lg:px-8 overflow-hidden">
+    <footer
+      className={`relative border-t pt-20 pb-12 px-4 sm:px-6 lg:px-8 overflow-hidden transition-colors duration-500 ${
+        isLight ? 'bg-white text-black border-neutral-200' : 'text-white border-white/[0.08]'
+      }`}
+      style={isLight ? undefined : { backgroundColor: darkBg }}
+    >
       {/* Background radial glow matching theme accent color */}
       <div
         className="absolute bottom-0 left-1/2 -translate-x-1/2 w-[900px] h-[350px] blur-[150px] pointer-events-none transition-all duration-700 opacity-20"
@@ -30,12 +36,12 @@ export const Footer: React.FC = () => {
 
       <div className="max-w-7xl mx-auto relative z-10">
         {/* Top Callout Banner */}
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 pb-16 border-b border-white/[0.08]">
+        <div className={`flex flex-col md:flex-row md:items-center justify-between gap-6 pb-16 border-b ${isLight ? 'border-neutral-200' : 'border-white/[0.08]'}`}>
           <div>
-            <h3 className="text-2xl sm:text-3xl font-bold tracking-tight">
+            <h3 className={`text-2xl sm:text-3xl font-bold tracking-tight ${isLight ? 'text-neutral-950' : 'text-white'}`}>
               <EditableText as="span" value="Let's make it happen together." overrideKey="footer.headline" label="Judul footer" />
             </h3>
-            <p className="text-neutral-400 text-sm font-light mt-1">
+            <p className={`text-sm font-light mt-1 ${isLight ? 'text-neutral-500' : 'text-neutral-400'}`}>
               <EditableText
                 as="span"
                 value="Currently accepting selected clients for Q1/Q2 2026."
@@ -61,7 +67,11 @@ export const Footer: React.FC = () => {
 
             <button
               onClick={scrollToTop}
-              className="w-10 h-10 rounded-full border border-white/10 hover:border-white text-neutral-400 hover:text-white flex items-center justify-center transition-colors"
+              className={`w-10 h-10 rounded-full border flex items-center justify-center transition-colors ${
+                isLight
+                  ? 'border-neutral-200 hover:border-neutral-900 text-neutral-500 hover:text-black'
+                  : 'border-white/10 hover:border-white text-neutral-400 hover:text-white'
+              }`}
               aria-label="Back to Top"
             >
               <ArrowUp className="w-4 h-4" />
@@ -70,7 +80,7 @@ export const Footer: React.FC = () => {
         </div>
 
         {/* Social Links Row */}
-        <div className="py-10 border-b border-white/[0.08] flex flex-wrap items-center justify-between gap-4">
+        <div className={`py-10 border-b flex flex-wrap items-center justify-between gap-4 ${isLight ? 'border-neutral-200' : 'border-white/[0.08]'}`}>
           <div className="flex flex-wrap items-center gap-6 sm:gap-10 text-sm font-medium">
             {socialLinks.map((s) => (
               <a
@@ -78,7 +88,9 @@ export const Footer: React.FC = () => {
                 href={s.href}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="group flex items-center gap-1.5 text-neutral-400 hover:text-white transition-colors"
+                className={`group flex items-center gap-1.5 transition-colors ${
+                  isLight ? 'text-neutral-500 hover:text-black' : 'text-neutral-400 hover:text-white'
+                }`}
               >
                 <EditableText as="span" value={s.label} overrideKey={`footer.social.${s.id}`} label="Label sosial" />
                 <ArrowUpRight className="w-3.5 h-3.5 opacity-50 group-hover:opacity-100 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-all" />
@@ -93,15 +105,21 @@ export const Footer: React.FC = () => {
 
         {/* Massive Aesthetic Graphic Typography */}
         <div className="py-12 sm:py-16 select-none overflow-hidden text-center">
-          <span className="block text-5xl sm:text-7xl md:text-9xl font-extrabold tracking-tighter text-white/[0.07] hover:text-white/[0.12] transition-colors duration-500 uppercase whitespace-nowrap">
+          <span className={`block text-5xl sm:text-7xl md:text-9xl font-extrabold tracking-tighter transition-colors duration-500 uppercase whitespace-nowrap ${
+            isLight ? 'text-black/[0.06] hover:text-black/[0.10]' : 'text-white/[0.07] hover:text-white/[0.12]'
+          }`}>
             {config.name}
           </span>
         </div>
 
         {/* Bottom Legal Row */}
-        <div className="pt-8 border-t border-white/[0.06] flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-neutral-500">
+        <div className={`pt-8 border-t flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-neutral-500 ${isLight ? 'border-neutral-200' : 'border-white/[0.06]'}`}>
           <div className="flex items-center gap-3">
-            <Logo size="sm" showSubtext={false} />
+            {isLight ? (
+              <Logo size="sm" showSubtext={false} textColor="#0A0A0A" />
+            ) : (
+              <Logo size="sm" showSubtext={false} />
+            )}
             <span>© {new Date().getFullYear()} {config.name} ({config.subtext}). All Rights Reserved.</span>
           </div>
 

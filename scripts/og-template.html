@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    width: 1200px;
+    height: 630px;
+    overflow: hidden;
+    background: #0A0A0A;
+    font-family: 'Segoe UI', Arial, sans-serif;
+    position: relative;
+  }
+  .glow-a, .glow-b, .glow-c {
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(90px);
+  }
+  .glow-a { width: 760px; height: 760px; left: -300px; top: -420px; background: rgba(107,92,231,0.55); }
+  .glow-b { width: 700px; height: 700px; right: -280px; bottom: -420px; background: rgba(79,70,229,0.42); }
+  .glow-c { width: 520px; height: 520px; right: 180px; top: -300px; background: rgba(37,99,235,0.22); }
+  .grid {
+    position: absolute; inset: 0;
+    background-image:
+      linear-gradient(to right, rgba(255,255,255,0.045) 1px, transparent 1px),
+      linear-gradient(to bottom, rgba(255,255,255,0.045) 1px, transparent 1px);
+    background-size: 60px 60px;
+  }
+  .content { position: relative; z-index: 2; padding: 84px 90px; height: 100%; display: flex; flex-direction: column; }
+  .mark { display: grid; grid-template-columns: repeat(3, 22px); grid-template-rows: repeat(3, 22px); gap: 5px; }
+  .mark span { border-radius: 2px; }
+  h1 {
+    margin-top: 30px;
+    font-size: 96px;
+    line-height: 1;
+    font-weight: 800;
+    letter-spacing: -0.03em;
+    color: #FFFFFF;
+  }
+  .rule { margin-top: 22px; width: 150px; height: 8px; background: #6B5CE7; border-radius: 2px; }
+  p.tagline { margin-top: 22px; font-size: 34px; font-weight: 300; color: rgba(235,235,240,0.92); }
+  p.kicker {
+    margin-top: 26px;
+    font-family: Consolas, 'Courier New', monospace;
+    font-size: 22px;
+    letter-spacing: 0.06em;
+    color: #8B7CFF;
+  }
+  .spacer { flex: 1; }
+  p.url { font-size: 25px; font-weight: 300; color: rgba(190,190,200,0.85); }
+  .bar { position: absolute; left: 0; right: 0; bottom: 0; height: 10px; background: linear-gradient(90deg, #6B5CE7, #4F46E5 55%, #2563EB); z-index: 3; }
+</style>
+</head>
+<body>
+  <div class="glow-a"></div>
+  <div class="glow-b"></div>
+  <div class="glow-c"></div>
+  <div class="grid"></div>
+  <div class="content">
+    <div class="mark">
+      <span style="background:#6B5CE7;opacity:0"></span>
+      <span style="background:#6B5CE7;opacity:.8"></span>
+      <span style="background:#6B5CE7;opacity:.55"></span>
+      <span style="background:#6B5CE7;opacity:.55"></span>
+      <span style="background:#6B5CE7"></span>
+      <span style="background:#6B5CE7;opacity:.8"></span>
+      <span style="background:#6B5CE7;opacity:.8"></span>
+      <span style="background:#6B5CE7;opacity:.55"></span>
+      <span style="background:#6B5CE7"></span>
+    </div>
+    <h1>DIGITARA</h1>
+    <div class="rule"></div>
+    <p class="tagline">High-End Digital Agency &amp; Creative Engineering</p>
+    <p class="kicker">// PORTFOLIO &nbsp;/&nbsp; SELECTED WORKS &nbsp;/&nbsp; 2026</p>
+    <div class="spacer"></div>
+    <p class="url">digitara.id</p>
+  </div>
+  <div class="bar"></div>
+</body>
+</html>

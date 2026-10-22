@@ -1,15 +1,29 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import { useCMS } from '../context/CMSContext';
 import { ArrowUpRight, X, Sparkle, Pencil, Camera, Plus, Trash2, ChevronLeft, ChevronRight } from 'lucide-react';
 import { ProjectItem } from '../types/cms';
 import { EditableText, EditableImage, ImageUploadTrigger } from './editorial/Editable';
+import { usePresence } from '../hooks/usePresence';
+import { useFocusTrap } from '../hooks/useFocusTrap';
+import { Reveal } from './common/Reveal';
 
 export const Portfolio: React.FC = () => {
-  const { data, activeProjectModal, setActiveProjectModal, isSectionLight, updatePortfolio, editorialMode } = useCMS();
+  const { data, activeProjectModal, setActiveProjectModal, isSectionLight, updatePortfolio, editorialMode, darkBg } = useCMS();
   const { portfolio, theme } = data;
   const isLight = isSectionLight('portfolio');
+  const isModalLight = data.theme.bgMode === 'light-minimal';
   const [activeCategory, setActiveCategory] = useState<string>('All');
   const [activeImage, setActiveImage] = useState(0);
+  const [slideDir, setSlideDir] = useState<'left' | 'right'>('right');
+  const { isMounted: modalMounted, isClosing: modalClosing } = usePresence(!!activeProjectModal, 220);
+  const modalRef = useRef<HTMLDivElement>(null);
+  const lastProjectRef = useRef<ProjectItem | null>(null);
+  if (activeProjectModal) lastProjectRef.current = activeProjectModal;
+  const modalProject = activeProjectModal || lastProjectRef.current;
+
+  // Trap keyboard focus inside the modal while it is open
+  useFocusTrap(modalMounted, modalRef);
 
   // Extract unique categories
   const categories = ['All', ...Array.from(new Set(portfolio.items.map((i) => i.category)))];
@@ -28,12 +42,28 @@ export const Portfolio: React.FC = () => {
     setActiveProjectModal({ ...activeProjectModal, ...patch });
   };
 
-  const gallery = activeProjectModal?.gallery?.length
-    ? activeProjectModal.gallery
-    : activeProjectModal?.imageUrl
-    ? [activeProjectModal.imageUrl]
+  const gallery = modalProject?.gallery?.length
+    ? modalProject.gallery
+    : modalProject?.imageUrl
+    ? [modalProject.imageUrl]
     : [];
   const safeActiveImage = Math.min(activeImage, Math.max(0, gallery.length - 1));
+
+  // Prevent background scroll while the modal is open
+  useEffect(() => {
+    if (!modalMounted) return;
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    return () => {
+      document.body.style.overflow = prev;
+    };
+  }, [modalMounted]);
+
+  const goToImage = (next: number, dir: 'left' | 'right') => {
+    if (next === safeActiveImage) return;
+    setSlideDir(dir);
+    setActiveImage(next);
+  };
 
   const patchGalleryImage = (index: number, value: string) => {
     if (!activeProjectModal) return;
@@ -58,7 +88,7 @@ export const Portfolio: React.FC = () => {
   };
 
   useEffect(() => {
-    setActiveImage(0);
+    if (activeProjectModal?.id) setActiveImage(0);
   }, [activeProjectModal?.id]);
 
   const clientMarquee = [
@@ -77,12 +107,15 @@ export const Portfolio: React.FC = () => {
       className={`relative py-24 sm:py-32 px-4 sm:px-6 lg:px-8 transition-colors duration-500 ${
         isLight
           ? 'bg-white text-black border-t border-neutral-200'
-          : 'bg-[#0A0A0A] text-white border-t border-white/[0.06]'
+          : 'text-white border-t border-white/[0.06]'
       }`}
+      style={isLight ? undefined : { backgroundColor: darkBg }}
     >
       <div className="max-w-7xl mx-auto">
         {/* Section Header */}
-        <div
+        <Reveal
+          variant="mask"
+          curtain={isLight ? '#FFFFFF' : darkBg}
           className={`flex flex-col md:flex-row md:items-end justify-between gap-8 pb-16 border-b ${
             isLight ? 'border-neutral-200' : 'border-white/[0.08]'
           }`}
@@ -128,22 +161,22 @@ export const Portfolio: React.FC = () => {
               }`}
             />
           </div>
-        </div>
+        </Reveal>
 
         {/* Filter Segmented Controls with Accent Impact */}
-        <div className="mt-8 flex flex-wrap items-center gap-2.5">
+        <Reveal variant="up" delay={100} className="mt-8 flex flex-wrap items-center gap-2.5">
           {categories.map((cat) => {
             const isActive = activeCategory === cat;
             return (
               <button
                 key={cat}
                 onClick={() => setActiveCategory(cat)}
-                className={`px-5 py-2 rounded-full text-xs font-medium transition-all duration-300 cursor-pointer border ${
+                className={`relative overflow-hidden px-5 py-2 rounded-full text-xs font-medium cursor-pointer border transition-all duration-300 ease-out active:scale-90 hover:-translate-y-0.5 ${
                   isActive
-                    ? 'text-white font-semibold shadow-md scale-102'
+                    ? 'text-white font-semibold shadow-md scale-105'
                     : isLight
-                    ? 'bg-neutral-100 text-neutral-600 hover:text-black border-neutral-200 hover:border-neutral-400'
-                    : 'bg-white/[0.04] text-neutral-400 hover:text-white hover:bg-white/[0.08] border-white/[0.06]'
+                    ? 'bg-neutral-100 text-neutral-600 hover:text-black border-neutral-200 hover:border-neutral-400 hover:shadow-md'
+                    : 'bg-white/[0.04] text-neutral-400 hover:text-white hover:bg-white/[0.08] border-white/[0.06] hover:shadow-md'
                 }`}
                 style={
                   isActive
@@ -156,14 +189,20 @@ export const Portfolio: React.FC = () => {
                     : {}
                 }
               >
-                {cat}
+                <span className="relative z-10">{cat}</span>
+                {isActive && (
+                  <span
+                    className="absolute inset-0 z-0 animate-filter-pop"
+                    style={{ backgroundColor: theme.accentColor || '#6B5CE7' }}
+                  />
+                )}
               </button>
             );
           })}
-        </div>
+        </Reveal>
 
         {/* 2-Column Aesthetic Project Grid */}
-        <div className="mt-12 grid grid-cols-1 md:grid-cols-2 gap-8 lg:gap-12">
+        <div key={activeCategory} className="mt-12 grid grid-cols-1 md:grid-cols-2 gap-8 lg:gap-12 animate-filter-grid">
           {filteredItems.map((project) => {
             const pIdx = portfolio.items.findIndex((p) => p.id === project.id);
             const patchProject = (patch: Partial<ProjectItem>) => {
@@ -173,12 +212,17 @@ export const Portfolio: React.FC = () => {
               updatePortfolio({ items: next });
             };
             return (
-            <div
+            <Reveal
               key={project.id}
+              variant="up"
+              delay={(pIdx % 2) * 90}
+              className="flex"
+            >
+            <div
               onClick={() => {
                 setActiveProjectModal(project);
               }}
-              className={`group cursor-pointer flex flex-col rounded-2xl overflow-hidden border transition-all duration-500 ${
+              className={`group w-full cursor-pointer flex flex-col rounded-2xl overflow-hidden border transition-all duration-500 ${
                 isLight
                   ? 'bg-neutral-50/80 border-neutral-200 hover:shadow-2xl'
                   : 'bg-white/[0.02] border-white/[0.06]'
@@ -226,7 +270,7 @@ export const Portfolio: React.FC = () => {
                       e.stopPropagation();
                       setActiveProjectModal(project);
                     }}
-                    className="absolute top-4 left-4 flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-[#6B5CE7] hover:bg-[#7d6fec] text-white text-[11px] font-semibold shadow-lg transition-colors"
+                    className="absolute top-4 left-4 flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-[#6B5CE7] hover:bg-[#7d6fec] text-white text-[11px] font-semibold shadow-lg cursor-pointer transition-all duration-200 hover:scale-105 active:scale-95"
                     title="Buka & edit detail case study"
                   >
                     <Pencil className="w-3 h-3" />
@@ -313,6 +357,7 @@ export const Portfolio: React.FC = () => {
                 </div>
               </div>
             </div>
+            </Reveal>
             );
           })}
         </div>
@@ -335,37 +380,53 @@ export const Portfolio: React.FC = () => {
       </div>
 
       {/* Case Study Detail Modal — near full screen gallery */}
-      {activeProjectModal && (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center p-0 sm:p-4 lg:p-6 bg-black/90 backdrop-blur-xl animate-in fade-in duration-200"
-          onClick={() => setActiveProjectModal(null)}
-        >
+      {modalMounted &&
+        modalProject &&
+        createPortal(
           <div
-            className="relative w-full h-full sm:h-[94vh] sm:w-[96vw] max-w-[1600px] bg-[#0E0E10] border border-white/15 sm:rounded-2xl overflow-hidden flex flex-col lg:flex-row shadow-2xl text-white"
+            className={`fixed inset-0 z-50 flex items-center justify-center p-0 sm:p-4 lg:p-6 backdrop-blur-xl ${isModalLight ? 'bg-neutral-900/60' : 'bg-black/90'} ${modalClosing ? 'animate-fade-out' : 'animate-fade-in'}`}
+            onClick={() => setActiveProjectModal(null)}
+          >
+          <div
+            ref={modalRef}
+            role="dialog"
+            aria-modal="true"
+            aria-label={modalProject.title}
+            className={`relative w-full h-full sm:h-[94vh] sm:w-[96vw] max-w-[1600px] border sm:rounded-2xl overflow-hidden flex flex-col lg:flex-row shadow-2xl ${
+              isModalLight ? 'modal-light bg-white text-neutral-900 border-neutral-200' : 'bg-[#0E0E10] text-white border-white/15'
+            } ${modalClosing ? 'animate-zoom-out' : 'animate-zoom-in'}`}
             onClick={(e) => e.stopPropagation()}
-            style={{ borderColor: `${theme.accentColor}40` }}
+            style={{ borderColor: isModalLight ? undefined : `${theme.accentColor}40` }}
           >
             {/* Close Button */}
             <button
               onClick={() => setActiveProjectModal(null)}
-              className="absolute top-4 right-4 z-20 p-2 rounded-full bg-black/60 hover:bg-black/80 text-white transition-colors"
+              className={`absolute top-4 right-4 z-20 p-2 rounded-full cursor-pointer border transition-all duration-200 hover:scale-110 active:scale-95 hover:shadow-lg focus-visible:outline-none focus-visible:ring-2 ${
+                isModalLight
+                  ? 'bg-white/80 hover:bg-white text-neutral-800 border-neutral-300 hover:border-neutral-500 focus-visible:ring-neutral-500'
+                  : 'bg-black/60 hover:bg-black/90 text-white border-white/10 hover:border-white/40 focus-visible:ring-white/60'
+              }`}
               aria-label="Close Case Study"
             >
               <X className="w-5 h-5" />
             </button>
 
             {/* LEFT: Project Gallery */}
-            <div className="flex-1 flex flex-col bg-black min-h-0 lg:h-full">
+            <div className={`flex-1 flex flex-col min-h-0 lg:h-full ${isModalLight ? 'bg-neutral-100' : 'bg-black'}`}>
               {/* Main large screenshot */}
-              <div className="relative flex-1 min-h-[220px] bg-neutral-950 overflow-hidden">
-                <EditableImage
+              <div className={`relative flex-1 min-h-[220px] overflow-hidden ${isModalLight ? 'bg-neutral-200' : 'bg-neutral-950'}`}>
+                <div
                   key={`main-${safeActiveImage}`}
-                  value={gallery[safeActiveImage]}
-                  onChange={(v) => patchGalleryImage(safeActiveImage, v)}
-                  label="Screenshot utama"
-                  alt={activeProjectModal.title}
-                  className="w-full h-full object-contain"
-                />
+                  className={`w-full h-full ${slideDir === 'right' ? 'animate-slide-in-right' : 'animate-slide-in-left'}`}
+                >
+                  <EditableImage
+                    value={gallery[safeActiveImage]}
+                    onChange={(v) => patchGalleryImage(safeActiveImage, v)}
+                    label="Screenshot utama"
+                    alt={modalProject.title}
+                    className="w-full h-full object-contain"
+                  />
+                </div>
 
                 {/* Prev / Next controls */}
                 {gallery.length > 1 && (
@@ -374,9 +435,13 @@ export const Portfolio: React.FC = () => {
                       type="button"
                       onClick={(e) => {
                         e.stopPropagation();
-                        setActiveImage((curr) => (curr - 1 + gallery.length) % gallery.length);
+                        goToImage((safeActiveImage - 1 + gallery.length) % gallery.length, 'left');
                       }}
-                      className="absolute left-4 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-black/60 hover:bg-black/85 border border-white/15 flex items-center justify-center transition-colors"
+                      className={`absolute left-4 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full border flex items-center justify-center cursor-pointer transition-all duration-200 hover:scale-110 active:scale-95 hover:shadow-xl focus-visible:outline-none focus-visible:ring-2 ${
+                        isModalLight
+                          ? 'bg-white/85 hover:bg-white text-neutral-800 border-neutral-300 hover:border-neutral-500 focus-visible:ring-neutral-500'
+                          : 'bg-black/60 hover:bg-black/90 text-white border-white/15 hover:border-white/50 focus-visible:ring-white/60'
+                      }`}
                       aria-label="Previous image"
                     >
                       <ChevronLeft className="w-5 h-5" />
@@ -385,14 +450,20 @@ export const Portfolio: React.FC = () => {
                       type="button"
                       onClick={(e) => {
                         e.stopPropagation();
-                        setActiveImage((curr) => (curr + 1) % gallery.length);
+                        goToImage((safeActiveImage + 1) % gallery.length, 'right');
                       }}
-                      className="absolute right-4 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-black/60 hover:bg-black/85 border border-white/15 flex items-center justify-center transition-colors"
+                      className={`absolute right-4 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full border flex items-center justify-center cursor-pointer transition-all duration-200 hover:scale-110 active:scale-95 hover:shadow-xl focus-visible:outline-none focus-visible:ring-2 ${
+                        isModalLight
+                          ? 'bg-white/85 hover:bg-white text-neutral-800 border-neutral-300 hover:border-neutral-500 focus-visible:ring-neutral-500'
+                          : 'bg-black/60 hover:bg-black/90 text-white border-white/15 hover:border-white/50 focus-visible:ring-white/60'
+                      }`}
                       aria-label="Next image"
                     >
                       <ChevronRight className="w-5 h-5" />
                     </button>
-                    <div className="absolute bottom-4 right-4 px-2.5 py-1 rounded-md bg-black/60 backdrop-blur-md text-[11px] font-mono text-white border border-white/10">
+                    <div className={`absolute bottom-4 right-4 px-2.5 py-1 rounded-md backdrop-blur-md text-[11px] font-mono border ${
+                      isModalLight ? 'bg-white/80 text-neutral-700 border-neutral-300' : 'bg-black/60 text-white border-white/10'
+                    }`}>
                       {safeActiveImage + 1} / {gallery.length}
                     </div>
                   </>
@@ -408,23 +479,27 @@ export const Portfolio: React.FC = () => {
               </div>
 
               {/* Thumbnail strip (project gallery) */}
-              <div className="shrink-0 flex items-center gap-2 sm:gap-3 p-3 sm:p-4 overflow-x-auto border-t border-white/10 bg-[#0A0A0B]">
+              <div className={`shrink-0 flex items-center gap-2 sm:gap-3 p-3 sm:p-4 overflow-x-auto border-t ${
+                isModalLight ? 'border-neutral-200 bg-neutral-50' : 'border-white/10 bg-[#0A0A0B]'
+              }`}>
                 {gallery.map((img, i) => (
                   <div key={i} className="relative group/thumb shrink-0">
                     <button
                       type="button"
                       onClick={(e) => {
                         e.stopPropagation();
-                        setActiveImage(i);
+                        goToImage(i, i > safeActiveImage ? 'right' : 'left');
                       }}
-                      className={`block w-20 h-14 sm:w-28 sm:h-20 rounded-lg overflow-hidden border-2 transition-all ${
+                      className={`block w-20 h-14 sm:w-28 sm:h-20 rounded-lg overflow-hidden border-2 cursor-pointer transition-all duration-200 hover:scale-105 hover:shadow-lg focus-visible:outline-none focus-visible:ring-2 ${
                         i === safeActiveImage
                           ? 'border-[#6B5CE7] opacity-100'
-                          : 'border-white/10 opacity-60 hover:opacity-100'
+                          : isModalLight
+                          ? 'border-neutral-200 opacity-60 hover:opacity-100 hover:border-neutral-400 focus-visible:ring-neutral-500'
+                          : 'border-white/10 opacity-60 hover:opacity-100 hover:border-white/40 focus-visible:ring-white/60'
                       }`}
                       aria-label={`Lihat gambar ${i + 1}`}
                     >
-                      <img src={img} alt={`${activeProjectModal.title} ${i + 1}`} referrerPolicy="no-referrer" className="w-full h-full object-cover" />
+                      <img src={img} alt={`${modalProject.title} ${i + 1}`} loading="lazy" decoding="async" referrerPolicy="no-referrer" className="w-full h-full object-cover" />
                     </button>
                     {editorialMode && (
                       <>
@@ -467,12 +542,14 @@ export const Portfolio: React.FC = () => {
             </div>
 
             {/* RIGHT: Project Information */}
-            <div className="w-full lg:w-[440px] xl:w-[500px] shrink-0 overflow-y-auto lg:h-full p-6 sm:p-8 border-t lg:border-t-0 lg:border-l border-white/10">
+            <div className={`w-full lg:w-[440px] xl:w-[500px] shrink-0 overflow-y-auto lg:h-full p-6 sm:p-8 border-t lg:border-t-0 lg:border-l ${
+              isModalLight ? 'border-neutral-200 bg-white' : 'border-white/10'
+            }`}>
               {/* Header */}
-              <div className="flex items-center gap-3 text-xs font-mono text-neutral-400 mb-2">
+              <div className={`flex items-center gap-3 text-xs font-mono mb-2 ${isModalLight ? 'text-neutral-500' : 'text-neutral-400'}`}>
                 <EditableText
                   as="span"
-                  value={activeProjectModal.category}
+                  value={modalProject.category}
                   onChange={(v) => patchActiveProject({ category: v })}
                   label="Kategori project"
                   style={{ color: theme.accentColor }}
@@ -483,7 +560,7 @@ export const Portfolio: React.FC = () => {
                   <EditableText as="span" value="Year" overrideKey="portfolio.modal.yearLabel" label="Label tahun" />{' '}
                   <EditableText
                     as="span"
-                    value={activeProjectModal.year}
+                    value={modalProject.year}
                     onChange={(v) => patchActiveProject({ year: v })}
                     label="Tahun project"
                   />
@@ -492,43 +569,45 @@ export const Portfolio: React.FC = () => {
 
               <EditableText
                 as="h2"
-                value={activeProjectModal.title}
+                value={modalProject.title}
                 onChange={(v) => patchActiveProject({ title: v })}
                 label="Judul project"
-                className="text-2xl sm:text-3xl font-bold text-white mb-3"
+                className={`text-2xl sm:text-3xl font-bold mb-3 ${isModalLight ? 'text-neutral-950' : 'text-white'}`}
               />
 
               <EditableText
                 as="p"
-                value={activeProjectModal.summary}
+                value={modalProject.summary}
                 onChange={(v) => patchActiveProject({ summary: v })}
                 label="Ringkasan project"
                 multiline
-                className="text-sm text-neutral-400 font-light leading-relaxed mb-6"
+                className={`text-sm font-light leading-relaxed mb-6 ${isModalLight ? 'text-neutral-600' : 'text-neutral-400'}`}
               />
 
               {/* Quick Specs */}
-              <div className="grid grid-cols-2 gap-4 p-4 rounded-xl bg-white/[0.03] border border-white/5 mb-6 text-xs">
+              <div className={`grid grid-cols-2 gap-4 p-4 rounded-xl border mb-6 text-xs ${
+                isModalLight ? 'bg-neutral-50 border-neutral-200' : 'bg-white/[0.03] border-white/5'
+              }`}>
                 <div>
-                  <span className="text-neutral-500 font-mono block">
+                  <span className={`font-mono block ${isModalLight ? 'text-neutral-500' : 'text-neutral-500'}`}>
                     <EditableText as="span" value="Client" overrideKey="portfolio.modal.client" label="Label client" />
                   </span>
                   <EditableText
                     as="span"
-                    value={activeProjectModal.client}
+                    value={modalProject.client}
                     onChange={(v) => patchActiveProject({ client: v })}
                     label="Nama client"
-                    className="font-medium text-white"
+                    className={`font-medium ${isModalLight ? 'text-neutral-900' : 'text-white'}`}
                   />
                 </div>
-                {activeProjectModal.metrics !== undefined && (
+                {modalProject.metrics !== undefined && (
                   <div>
-                    <span className="text-neutral-500 font-mono block">
+                    <span className={`font-mono block ${isModalLight ? 'text-neutral-500' : 'text-neutral-500'}`}>
                       <EditableText as="span" value="Key Metric" overrideKey="portfolio.modal.metric" label="Label metric" />
                     </span>
                     <EditableText
                       as="span"
-                      value={activeProjectModal.metrics}
+                      value={modalProject.metrics}
                       onChange={(v) => patchActiveProject({ metrics: v })}
                       label="Metric project"
                       className="font-semibold"
@@ -537,23 +616,23 @@ export const Portfolio: React.FC = () => {
                   </div>
                 )}
                 <div className="col-span-2">
-                  <span className="text-neutral-500 font-mono block">
+                  <span className={`font-mono block ${isModalLight ? 'text-neutral-500' : 'text-neutral-500'}`}>
                     <EditableText as="span" value="Deliverables" overrideKey="portfolio.modal.deliverables" label="Label deliverables" />
                   </span>
-                  <span className="font-medium text-white">
-                    {activeProjectModal.tags.map((tag, tIdx) => (
+                  <span className={`font-medium ${isModalLight ? 'text-neutral-900' : 'text-white'}`}>
+                    {modalProject.tags.map((tag, tIdx) => (
                       <span key={tIdx}>
                         <EditableText
                           as="span"
                           value={tag}
                           onChange={(v) => {
-                            const next = [...activeProjectModal.tags];
+                            const next = [...modalProject.tags];
                             next[tIdx] = v;
                             patchActiveProject({ tags: next });
                           }}
                           label="Deliverable project"
                         />
-                        {tIdx < activeProjectModal.tags.length - 1 ? <>, </> : null}
+                        {tIdx < modalProject.tags.length - 1 ? <>, </> : null}
                       </span>
                     ))}
                   </span>
@@ -561,44 +640,44 @@ export const Portfolio: React.FC = () => {
               </div>
 
               {/* Challenge & Solution */}
-              <div className="space-y-6 text-sm text-neutral-300 leading-relaxed font-light">
+              <div className={`space-y-6 text-sm leading-relaxed font-light ${isModalLight ? 'text-neutral-700' : 'text-neutral-300'}`}>
                 <div>
-                  <h4 className="text-xs font-mono uppercase tracking-wider text-neutral-400 mb-2 font-semibold">
+                  <h4 className={`text-xs font-mono uppercase tracking-wider mb-2 font-semibold ${isModalLight ? 'text-neutral-500' : 'text-neutral-400'}`}>
                     <EditableText as="span" value="The Challenge" overrideKey="portfolio.modal.challenge" label="Judul challenge" />
                   </h4>
                   <EditableText
                     as="p"
-                    value={activeProjectModal.challenge}
+                    value={modalProject.challenge}
                     onChange={(v) => patchActiveProject({ challenge: v })}
                     label="Deskripsi challenge"
                     multiline
-                    className="bg-white/[0.02] p-4 rounded-xl border border-white/5"
+                    className={`p-4 rounded-xl border ${isModalLight ? 'bg-neutral-50 border-neutral-200' : 'bg-white/[0.02] border-white/5'}`}
                   />
                 </div>
 
                 <div>
-                  <h4 className="text-xs font-mono uppercase tracking-wider text-neutral-400 mb-2 font-semibold">
+                  <h4 className={`text-xs font-mono uppercase tracking-wider mb-2 font-semibold ${isModalLight ? 'text-neutral-500' : 'text-neutral-400'}`}>
                     <EditableText as="span" value="Strategic Solution & Execution" overrideKey="portfolio.modal.solution" label="Judul solution" />
                   </h4>
                   <EditableText
                     as="p"
-                    value={activeProjectModal.solution}
+                    value={modalProject.solution}
                     onChange={(v) => patchActiveProject({ solution: v })}
                     label="Deskripsi solution"
                     multiline
-                    className="bg-white/[0.02] p-4 rounded-xl border border-white/5"
+                    className={`p-4 rounded-xl border ${isModalLight ? 'bg-neutral-50 border-neutral-200' : 'bg-white/[0.02] border-white/5'}`}
                   />
                 </div>
               </div>
 
               {/* Footer with CTA */}
-              <div className="mt-8 pt-6 border-t border-white/10 flex items-center justify-between gap-4">
+              <div className={`mt-8 pt-6 border-t flex items-center justify-between gap-4 ${isModalLight ? 'border-neutral-200' : 'border-white/10'}`}>
                 <EditableText
                   as="span"
                   value="DIGITARA Archive · Confidential"
                   overrideKey="portfolio.modal.confidential"
                   label="Teks confidential"
-                  className="text-xs text-neutral-500"
+                  className={`text-xs ${isModalLight ? 'text-neutral-400' : 'text-neutral-500'}`}
                 />
                 <a
                   href="#contact"
@@ -607,7 +686,7 @@ export const Portfolio: React.FC = () => {
                     const el = document.querySelector('#contact');
                     if (el) el.scrollIntoView({ behavior: 'smooth' });
                   }}
-                  className="inline-flex items-center gap-2 px-5 py-3 rounded-xl text-white text-xs font-semibold hover:brightness-110 transition-all shadow-xl active:scale-95 shrink-0"
+                  className="inline-flex items-center gap-2 px-5 py-3 rounded-xl text-white text-xs font-semibold cursor-pointer hover:brightness-110 hover:scale-[1.03] transition-all shadow-xl active:scale-95 shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/60"
                   style={{
                     backgroundColor: theme.accentColor || '#FFFFFF',
                     color: theme.accentColor === '#FFFFFF' ? '#000000' : '#FFFFFF',
@@ -620,8 +699,9 @@ export const Portfolio: React.FC = () => {
               </div>
             </div>
           </div>
-        </div>
-      )}
+        </div>,
+          document.body
+        )}
     </section>
   );
 };

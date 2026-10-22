@@ -125,6 +125,8 @@ interface EditableImageProps extends Omit<React.ImgHTMLAttributes<HTMLImageEleme
   value: string;
   onChange: (value: string) => void;
   label?: string;
+  /** Eager-load with high priority (use for LCP images such as the hero). */
+  priority?: boolean;
 }
 
 export const EditableImage: React.FC<EditableImageProps> = ({
@@ -132,10 +134,20 @@ export const EditableImage: React.FC<EditableImageProps> = ({
   onChange,
   className = '',
   label,
+  priority = false,
   ...rest
 }) => {
   const { editorialMode, showToast } = useCMS();
   const inputRef = useRef<HTMLInputElement>(null);
+  const imgRef = useRef<HTMLImageElement>(null);
+  const [loaded, setLoaded] = useState(false);
+
+  // A cached image can already be "complete" before React attaches the
+  // onLoad handler, which would leave it stuck at opacity-0.
+  useEffect(() => {
+    const el = imgRef.current;
+    if (el && el.complete && el.naturalWidth > 0) setLoaded(true);
+  }, [value]);
 
   const handleFile = async (file: File) => {
     try {
@@ -147,13 +159,27 @@ export const EditableImage: React.FC<EditableImageProps> = ({
     }
   };
 
+  const imgProps = {
+    ...rest,
+    src: value,
+    loading: priority ? ('eager' as const) : ('lazy' as const),
+    decoding: 'async' as const,
+    ...(priority ? { fetchPriority: 'high' as const } : {}),
+    referrerPolicy: 'no-referrer' as const,
+    onLoad: (e: React.SyntheticEvent<HTMLImageElement>) => {
+      setLoaded(true);
+      (rest as any).onLoad?.(e);
+    },
+  };
+
   if (!editorialMode) {
     return (
       <img
-        {...rest}
-        src={value}
-        className={className}
-        referrerPolicy="no-referrer"
+        {...imgProps}
+        ref={imgRef}
+        className={`${className} transition-opacity duration-700 ease-out ${
+          loaded ? 'opacity-100' : 'opacity-0'
+        }`}
       />
     );
   }
@@ -161,10 +187,9 @@ export const EditableImage: React.FC<EditableImageProps> = ({
   return (
     <>
       <img
-        {...rest}
-        src={value}
+        {...imgProps}
+        ref={imgRef}
         className={`${className} cursor-pointer ring-2 ring-[#6B5CE7] hover:ring-4 ring-offset-1 ring-offset-black/40 transition-all`}
-        referrerPolicy="no-referrer"
         title={label ? `Klik untuk ganti foto: ${label}` : 'Klik untuk ganti foto'}
         onClick={(e) => {
           e.preventDefault();

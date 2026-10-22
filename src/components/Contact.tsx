@@ -2,9 +2,10 @@ import React, { useState, useEffect } from 'react';
 import { useCMS } from '../context/CMSContext';
 import { ArrowUpRight, Check, MapPin, Clock, Mail } from 'lucide-react';
 import { EditableText, DraggableBox } from './editorial/Editable';
+import { Reveal } from './common/Reveal';
 
 export const Contact: React.FC = () => {
-  const { data, addInquiry, isSectionLight, updateContact, updateConfig } = useCMS();
+  const { data, addInquiry, isSectionLight, updateContact, updateConfig, darkBg } = useCMS();
   const { contact, config, theme } = data;
   const isLight = isSectionLight('contact');
 
@@ -103,13 +104,15 @@ export const Contact: React.FC = () => {
       className={`relative py-24 sm:py-32 px-4 sm:px-6 lg:px-8 transition-colors duration-500 ${
         isLight
           ? 'bg-white text-black border-t border-neutral-200'
-          : 'bg-[#0A0A0A] text-white border-t border-white/[0.08]'
+          : 'text-white border-t border-white/[0.08]'
       }`}
+      style={isLight ? undefined : { backgroundColor: darkBg }}
     >
       <div className="max-w-7xl mx-auto">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16">
           {/* Left Column: Agency Information */}
-          <div className="lg:col-span-5 flex flex-col justify-between">
+          <Reveal variant="left" className="lg:col-span-5 flex">
+            <div className="w-full flex flex-col justify-between">
             <div>
               <div className="inline-flex items-center gap-2 text-xs font-mono uppercase tracking-widest mb-4">
                 <span
@@ -157,6 +160,7 @@ export const Contact: React.FC = () => {
                 isLight ? 'border-neutral-200' : 'border-white/[0.08]'
               }`}
             >
+              <Reveal variant="up" delay={0}>
               <div className="flex items-start gap-3">
                 <MapPin className={`w-4 h-4 mt-0.5 shrink-0 ${isLight ? 'text-neutral-500' : 'text-neutral-400'}`} />
                 <div>
@@ -172,7 +176,9 @@ export const Contact: React.FC = () => {
                   />
                 </div>
               </div>
+              </Reveal>
 
+              <Reveal variant="up" delay={80}>
               <div className="flex items-start gap-3">
                 <Clock className={`w-4 h-4 mt-0.5 shrink-0 ${isLight ? 'text-neutral-500' : 'text-neutral-400'}`} />
                 <div>
@@ -188,7 +194,9 @@ export const Contact: React.FC = () => {
                   />
                 </div>
               </div>
+              </Reveal>
 
+              <Reveal variant="up" delay={160}>
               <div className="flex items-start gap-3">
                 <Mail className={`w-4 h-4 mt-0.5 shrink-0 ${isLight ? 'text-neutral-500' : 'text-neutral-400'}`} />
                 <div>
@@ -212,13 +220,15 @@ export const Contact: React.FC = () => {
                   </DraggableBox>
                 </div>
               </div>
+              </Reveal>
             </div>
-          </div>
+            </div>
+          </Reveal>
 
           {/* Right Column: Interactive Lead Capture Form */}
-          <div className="lg:col-span-7">
+          <Reveal variant="right" className="lg:col-span-7 flex" delay={100}>
             <div
-              className={`p-8 sm:p-10 rounded-2xl border backdrop-blur-md ${
+              className={`w-full p-8 sm:p-10 rounded-2xl border backdrop-blur-md ${
                 isLight
                   ? 'bg-neutral-50/90 border-neutral-200 shadow-sm'
                   : 'bg-white/[0.02] border-white/[0.08]'
@@ -254,7 +264,7 @@ export const Contact: React.FC = () => {
               </div>
 
               {submitted ? (
-                <div className="py-12 flex flex-col items-center text-center animate-in fade-in zoom-in-95 duration-300">
+                <div className="py-12 flex flex-col items-center text-center animate-fade-in animate-zoom-in">
                   <div
                     className="w-16 h-16 rounded-full text-white flex items-center justify-center mb-6 shadow-md"
                     style={{ backgroundColor: theme.accentColor || '#0A0A0A' }}
@@ -493,7 +503,7 @@ export const Contact: React.FC = () => {
                 </form>
               )}
             </div>
-          </div>
+          </Reveal>
         </div>
       </div>
     </section>

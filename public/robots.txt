@@ -1,0 +1,7 @@
+User-agent: *
+Allow: /
+
+# Private/admin surfaces are not useful in search results
+Disallow: /cms
+
+Sitemap: https://digitara.id/sitemap.xml

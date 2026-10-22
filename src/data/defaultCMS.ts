@@ -23,6 +23,12 @@ export const DEFAULT_CMS_DATA: CMSData = {
     headingFont: 'Plus Jakarta Sans',
     bodyFont: 'Plus Jakarta Sans',
     surfaceOpacity: 0.9,
+    customColors: {
+      primary: '#0A0A0A',
+      secondary: '#0E0E10',
+      tertiary: '#151517',
+      accent: '#6B5CE7',
+    },
   },
   sections: [
     { id: 'hero', name: 'Hero Showcase', enabled: true, order: 1 },
@@ -33,6 +39,7 @@ export const DEFAULT_CMS_DATA: CMSData = {
     { id: 'workflow', name: 'Creative Workflow', enabled: true, order: 6 },
     { id: 'testimonials', name: 'Client Testimonials', enabled: true, order: 7 },
     { id: 'contact', name: 'Contact & Brief', enabled: true, order: 8 },
+    { id: 'clients', name: 'Trusted By Clients', enabled: true, order: 9 },
   ],
   hero: {
     headlineMain: 'WE MAKE',
@@ -391,6 +398,20 @@ export const DEFAULT_CMS_DATA: CMSData = {
     formSubtitle: "We'll review your brief and get back to you within 24 hours.",
     submitButtonText: 'Start A Project',
     consentText: 'I agree to the processing of my personal data for project communications.',
+  },
+  clients: {
+    badge: 'Trusted By',
+    headline: 'Brands that trust us with their digital presence.',
+    items: [
+      { id: 'client-1', name: 'Aura', tagline: 'Wellness Platform', url: '' },
+      { id: 'client-2', name: 'Modern Health', tagline: 'Digital Health', url: '' },
+      { id: 'client-3', name: 'Orbital', tagline: 'Aerospace Systems', url: '' },
+      { id: 'client-4', name: 'Northstar', tagline: 'Fintech', url: '' },
+      { id: 'client-5', name: 'Acme Labs', tagline: 'R&D Studio', url: '' },
+      { id: 'client-6', name: 'Velvet Geneva', tagline: 'Luxury Retail', url: '' },
+      { id: 'client-7', name: 'Quantum Dynamics', tagline: 'AI Research', url: '' },
+      { id: 'client-8', name: 'Synapse Digital', tagline: 'Media Group', url: '' },
+    ],
   },
   inquiries: [
     {

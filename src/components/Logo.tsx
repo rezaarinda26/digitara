@@ -6,6 +6,8 @@ interface LogoProps {
   showSubtext?: boolean;
   size?: 'sm' | 'md' | 'lg';
   variant?: 'brand' | 'white';
+  textColor?: string;
+  subtextColor?: string;
 }
 
 export const Logo: React.FC<LogoProps> = ({
@@ -13,6 +15,8 @@ export const Logo: React.FC<LogoProps> = ({
   showSubtext = true,
   size = 'md',
   variant = 'brand',
+  textColor,
+  subtextColor,
 }) => {
   const { data } = useCMS();
 
@@ -90,14 +94,15 @@ export const Logo: React.FC<LogoProps> = ({
         <span
           className={`${titleSizes[size]} text-white transition-colors duration-200`}
           style={{
-            color: variant === 'brand' ? (data.theme.accentColor === '#6B5CE7' ? '#FFFFFF' : '#FFFFFF') : '#FFFFFF',
+            color: textColor ?? (variant === 'brand' ? (data.theme.accentColor === '#6B5CE7' ? '#FFFFFF' : '#FFFFFF') : '#FFFFFF'),
           }}
         >
           {data.config.name.toLowerCase()}
         </span>
         {showSubtext && (
           <span
-            className={`${subtextSizes[size]} uppercase font-medium text-neutral-400 mt-[3px] whitespace-nowrap`}
+            className={`${subtextSizes[size]} uppercase font-medium mt-[3px] whitespace-nowrap`}
+            style={{ color: subtextColor ?? '#A3A3A3' }}
           >
             {data.config.subtext}
           </span>

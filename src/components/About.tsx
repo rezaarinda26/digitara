@@ -2,9 +2,11 @@ import React from 'react';
 import { useCMS } from '../context/CMSContext';
 import { ArrowUpRight } from 'lucide-react';
 import { EditableText, EditableImage, DraggableBox } from './editorial/Editable';
+import { Reveal } from './common/Reveal';
+import { StatNumber } from './common/StatNumber';
 
 export const About: React.FC = () => {
-  const { data, isSectionLight, updateAbout } = useCMS();
+  const { data, isSectionLight, updateAbout, darkBg } = useCMS();
   const { about, theme } = data;
   const isLight = isSectionLight('about');
 
@@ -14,8 +16,9 @@ export const About: React.FC = () => {
       className={`relative py-24 sm:py-32 px-4 sm:px-6 lg:px-8 transition-colors duration-500 overflow-hidden ${
         isLight
           ? 'bg-white text-black border-t border-neutral-200'
-          : 'bg-[#0A0A0A] text-white border-t border-white/[0.06]'
+          : 'text-white border-t border-white/[0.06]'
       }`}
+      style={isLight ? undefined : { backgroundColor: darkBg }}
     >
       {/* Subtle ambient accent gradient blur */}
       <div
@@ -25,7 +28,8 @@ export const About: React.FC = () => {
 
       <div className="max-w-7xl mx-auto relative z-10">
         {/* Top Kicker Row */}
-        <div
+        <Reveal
+          variant="up"
           className={`flex items-center justify-between pb-6 mb-16 border-b ${
             isLight ? 'border-neutral-200' : 'border-white/[0.08]'
           }`}
@@ -66,12 +70,13 @@ export const About: React.FC = () => {
               label="Tag kartu About"
             />
           </span>
-        </div>
+        </Reveal>
 
         {/* Main 2-Column Split */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16 items-start">
           {/* Left Column: Atmospheric Visual Card */}
-          <div className="lg:col-span-4 flex flex-col gap-6">
+          <Reveal variant="left" className="lg:col-span-4 flex">
+            <div className="w-full flex flex-col gap-6">
             <div
               className={`relative rounded-2xl overflow-hidden aspect-[4/5] border group shadow-xl ${
                 isLight ? 'bg-neutral-100 border-neutral-200' : 'bg-neutral-900 border-white/10'
@@ -140,10 +145,12 @@ export const About: React.FC = () => {
                 <ArrowUpRight className="w-4 h-4" />
               </a>
             </DraggableBox>
-          </div>
+            </div>
+          </Reveal>
 
           {/* Right Column: Editorial Intro & Capabilities */}
-          <div className="lg:col-span-8 flex flex-col">
+          <Reveal variant="right" className="lg:col-span-8 flex" delay={100}>
+            <div className="w-full flex flex-col">
             {/* Dual Tone Editorial Headline with Accent Impact */}
             <h2 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight leading-[1.15]">
               <EditableText
@@ -174,33 +181,61 @@ export const About: React.FC = () => {
               }`}
             />
 
-            {/* Badges / Pill matrix with Accent Hover and Border Tint */}
-            <div className="mt-10 flex flex-wrap gap-2.5">
-              {about.badges.map((badge, idx) => (
-                <div
-                  key={idx}
-                  className={`px-4 py-2 rounded-full text-xs font-medium transition-all duration-200 cursor-default border ${
-                    isLight
-                      ? 'bg-neutral-50 hover:bg-white text-neutral-800 border-neutral-300/80 shadow-2xs hover:shadow'
-                      : 'bg-white/[0.04] hover:bg-white/[0.08] border-white/[0.08] text-neutral-200'
+            {/* Founder Signature */}
+            <div className="mt-6 flex items-center gap-3">
+              <span
+                className="h-px w-8"
+                style={{ backgroundColor: theme.accentColor }}
+              />
+              <div className="flex flex-col">
+                <EditableText
+                  as="span"
+                  value="Reza Arinda Pratama"
+                  overrideKey="about.founderName"
+                  label="Nama founder"
+                  className={`text-sm font-semibold tracking-wide ${
+                    isLight ? 'text-neutral-900' : 'text-white'
                   }`}
-                  style={{
-                    borderColor: `${theme.accentColor}35`,
-                  }}
-                >
-                  <EditableText
-                    as="span"
-                    value={badge}
-                    onChange={(v) => {
-                      const next = [...about.badges];
-                      next[idx] = v;
-                      updateAbout({ badges: next });
-                    }}
-                    label="Tag About"
-                  />
-                </div>
-              ))}
+                />
+                <EditableText
+                  as="span"
+                  value="Founder & Creative Director"
+                  overrideKey="about.founderRole"
+                  label="Jabatan founder"
+                  className="text-[11px] font-mono uppercase tracking-wider text-neutral-500"
+                />
+              </div>
             </div>
+
+            {/* Badges / Pill matrix with Accent Hover and Border Tint */}
+            <Reveal variant="up" delay={120} className="mt-10">
+              <div className="flex flex-wrap gap-2.5">
+                {about.badges.map((badge, idx) => (
+                  <div
+                    key={idx}
+                    className={`px-4 py-2 rounded-full text-xs font-medium transition-all duration-200 cursor-default border ${
+                      isLight
+                        ? 'bg-neutral-50 hover:bg-white text-neutral-800 border-neutral-300/80 shadow-2xs hover:shadow'
+                        : 'bg-white/[0.04] hover:bg-white/[0.08] border-white/[0.08] text-neutral-200'
+                    }`}
+                    style={{
+                      borderColor: `${theme.accentColor}35`,
+                    }}
+                  >
+                    <EditableText
+                      as="span"
+                      value={badge}
+                      onChange={(v) => {
+                        const next = [...about.badges];
+                        next[idx] = v;
+                        updateAbout({ badges: next });
+                      }}
+                      label="Tag About"
+                    />
+                  </div>
+                ))}
+              </div>
+            </Reveal>
 
             {/* Stats Row with High-Impact Accent Color Numbers */}
             <div
@@ -209,38 +244,40 @@ export const About: React.FC = () => {
               }`}
             >
               {about.stats.map((stat, sIdx) => (
-                <div key={stat.id} className="flex flex-col group">
-                  <EditableText
-                    as="span"
-                    value={stat.number}
-                    onChange={(v) => {
-                      const next = [...about.stats];
-                      next[sIdx] = { ...next[sIdx], number: v };
-                      updateAbout({ stats: next });
-                    }}
-                    label="Angka statistik"
-                    className="text-4xl sm:text-5xl font-extrabold font-mono tabular-nums tracking-tight transition-transform duration-300 group-hover:translate-x-1"
-                    style={{
-                      color: theme.accentColor || (isLight ? '#0A0A0A' : '#FFFFFF'),
-                    }}
-                  />
-                  <EditableText
-                    as="span"
-                    value={stat.label}
-                    onChange={(v) => {
-                      const next = [...about.stats];
-                      next[sIdx] = { ...next[sIdx], label: v };
-                      updateAbout({ stats: next });
-                    }}
-                    label="Label statistik"
-                    className={`text-xs sm:text-sm mt-2 font-medium ${
-                      isLight ? 'text-neutral-600' : 'text-neutral-400'
-                    }`}
-                  />
-                </div>
+                <Reveal key={stat.id} variant="up" delay={(sIdx % 3) * 80} className="flex">
+                  <div className="w-full flex flex-col group">
+                    <StatNumber
+                      value={stat.number}
+                      onChange={(v) => {
+                        const next = [...about.stats];
+                        next[sIdx] = { ...next[sIdx], number: v };
+                        updateAbout({ stats: next });
+                      }}
+                      label="Angka statistik"
+                      className="text-4xl sm:text-5xl font-extrabold font-mono tabular-nums tracking-tight transition-transform duration-300 group-hover:translate-x-1"
+                      style={{
+                        color: theme.accentColor || (isLight ? '#0A0A0A' : '#FFFFFF'),
+                      }}
+                    />
+                    <EditableText
+                      as="span"
+                      value={stat.label}
+                      onChange={(v) => {
+                        const next = [...about.stats];
+                        next[sIdx] = { ...next[sIdx], label: v };
+                        updateAbout({ stats: next });
+                      }}
+                      label="Label statistik"
+                      className={`text-xs sm:text-sm mt-2 font-medium ${
+                        isLight ? 'text-neutral-600' : 'text-neutral-400'
+                      }`}
+                    />
+                  </div>
+                </Reveal>
               ))}
             </div>
-          </div>
+            </div>
+          </Reveal>
         </div>
       </div>
     </section>

@@ -6,6 +6,8 @@
     --font-body: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
     --brand-accent: #6B5CE7;
     --brand-bg: #0A0A0A;
+    --brand-secondary: #0A0A0A;
+    --brand-tertiary: #0A0A0A;
   }
 
   body {
@@ -17,25 +19,54 @@
   h1, h2, h3, h4, h5, h6, .font-heading {
     font-family: var(--font-heading);
   }
+
+  /* Tailwind v4 resets buttons to cursor: default. Restore the expected
+     pointer cursor on all interactive elements unless explicitly disabled. */
+  button:not(:disabled),
+  [role="button"]:not([aria-disabled="true"]),
+  select:not(:disabled),
+  label[for] {
+    cursor: pointer;
+  }
 }
 
 /* Custom aesthetic scrollbar */
+:root {
+  --scrollbar-track: #0A0A0A;
+  --scrollbar-thumb: #262626;
+  --scrollbar-thumb-hover: #404040;
+}
+
 ::-webkit-scrollbar {
   width: 6px;
   height: 6px;
 }
 
 ::-webkit-scrollbar-track {
-  background: #0A0A0A;
+  background: var(--scrollbar-track);
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #262626;
+  background: var(--scrollbar-thumb);
   border-radius: 9999px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #404040;
+  background: var(--scrollbar-thumb-hover);
+}
+
+* {
+  scrollbar-color: var(--scrollbar-thumb) var(--scrollbar-track);
+}
+
+/* Light surfaces (light mode page, light modals) get a light scrollbar
+   so no dark track bleeds through on the right edge. */
+.light-mode,
+.cms-light,
+.modal-light {
+  --scrollbar-track: #F3F4F6;
+  --scrollbar-thumb: #D4D4D8;
+  --scrollbar-thumb-hover: #A1A1AA;
 }
 
 /* Infinite marquee keyframe */
@@ -58,4 +89,377 @@
 .bg-grain {
   background-image: radial-gradient(rgba(255, 255, 255, 0.04) 1px, transparent 0);
   background-size: 24px 24px;
+}
+
+/* ------------------------------------------------------------------ */
+/* Entrance animation utilities (lightweight replacements for the     */
+/* un-installed tailwindcss-animate plugin classes used across the UI) */
+/* ------------------------------------------------------------------ */
+
+@keyframes dg-fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes dg-slide-from-top {
+  from { opacity: 0; transform: translateY(-1rem); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes dg-slide-from-bottom {
+  from { opacity: 0; transform: translateY(1.25rem); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes dg-zoom-in {
+  from { opacity: 0; transform: scale(0.95); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+/* Accordion smooth height: animates between 0fr and 1fr grid rows so the
+   panel can grow from its natural (auto) height without measuring it. */
+.dg-collapsible {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 320ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+.dg-collapsible.is-open {
+  grid-template-rows: 1fr;
+}
+.dg-collapsible > * {
+  overflow: hidden;
+  min-height: 0;
+}
+
+/* Content inside an opening panel fades + lifts slightly. */
+.dg-accordion-content {
+  opacity: 0;
+  transform: translateY(8px);
+  transition: opacity 300ms ease, transform 320ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+.dg-collapsible.is-open .dg-accordion-content {
+  opacity: 1;
+  transform: translateY(0);
+  transition-delay: 60ms;
+}
+
+/* Toggle icon rotation for accordion triggers. */
+.dg-icon-toggle {
+  transition: transform 300ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+.dg-icon-toggle.is-open {
+  transform: rotate(180deg);
+}
+
+/* Named utility animations matching the previous animate-* class usages. */
+.animate-fade-in {
+  animation: dg-fade-in 300ms ease-out both;
+}
+.animate-slide-in-top {
+  animation: dg-slide-from-top 250ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+.animate-slide-in-bottom {
+  animation: dg-slide-from-bottom 300ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+.animate-zoom-in {
+  animation: dg-zoom-in 250ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+/* Exit animations (reverse of the entrance ones). */
+@keyframes dg-fade-out {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}
+
+@keyframes dg-zoom-out {
+  from { opacity: 1; transform: scale(1); }
+  to { opacity: 0; transform: scale(0.95); }
+}
+
+.animate-fade-out {
+  animation: dg-fade-out 220ms ease-in both;
+}
+.animate-zoom-out {
+  animation: dg-zoom-out 220ms ease-in both;
+}
+
+/* Gallery slide transitions for the project modal. */
+@keyframes dg-slide-in-right {
+  from { opacity: 0; transform: translateX(6%); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes dg-slide-in-left {
+  from { opacity: 0; transform: translateX(-6%); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+.animate-slide-in-right {
+  animation: dg-slide-in-right 350ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+.animate-slide-in-left {
+  animation: dg-slide-in-left 350ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+/* Portfolio filter interactions. */
+@keyframes dg-filter-pop {
+  from { transform: scale(0.6); opacity: 0.5; }
+  to { transform: scale(1); opacity: 1; }
+}
+
+@keyframes dg-filter-grid {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-filter-pop {
+  animation: dg-filter-pop 320ms cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+
+.animate-filter-grid {
+  animation: dg-filter-grid 400ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+/* Scroll-reveal: elements start hidden/offset and animate in when they enter
+   the viewport (toggled by the Reveal component adding .is-visible). */
+.reveal {
+  opacity: 0;
+  transition-property: opacity, transform;
+  transition-duration: 700ms;
+  transition-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+  will-change: opacity, transform;
+}
+.reveal-up { transform: translateY(32px); }
+.reveal-down { transform: translateY(-32px); }
+.reveal-left { transform: translateX(-40px); }
+.reveal-right { transform: translateX(40px); }
+.reveal-fade { transform: none; }
+.reveal-zoom { transform: scale(0.92); }
+
+/* Mask reveal: a curtain overlay slides away to uncover the content.
+   NOTE: the target element itself must never be clipped, because Chrome
+   computes IntersectionObserver ratios from the clipped area - a fully
+   clipped element would never intersect and stay hidden forever. */
+.reveal-mask {
+  transform: none;
+  position: relative;
+  transition-property: opacity;
+  transition-duration: 700ms;
+  will-change: opacity;
+}
+.reveal-mask::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+  background-color: var(--reveal-curtain, #0a0a0a);
+  transform: translateY(0);
+  transition: transform 900ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+.reveal-mask.is-visible::after {
+  transform: translateY(-101%);
+}
+
+/* Text shimmer: a soft accent light sweeping across the glyphs. */
+.dg-shimmer {
+  background-size: 220% 100%;
+  background-position: 0% 50%;
+  animation: dg-shimmer 6s linear infinite;
+}
+@keyframes dg-shimmer {
+  0% { background-position: 120% 50%; }
+  100% { background-position: -20% 50%; }
+}
+
+/* Accent underline that grows from the left on hover. */
+.dg-underline {
+  position: relative;
+}
+.dg-underline::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  bottom: -2px;
+  height: 1.5px;
+  width: 100%;
+  transform: scaleX(0);
+  transform-origin: left center;
+  transition: transform 420ms cubic-bezier(0.22, 1, 0.36, 1);
+  background: currentColor;
+}
+.dg-underline:hover::after {
+  transform: scaleX(1);
+}
+
+.reveal.is-visible {
+  opacity: 1;
+  transform: none;
+}
+
+/* ------------------------------------------------------------------ */
+/* Light-theme overrides for the CMS Studio modal. The modal is built  */
+/* with dark utilities, so when the global theme is light we remap the */
+/* neutral surfaces, text and borders by scoping with .cms-light.      */
+/* Accent colors & gradient previews are intentionally left untouched. */
+/* ------------------------------------------------------------------ */
+.cms-light .bg-\[\#0D0D11\] {
+  background-color: #FFFFFF;
+}
+.cms-light .bg-black\/30 { background-color: rgba(0, 0, 0, 0.03); }
+.cms-light .bg-black\/40 { background-color: rgba(0, 0, 0, 0.04); }
+.cms-light .bg-black\/60 { background-color: rgba(0, 0, 0, 0.06); }
+.cms-light .bg-black\/80 { background-color: rgba(0, 0, 0, 0.08); }
+.cms-light .bg-black\/90 { background-color: rgba(255, 255, 255, 0.7); }
+
+.cms-light .bg-white\/5 { background-color: rgba(0, 0, 0, 0.04); }
+.cms-light .bg-white\/10 { background-color: rgba(0, 0, 0, 0.07); }
+.cms-light .bg-white\/20 { background-color: rgba(0, 0, 0, 0.12); }
+
+.cms-light .bg-white\/\[0\.01\] { background-color: rgba(0, 0, 0, 0.015); }
+.cms-light .bg-white\/\[0\.02\] { background-color: rgba(0, 0, 0, 0.025); }
+.cms-light .bg-white\/\[0\.03\] { background-color: rgba(0, 0, 0, 0.035); }
+.cms-light .bg-white\/\[0\.04\] { background-color: rgba(0, 0, 0, 0.045); }
+.cms-light .bg-white\/\[0\.06\] { background-color: rgba(0, 0, 0, 0.06); }
+.cms-light .bg-white\/\[0\.08\] { background-color: rgba(0, 0, 0, 0.08); }
+
+/* Hover states: keep a clear, visible contrast in light mode. */
+.cms-light .hover\:bg-white\/5:hover { background-color: rgba(0, 0, 0, 0.05); }
+.cms-light .hover\:bg-white\/10:hover { background-color: rgba(0, 0, 0, 0.09); }
+.cms-light .hover\:bg-white\/20:hover { background-color: rgba(0, 0, 0, 0.15); }
+.cms-light .hover\:bg-white\/\[0\.04\]:hover { background-color: rgba(0, 0, 0, 0.05); }
+.cms-light .hover\:bg-white\/\[0\.06\]:hover { background-color: rgba(0, 0, 0, 0.07); }
+.cms-light .hover\:bg-white\/\[0\.08\]:hover { background-color: rgba(0, 0, 0, 0.09); }
+.cms-light .hover\:bg-black\/30:hover { background-color: rgba(0, 0, 0, 0.05); }
+.cms-light .hover\:text-white:hover { color: #111113; }
+.cms-light .hover\:border-white\/40:hover,
+.cms-light .hover\:border-white\/50:hover { border-color: rgba(0, 0, 0, 0.35); }
+
+/* Reset Defaults hover - keep red accent in light mode like dark mode */
+.cms-light .hover\:bg-rose-500\/20:hover { background-color: rgba(244, 63, 94, 0.16); }
+.cms-light .hover\:text-rose-300:hover { color: rgb(225, 29, 72); }
+
+.cms-light .text-white { color: #111113; }
+.cms-light .text-neutral-200 { color: #333338; }
+.cms-light .text-neutral-300 { color: #4b4b52; }
+.cms-light .text-neutral-400 { color: #6b6b73; }
+
+.cms-light .border-white { border-color: rgba(0, 0, 0, 0.2); }
+.cms-light .border-white\/5 { border-color: rgba(0, 0, 0, 0.06); }
+.cms-light .border-white\/10 { border-color: rgba(0, 0, 0, 0.1); }
+.cms-light .border-white\/15 { border-color: rgba(0, 0, 0, 0.12); }
+.cms-light .border-white\/20 { border-color: rgba(0, 0, 0, 0.16); }
+
+.cms-light .divide-white\/\[0\.06\] > :not([hidden]) ~ :not([hidden]) {
+  border-color: rgba(0, 0, 0, 0.06);
+}
+
+.cms-light input,
+.cms-light select,
+.cms-light textarea {
+  color: #111113;
+}
+
+/* Keep light text on elements that sit on top of colored accents. */
+.cms-light .bg-\[\#6B5CE7\].text-white,
+.cms-light .bg-\[\#6B5CE7\] .text-white,
+.cms-light .bg-\[\#5A4CC7\].text-white,
+.cms-light .bg-\[\#5A4CC7\] .text-white,
+.cms-light .bg-emerald-500.text-white,
+.cms-light .bg-emerald-500 .text-white,
+.cms-light .bg-emerald-400.text-white,
+.cms-light .bg-emerald-400 .text-white,
+.cms-light .bg-rose-500.text-white,
+.cms-light .bg-amber-500.text-white {
+  color: #FFFFFF;
+}
+
+/* ------------------------------------------------------------------ */
+/* Light sections: raise the contrast of muted neutral text so it     */
+/* clears WCAG AA (4.5:1) on white and near-white surfaces.          */
+/* ------------------------------------------------------------------ */
+.light-section .text-neutral-300 { color: #3f3f46; }
+.light-section .text-neutral-400 { color: #525252; }
+.light-section .text-neutral-500 { color: #525252; }
+.light-section .text-neutral-600 { color: #3f3f46; }
+.light-section .text-white\/60 { color: rgba(0, 0, 0, 0.6); }
+.light-section .placeholder\:text-neutral-500::placeholder { color: #6b6b73; }
+
+/* ------------------------------------------------------------------ */
+/* Custom theme: remap hardcoded dark surfaces to user-defined colors */
+.custom-theme {
+  background-color: var(--brand-bg);
+}
+.custom-theme .bg-\[\#0E0E10\] { background-color: var(--brand-secondary); }
+.custom-theme .bg-\[\#0D0D11\] { background-color: var(--brand-secondary); }
+.custom-theme .bg-\[\#151517\] { background-color: var(--brand-tertiary); }
+.custom-theme .bg-\[\#0A0A0B\] { background-color: var(--brand-secondary); }
+.custom-theme .bg-black { background-color: var(--brand-bg); }
+.custom-theme .bg-black\/30 { background-color: color-mix(in srgb, var(--brand-secondary) 85%, transparent); }
+.custom-theme .bg-black\/40 { background-color: color-mix(in srgb, var(--brand-secondary) 90%, transparent); }
+.custom-theme .bg-black\/60 { background-color: color-mix(in srgb, var(--brand-bg) 70%, transparent); }
+.custom-theme .bg-black\/80 { background-color: color-mix(in srgb, var(--brand-bg) 85%, transparent); }
+.custom-theme .bg-black\/90 { background-color: color-mix(in srgb, var(--brand-bg) 95%, transparent); }
+.custom-theme .bg-white\/\[0\.02\] { background-color: color-mix(in srgb, var(--brand-tertiary) 90%, transparent); }
+.custom-theme .bg-white\/\[0\.03\] { background-color: color-mix(in srgb, var(--brand-tertiary) 95%, transparent); }
+.custom-theme .bg-white\/\[0\.04\] { background-color: color-mix(in srgb, var(--brand-tertiary) 100%, transparent); }
+.custom-theme .bg-white\/\[0\.06\] { background-color: color-mix(in srgb, var(--brand-tertiary) 100%, transparent); }
+.custom-theme .bg-\[\#6B5CE7\] { background-color: var(--brand-accent); }
+.custom-theme .hover\:bg-\[\#5A4CC7\]:hover { background-color: color-mix(in srgb, var(--brand-accent) 85%, black); }
+
+/* Custom accent cursor replaces the native one only on fine pointers
+   and when motion is allowed. */
+@media (pointer: fine) and (prefers-reduced-motion: no-preference) {
+  body.cursor-custom,
+  body.cursor-custom a,
+  body.cursor-custom button,
+  body.cursor-custom [role="button"],
+  body.cursor-custom label[for],
+  body.cursor-custom select {
+    cursor: none;
+  }
+}
+
+/* Dev-only QA helper (?noreveal=1): force every scroll-reveal element to be
+   visible so full-page screenshots can be captured. */
+.no-reveal .reveal {
+  opacity: 1 !important;
+  transform: none !important;
+  clip-path: none !important;
+  transition: none !important;
+}
+.no-reveal .reveal-mask::after {
+  display: none !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dg-collapsible,
+  .dg-accordion-content,
+  .dg-icon-toggle,
+  .animate-fade-in,
+  .animate-slide-in-top,
+  .animate-slide-in-bottom,
+  .animate-zoom-in,
+  .animate-filter-pop,
+  .animate-filter-grid {
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+  }
+
+  .reveal {
+    opacity: 1 !important;
+    transform: none !important;
+    transition-duration: 0.01ms !important;
+  }
+
+  .reveal-mask {
+    clip-path: none !important;
+  }
+  .reveal-mask::after {
+    display: none !important;
+  }
+
+  .dg-shimmer {
+    animation: none !important;
+  }
 }

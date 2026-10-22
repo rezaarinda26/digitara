@@ -1,8 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { useCMS } from '../context/CMSContext';
 import { ArrowUpRight } from 'lucide-react';
 import { HeroTextSize } from '../types/cms';
 import { EditableText, EditableImage, DraggableBox } from './editorial/Editable';
+import { useReducedMotion } from '../hooks/useReducedMotion';
+import { useAnimatedScroll } from '../hooks/useAnimatedScroll';
 
 const headlineSizeClasses: Record<HeroTextSize, string> = {
   sm: 'text-4xl sm:text-5xl md:text-6xl lg:text-7xl',
@@ -19,15 +21,45 @@ const editorialSizeClasses: Record<HeroTextSize, string> = {
 };
 
 export const Hero: React.FC = () => {
-  const { data, editorialMode, updateHero } = useCMS();
+  const { data, editorialMode, updateHero, isSectionLight, darkBg } = useCMS();
   const { hero, theme } = data;
+  const isLight = isSectionLight('hero');
   const [imageError, setImageError] = useState(false);
+  const sectionRef = useRef<HTMLElement>(null);
+  const bgRef = useRef<HTMLDivElement>(null);
+  const contentRef = useRef<HTMLDivElement>(null);
+  const reduced = useReducedMotion();
+
+  // Parallax: the cinematic background drifts slower than the page scroll
+  // while the headline eases out of view.
+  useAnimatedScroll(
+    (p) => {
+      if (bgRef.current) {
+        const y = p * 18;
+        const scale = 1 + p * 0.14;
+        bgRef.current.style.transform = `translate3d(0, ${y}%, 0) scale(${scale})`;
+      }
+      if (contentRef.current) {
+        const y = p * 10;
+        const opacity = Math.max(0.25, 1 - p * 0.75);
+        contentRef.current.style.transform = `translate3d(0, ${y}%, 0)`;
+        contentRef.current.style.opacity = String(opacity);
+      }
+    },
+    { targetRef: sectionRef, smoothing: reduced ? 1 : 0.14 }
+  );
 
   const headlineSize = headlineSizeClasses[hero.headlineSize || 'md'];
   const editorialSize = editorialSizeClasses[hero.editorialSize || 'md'];
 
   return (
-    <section className="relative min-h-[92vh] flex flex-col justify-between pt-28 pb-12 px-4 sm:px-6 lg:px-8 overflow-hidden bg-[#0A0A0A]">
+    <section
+      ref={sectionRef}
+      className={`relative min-h-[92vh] flex flex-col justify-between pt-28 pb-12 px-4 sm:px-6 lg:px-8 overflow-hidden transition-colors duration-500 ${
+        isLight ? 'bg-white text-black' : 'text-white'
+      }`}
+      style={isLight ? undefined : { backgroundColor: darkBg }}
+    >
       {/* Dynamic Ambient Glow matching brand accent color */}
       <div
         className="absolute top-1/4 right-1/4 w-[500px] h-[500px] rounded-full blur-[160px] opacity-25 pointer-events-none transition-all duration-700"
@@ -41,23 +73,43 @@ export const Hero: React.FC = () => {
       {/* Cinematic Background Image Container with Gradient Scrim */}
       <div className={`absolute inset-0 z-0 overflow-hidden select-none ${editorialMode ? 'pointer-events-auto' : 'pointer-events-none'}`}>
         {!imageError && hero.bgImageUrl ? (
-          <EditableImage
-            value={hero.bgImageUrl}
-            onChange={(v) => updateHero({ bgImageUrl: v })}
-            label="Background Hero"
-            alt="Cinematic digital agency background"
-            onError={() => setImageError(true)}
-            className="w-full h-full object-cover object-center opacity-45 scale-105 transform motion-safe:animate-pulse duration-1000"
-            style={{ animationDuration: '8s' }}
-          />
+          <div ref={bgRef} className="w-full h-full will-change-transform">
+            <EditableImage
+              value={hero.bgImageUrl}
+              onChange={(v) => updateHero({ bgImageUrl: v })}
+              label="Background Hero"
+              alt="Cinematic digital agency background"
+              priority
+              onError={() => setImageError(true)}
+              className={`w-full h-full object-cover object-center ${
+                isLight ? 'opacity-10' : 'opacity-45 motion-safe:animate-pulse duration-1000'
+              }`}
+              style={isLight ? undefined : { animationDuration: '8s' }}
+            />
+          </div>
         ) : (
-          <div className="w-full h-full bg-gradient-to-br from-[#121024] via-[#0A0A0A] to-[#171520]" />
+          <div
+            className={`w-full h-full ${
+              isLight
+                ? 'bg-gradient-to-br from-neutral-50 via-white to-neutral-100'
+                : 'bg-gradient-to-br from-[#121024] via-[#0A0A0A] to-[#171520]'
+            }`}
+          />
         )}
 
         {/* Sophisticated Dark Vignette & Gradient Overlays */}
-        <div className="absolute inset-0 bg-gradient-to-t from-[#0A0A0A] via-[#0A0A0A]/60 to-transparent pointer-events-none" />
-        <div className="absolute inset-0 bg-gradient-to-r from-[#0A0A0A] via-transparent to-[#0A0A0A]/80 pointer-events-none" />
-        <div className="absolute inset-0 bg-grain pointer-events-none opacity-40" />
+        {isLight ? (
+          <>
+            <div className="absolute inset-0 bg-gradient-to-t from-white via-white/70 to-white/40 pointer-events-none" />
+            <div className="absolute inset-0 bg-grain pointer-events-none opacity-10" />
+          </>
+        ) : (
+          <>
+            <div className="absolute inset-0 bg-gradient-to-t from-[#0A0A0A] via-[#0A0A0A]/60 to-transparent pointer-events-none" />
+            <div className="absolute inset-0 bg-gradient-to-r from-[#0A0A0A] via-transparent to-[#0A0A0A]/80 pointer-events-none" />
+            <div className="absolute inset-0 bg-grain pointer-events-none opacity-40" />
+          </>
+        )}
       </div>
 
       {/* Top Floating Row: Corner Showcase Card & Right Chapter Index */}
@@ -69,12 +121,16 @@ export const Hero: React.FC = () => {
             id="hero-floating-card"
             label="Kartu showcase hero"
             href={hero.floatingCard.linkUrl || '#portfolio'}
-            className="group flex items-center gap-3.5 p-2 pr-4 bg-white/[0.05] hover:bg-white/[0.09] backdrop-blur-xl border border-white/10 hover:border-white/30 rounded-xl transition-all duration-300 max-w-xs shadow-2xl active:scale-98"
+            className={`group flex items-center gap-3.5 p-2 pr-4 backdrop-blur-xl border rounded-xl transition-all duration-300 max-w-xs shadow-2xl active:scale-98 ${
+              isLight
+                ? 'bg-neutral-50 hover:bg-neutral-100 border-neutral-200'
+                : 'bg-white/[0.05] hover:bg-white/[0.09] border-white/10 hover:border-white/30'
+            }`}
             style={{
               borderColor: `${theme.accentColor}30`,
             }}
           >
-            <div className="relative w-14 h-14 rounded-lg overflow-hidden shrink-0 bg-neutral-900 border border-white/10">
+            <div className={`relative w-14 h-14 rounded-lg overflow-hidden shrink-0 bg-neutral-900 border ${isLight ? 'border-neutral-200' : 'border-white/10'}`}>
               <EditableImage
                 value={hero.floatingCard.imageUrl}
                 onChange={(v) =>
@@ -88,7 +144,7 @@ export const Hero: React.FC = () => {
             </div>
 
             <div className="flex flex-col min-w-0">
-              <div className="flex items-center gap-1.5 text-xs text-white font-medium group-hover:text-white transition-colors">
+              <div className={`flex items-center gap-1.5 text-xs font-medium ${isLight ? 'text-neutral-900' : 'text-white'}`}>
                 <EditableText
                   as="span"
                   value={hero.floatingCard.title}
@@ -103,7 +159,7 @@ export const Hero: React.FC = () => {
                   style={{ color: theme.accentColor }}
                 />
               </div>
-              <div className="flex items-center gap-1 text-[11px] text-neutral-400 mt-0.5 font-normal">
+              <div className={`flex items-center gap-1 text-[11px] mt-0.5 font-normal ${isLight ? 'text-neutral-500' : 'text-neutral-400'}`}>
                 <EditableText
                   as="span"
                   value={hero.floatingCard.category}
@@ -113,7 +169,7 @@ export const Hero: React.FC = () => {
                   label="Kategori kartu"
                   style={{ color: `${theme.accentColor}` }}
                 />
-                <span className="text-neutral-600">·</span>
+                <span className={isLight ? 'text-neutral-300' : 'text-neutral-600'}>·</span>
                 <EditableText
                   as="span"
                   value={hero.floatingCard.year}
@@ -130,7 +186,9 @@ export const Hero: React.FC = () => {
           {hero.sideCategories.map((cat, idx) => (
             <div
               key={idx}
-              className="flex items-center justify-end gap-3 text-xs tracking-wide text-neutral-400 hover:text-white transition-colors cursor-default group"
+              className={`flex items-center justify-end gap-3 text-xs tracking-wide transition-colors cursor-default group ${
+                isLight ? 'text-neutral-500 hover:text-black' : 'text-neutral-400 hover:text-white'
+              }`}
             >
               <span
                 className="font-mono text-[11px] transition-colors"
@@ -163,7 +221,10 @@ export const Hero: React.FC = () => {
       </div>
 
       {/* Main Massive Editorial Typography Anchor */}
-      <div className="relative z-10 max-w-7xl mx-auto w-full my-auto py-12">
+      <div
+        ref={contentRef}
+        className="relative z-10 max-w-7xl mx-auto w-full my-auto py-12 will-change-transform"
+      >
         <div className="flex flex-col">
           {/* Top Line "WE MAKE" */}
           <EditableText
@@ -171,7 +232,9 @@ export const Hero: React.FC = () => {
             value={hero.headlineMain}
             onChange={(v) => updateHero({ headlineMain: v })}
             label="Headline utama"
-            className={`${headlineSize} font-extrabold tracking-tighter text-white uppercase select-none leading-[0.9]`}
+            className={`${headlineSize} font-extrabold tracking-tighter uppercase select-none leading-[0.9] ${
+              isLight ? 'text-neutral-950' : 'text-white'
+            }`}
           />
 
           {/* Bottom Line "DIGITAL" with vibrant luminous accent gradient */}
@@ -181,26 +244,39 @@ export const Hero: React.FC = () => {
               value={hero.headlineAccent}
               onChange={(v) => updateHero({ headlineAccent: v })}
               label="Headline accent"
-              className={`${headlineSize} font-extrabold tracking-tighter uppercase select-none leading-[0.9] text-transparent bg-clip-text`}
-              editStyle={{ WebkitTextFillColor: '#FFFFFF', color: '#FFFFFF', backgroundImage: 'none' }}
-              style={{
-                backgroundImage: `linear-gradient(120deg, #FFFFFF 40%, ${theme.accentColor || '#6B5CE7'} 100%)`,
-                textShadow: `0 0 50px ${theme.accentColor}33`,
-              }}
+              className={`${headlineSize} font-extrabold tracking-tighter uppercase select-none leading-[0.9] ${
+                isLight ? 'text-neutral-950' : 'text-transparent bg-clip-text dg-shimmer'
+              }`}
+              editStyle={
+                isLight
+                  ? { color: '#0A0A0A', backgroundImage: 'none' }
+                  : { WebkitTextFillColor: '#FFFFFF', color: '#FFFFFF', backgroundImage: 'none' }
+              }
+              style={
+                isLight
+                  ? { color: '#0A0A0A' }
+                  : {
+                      backgroundImage: `linear-gradient(120deg, #FFFFFF 25%, ${theme.accentColor || '#6B5CE7'} 50%, #FFFFFF 75%)`,
+                      backgroundSize: '220% 100%',
+                      textShadow: `0 0 50px ${theme.accentColor}33`,
+                    }
+              }
             />
           </div>
         </div>
       </div>
 
       {/* Bottom Row: Editorial Description & High-Impact CTA */}
-      <div className="relative z-10 max-w-7xl mx-auto w-full border-t border-white/10 pt-6 flex flex-col md:flex-row md:items-end justify-between gap-6">
+      <div className={`relative z-10 max-w-7xl mx-auto w-full border-t pt-6 flex flex-col md:flex-row md:items-end justify-between gap-6 ${isLight ? 'border-neutral-200' : 'border-white/10'}`}>
         <EditableText
           as="p"
           value={hero.editorialLead}
           onChange={(v) => updateHero({ editorialLead: v })}
           label="Editorial statement"
           multiline
-          className={`max-w-xl ${editorialSize} text-neutral-300 font-light leading-relaxed text-wrap-balance`}
+          className={`max-w-xl ${editorialSize} font-light leading-relaxed text-wrap-balance ${
+            isLight ? 'text-neutral-600' : 'text-neutral-300'
+          }`}
         />
 
         <div className="flex items-center gap-4 shrink-0">

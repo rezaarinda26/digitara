@@ -1,12 +1,28 @@
-import React from 'react';
+import React, { useRef } from 'react';
 import { useCMS } from '../context/CMSContext';
 import { Compass, PenTool, Layers, Rocket } from 'lucide-react';
 import { EditableText } from './editorial/Editable';
+import { Reveal } from './common/Reveal';
+import { useAnimatedScroll } from '../hooks/useAnimatedScroll';
+import { useReducedMotion } from '../hooks/useReducedMotion';
 
 export const Workflow: React.FC = () => {
-  const { data, isSectionLight, updateWorkflow } = useCMS();
+  const { data, isSectionLight, updateWorkflow, darkBg } = useCMS();
   const { workflow, theme } = data;
   const isLight = isSectionLight('workflow');
+  const gridRef = useRef<HTMLDivElement>(null);
+  const lineRef = useRef<HTMLSpanElement>(null);
+  const reduced = useReducedMotion();
+
+  // The connector line draws itself as the row travels across the viewport.
+  useAnimatedScroll(
+    (p) => {
+      if (lineRef.current) {
+        lineRef.current.style.transform = `scaleX(${p})`;
+      }
+    },
+    { targetRef: gridRef, smoothing: reduced ? 1 : 0.16 }
+  );
 
   const renderIcon = (iconName: string) => {
     switch (iconName) {
@@ -29,12 +45,17 @@ export const Workflow: React.FC = () => {
       className={`relative py-24 sm:py-32 px-4 sm:px-6 lg:px-8 transition-colors duration-500 ${
         isLight
           ? 'bg-white text-black border-t border-neutral-200'
-          : 'bg-[#0A0A0A] text-white border-t border-white/[0.06]'
+          : 'text-white border-t border-white/[0.06]'
       }`}
+      style={isLight ? undefined : { backgroundColor: darkBg }}
     >
       <div className="max-w-7xl mx-auto">
         {/* Header */}
-        <div className="text-center max-w-3xl mx-auto pb-16">
+        <Reveal
+          variant="mask"
+          curtain={isLight ? '#FFFFFF' : darkBg}
+          className="text-center max-w-3xl mx-auto pb-16"
+        >
           <div className="inline-flex items-center gap-2 text-xs font-mono uppercase tracking-widest mb-3">
             <span
               className="w-2.5 h-2.5 rounded-full"
@@ -61,14 +82,32 @@ export const Workflow: React.FC = () => {
               isLight ? 'text-neutral-950' : 'text-white'
             }`}
           />
-        </div>
+        </Reveal>
 
         {/* 4 Step Cards Sequential Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div ref={gridRef} className="relative">
+          {/* Progressive accent connector that draws itself as the row is scrolled through */}
+          <div
+            className="hidden lg:block absolute left-0 right-0 top-[38px] h-px pointer-events-none"
+            style={{ backgroundColor: isLight ? 'rgba(0,0,0,0.08)' : 'rgba(255,255,255,0.08)' }}
+            aria-hidden="true"
+          >
+            <span
+              ref={lineRef}
+              className="block h-full origin-left"
+              style={{
+                transform: 'scaleX(0)',
+                background: `linear-gradient(90deg, ${theme.accentColor || '#6B5CE7'} 0%, ${theme.accentColor || '#6B5CE7'}99 100%)`,
+                boxShadow: `0 0 10px ${theme.accentColor || '#6B5CE7'}70`,
+              }}
+            />
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
           {workflow.steps.map((step, idx) => (
+            <Reveal key={step.id} variant="up" delay={(idx % 4) * 80} className="flex">
             <div
-              key={step.id}
-              className={`group relative p-8 rounded-2xl border transition-all duration-300 flex flex-col justify-between min-h-[290px] ${
+              className={`w-full group relative p-8 rounded-2xl border transition-all duration-300 flex flex-col justify-between min-h-[290px] ${
                 isLight
                   ? 'bg-[#F7F7F8] hover:bg-white border-neutral-200/90 hover:shadow-xl'
                   : 'bg-white/[0.02] hover:bg-white/[0.05] border-white/[0.06]'
@@ -156,7 +195,9 @@ export const Workflow: React.FC = () => {
                 </span>
               </div>
             </div>
+            </Reveal>
           ))}
+          </div>
         </div>
       </div>
     </section>

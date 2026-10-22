@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import { useCMS } from '../../context/CMSContext';
 import {
   X,
@@ -9,6 +10,10 @@ import {
   FileText,
   MessageSquare,
   Mail,
+  Award,
+  Undo2,
+  Redo2,
+  History,
   Code2,
   Save,
   RotateCcw,
@@ -27,6 +32,9 @@ import {
   Pencil,
 } from 'lucide-react';
 import { SectionKey, ProjectItem, ServiceItem } from '../../types/cms';
+import { usePresence } from '../../hooks/usePresence';
+import { useFocusTrap } from '../../hooks/useFocusTrap';
+import { SmartImage } from '../common/SmartImage';
 
 export const AdminCMSModal: React.FC = () => {
   const {
@@ -48,18 +56,43 @@ export const AdminCMSModal: React.FC = () => {
     updateWorkflow,
     updateTestimonials,
     updateContact,
+    updateClients,
     updateInquiryStatus,
     deleteInquiry,
     exportJSON,
     importJSON,
+    undo,
+    redo,
+    canUndo,
+    canRedo,
+    publish,
+    revertToPublished,
+    publishedAt,
+    hasUnpublishedChanges,
     resetToDefault,
     showToast,
   } = useCMS();
 
   const [importJsonText, setImportJsonText] = useState('');
   const [copySuccess, setCopySuccess] = useState(false);
+  const { isMounted, isClosing } = usePresence(isAdminOpen, 220);
+  const isLight = data.theme.bgMode === 'light-minimal';
+  const modalRef = useRef<HTMLDivElement>(null);
 
-  if (!isAdminOpen) return null;
+  // Prevent background scroll while the CMS modal is open
+  useEffect(() => {
+    if (!isMounted) return;
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    return () => {
+      document.body.style.overflow = prev;
+    };
+  }, [isMounted]);
+
+  // Trap keyboard focus inside the modal while it is open
+  useFocusTrap(isMounted, modalRef);
+
+  if (!isMounted) return null;
 
   const tabs = [
     { id: 'overview', label: 'Dashboard & Inquiries', icon: Mail, count: data.inquiries?.length || 0 },
@@ -72,6 +105,7 @@ export const AdminCMSModal: React.FC = () => {
     { id: 'portfolio', label: 'Portfolio Projects', icon: Layers },
     { id: 'workflow', label: 'Creative Process', icon: Layout },
     { id: 'testimonials', label: 'Client Reviews', icon: MessageSquare },
+    { id: 'clients', label: 'Client Wall', icon: Award, count: data.clients?.items?.length || 0 },
     { id: 'headless', label: 'Headless JSON API', icon: Code2 },
     { id: 'editorial', label: 'Admin Editorial Mode', icon: Pencil },
   ];
@@ -100,9 +134,15 @@ export const AdminCMSModal: React.FC = () => {
     showToast('Downloaded CMS JSON export file');
   };
 
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 md:p-6 bg-black/90 backdrop-blur-xl animate-in fade-in duration-200">
-      <div className="relative w-full max-w-6xl h-[92vh] flex flex-col rounded-2xl bg-[#0D0D11] border border-white/15 shadow-2xl overflow-hidden">
+  return createPortal(
+    <div className={`fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 md:p-6 backdrop-blur-xl ${isLight ? 'bg-neutral-900/50' : 'bg-black/90'} ${isClosing ? 'animate-fade-out' : 'animate-fade-in'}`}>
+      <div
+        ref={modalRef}
+        role="dialog"
+        aria-modal="true"
+        aria-label="DIGITARA Headless CMS Studio"
+        className={`relative w-full max-w-6xl h-[92vh] flex flex-col rounded-2xl border shadow-2xl overflow-hidden ${isLight ? 'cms-light bg-white border-neutral-300' : 'bg-[#0D0D11] border-white/15'} ${isClosing ? 'animate-zoom-out' : 'animate-zoom-in'}`}
+      >
         {/* Top Bar */}
         <div className="px-6 py-4 border-b border-white/10 flex items-center justify-between bg-black/40">
           <div className="flex items-center gap-3">
@@ -125,6 +165,56 @@ export const AdminCMSModal: React.FC = () => {
           </div>
 
           <div className="flex items-center gap-2">
+            {/* Undo / Redo */}
+            <button
+              onClick={undo}
+              disabled={!canUndo}
+              className="p-2 rounded-lg bg-white/5 hover:bg-white/10 text-neutral-300 disabled:opacity-25 disabled:pointer-events-none transition-colors"
+              title="Undo (Ctrl+Z)"
+              aria-label="Undo"
+            >
+              <Undo2 className="w-4 h-4" />
+            </button>
+            <button
+              onClick={redo}
+              disabled={!canRedo}
+              className="p-2 rounded-lg bg-white/5 hover:bg-white/10 text-neutral-300 disabled:opacity-25 disabled:pointer-events-none transition-colors"
+              title="Redo (Ctrl+Shift+Z)"
+              aria-label="Redo"
+            >
+              <Redo2 className="w-4 h-4" />
+            </button>
+
+            {/* Publish / Revert */}
+            <button
+              onClick={publish}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors border ${
+                hasUnpublishedChanges
+                  ? 'bg-amber-500/20 text-amber-200 border-amber-500/40 hover:bg-amber-500/30'
+                  : 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30 hover:bg-emerald-500/30'
+              }`}
+              title={
+                publishedAt
+                  ? `Last published: ${new Date(publishedAt).toLocaleString()}`
+                  : 'Publish a snapshot of the current content'
+              }
+            >
+              <Upload className="w-3.5 h-3.5" />
+              <span className="hidden sm:inline">
+                {hasUnpublishedChanges ? 'Publish' : 'Published'}
+              </span>
+            </button>
+
+            <button
+              onClick={revertToPublished}
+              disabled={!hasUnpublishedChanges}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-neutral-400 hover:text-white text-xs transition-colors border border-white/5 disabled:opacity-30 disabled:pointer-events-none"
+              title="Revert to the last published snapshot"
+            >
+              <History className="w-3.5 h-3.5" />
+              <span className="hidden lg:inline">Revert</span>
+            </button>
+
             <button
               onClick={() => {
                 if (window.confirm('Reset all CMS content and theme back to default state?')) {
@@ -317,6 +407,8 @@ export const AdminCMSModal: React.FC = () => {
                         ? '#F9FAFB'
                         : data.theme.bgMode === 'midnight'
                         ? '#060814'
+                        : data.theme.bgMode === 'custom' && data.theme.customColors
+                        ? data.theme.customColors.primary
                         : '#0A0A0A',
                     borderColor: 'rgba(255,255,255,0.15)',
                     color:
@@ -333,11 +425,13 @@ export const AdminCMSModal: React.FC = () => {
                       DIGITARA Nuansa Teknologi
                     </h4>
                     <p className="text-xs opacity-75 font-light max-w-md">
-                      {data.theme.bgMode === 'reference-hybrid'
-                        ? 'Mode Referensi Gambar Aktif: Seksi Konten (About, Services, Works, Form) Putih Bersih + Hero/Footer Gelap Sinematik.'
-                        : data.theme.bgMode === 'light-minimal'
-                        ? 'Mode Light Minimalist: Tampilan Putih Bersih di seluruh landing page.'
-                        : 'Mode Gelap Aktif: Tampilan gelap pekat kontras tinggi.'}
+                    {data.theme.bgMode === 'reference-hybrid'
+                      ? 'Mode Referensi Gambar Aktif: Seksi Konten (About, Services, Works, Form) Putih Bersih + Hero/Footer Gelap Sinematik.'
+                      : data.theme.bgMode === 'light-minimal'
+                      ? 'Mode Light Minimalist: Tampilan Putih Bersih di seluruh landing page.'
+                      : data.theme.bgMode === 'custom'
+                      ? 'Mode Custom Aktif: Seluruh warna mengikuti Primary/Secondary/Tertiary & Accent yang kamu atur.'
+                      : 'Mode Gelap Aktif: Tampilan gelap pekat kontras tinggi.'}
                     </p>
                   </div>
 
@@ -394,6 +488,14 @@ export const AdminCMSModal: React.FC = () => {
                         bgPreview: 'from-[#060814] to-[#0F172A]',
                         textColor: 'text-white',
                       },
+                      {
+                        id: 'custom',
+                        badge: 'CUSTOM',
+                        label: 'Tema Kustom (Bebas)',
+                        desc: 'Atur warna Primary, Secondary, Tertiary, dan Accent sesuai keinginan kamu.',
+                        bgPreview: 'from-[#0A0A0A] via-[#151517] to-[#6B5CE7]',
+                        textColor: 'text-white',
+                      },
                     ].map((mode) => {
                       const isSelected = data.theme.bgMode === mode.id;
                       return (
@@ -419,7 +521,7 @@ export const AdminCMSModal: React.FC = () => {
                           </div>
 
                           <div
-                            className={`w-full h-10 rounded-lg mb-3 border border-white/20 bg-gradient-to-r ${mode.bgPreview} shadow-inner flex items-center justify-center text-[11px] font-bold ${
+                            className={`cms-swatch w-full h-10 rounded-lg mb-3 border border-white/20 bg-gradient-to-r ${mode.bgPreview} shadow-inner flex items-center justify-center text-[11px] font-bold ${
                               mode.id === 'light-minimal' ? 'text-black' : 'text-white'
                             }`}
                           >
@@ -437,6 +539,55 @@ export const AdminCMSModal: React.FC = () => {
                     })}
                   </div>
                 </div>
+
+                {/* Custom Colors */}
+                {data.theme.bgMode === 'custom' && (
+                  <div className="space-y-3">
+                    <label className="text-xs font-mono uppercase text-neutral-400 tracking-wider">
+                      Warna Kustom (Custom Theme)
+                    </label>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+                      {[
+                        { key: 'primary', label: 'Primary', desc: 'Latar Utama' },
+                        { key: 'secondary', label: 'Secondary', desc: 'Panel/Seksi' },
+                        { key: 'tertiary', label: 'Tertiary', desc: 'Card/Surface' },
+                        { key: 'accent', label: 'Accent', desc: 'Tombol & Highlight' },
+                      ].map((item) => (
+                        <div
+                          key={item.key}
+                          className="p-3 rounded-xl border border-white/10 bg-white/[0.02] flex items-center justify-between gap-3"
+                        >
+                          <div>
+                            <div className="text-xs font-semibold text-white">{item.label}</div>
+                            <div className="text-[10px] text-neutral-500">{item.desc}</div>
+                            <div className="text-[10px] font-mono text-neutral-400 mt-1">
+                              {(data.theme.customColors as any)?.[item.key] || '#000000'}
+                            </div>
+                          </div>
+                          <input
+                            type="color"
+                            value={(data.theme.customColors as any)?.[item.key] || '#000000'}
+                            onChange={(e) => {
+                              updateTheme({
+                                customColors: {
+                                  ...(data.theme.customColors || {
+                                    primary: '#0A0A0A',
+                                    secondary: '#0E0E10',
+                                    tertiary: '#151517',
+                                    accent: '#6B5CE7',
+                                  }),
+                                  [item.key]: e.target.value,
+                                },
+                                accentColor: item.key === 'accent' ? e.target.value : data.theme.accentColor,
+                              });
+                            }}
+                            className="w-10 h-10 rounded-lg cursor-pointer border border-white/20 bg-transparent"
+                          />
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
 
                 {/* Accent Color */}
                 <div className="space-y-3">
@@ -881,14 +1032,13 @@ export const AdminCMSModal: React.FC = () => {
                       className="w-full px-4 py-2.5 rounded-xl bg-black/60 border border-white/15 text-xs text-white font-mono"
                     />
                     {data.about.imageUrl && (
-                      <div className="mt-3 w-32 aspect-[4/5] rounded-xl overflow-hidden border border-white/10 bg-neutral-900">
-                        <img
-                          src={data.about.imageUrl}
-                          alt="About preview"
-                          referrerPolicy="no-referrer"
-                          className="w-full h-full object-cover"
-                        />
-                      </div>
+                      <SmartImage
+                        src={data.about.imageUrl}
+                        alt="About preview"
+                        aspectRatio="4 / 5"
+                        placeholderClassName="bg-neutral-900"
+                        frameClassName="mt-3 w-32 rounded-xl overflow-hidden border border-white/10"
+                      />
                     )}
                   </div>
 
@@ -1263,11 +1413,12 @@ export const AdminCMSModal: React.FC = () => {
                           <div className="space-y-2">
                             {(proj.gallery || []).map((img, gIdx) => (
                               <div key={gIdx} className="flex items-center gap-2">
-                                <img
+                                <SmartImage
                                   src={img}
                                   alt=""
-                                  referrerPolicy="no-referrer"
-                                  className="w-12 h-9 rounded-md object-cover border border-white/10 shrink-0"
+                                  aspectRatio="4 / 3"
+                                  placeholderClassName="bg-neutral-900"
+                                  frameClassName="w-12 h-9 rounded-md border border-white/10 shrink-0"
                                 />
                                 <input
                                   type="text"
@@ -1518,6 +1669,122 @@ export const AdminCMSModal: React.FC = () => {
               </div>
             )}
 
+            {/* TAB: CLIENT WALL */}
+            {activeAdminTab === 'clients' && (
+              <div className="space-y-6 max-w-4xl">
+                <div>
+                  <h3 className="text-xl font-bold text-white">Trusted By — Client Wall</h3>
+                  <p className="text-xs text-neutral-400 mt-1">
+                    Daftar klien yang tampil di section &ldquo;Trusted By&rdquo;.
+                  </p>
+                </div>
+
+                <div className="space-y-3">
+                  <label className="text-xs font-mono uppercase text-neutral-400 tracking-wider">Badge</label>
+                  <input
+                    type="text"
+                    value={data.clients?.badge || ''}
+                    onChange={(e) => updateClients({ badge: e.target.value })}
+                    className="w-full px-4 py-2.5 rounded-xl bg-black/60 border border-white/15 text-xs text-white font-mono"
+                  />
+                </div>
+
+                <div className="space-y-3">
+                  <label className="text-xs font-mono uppercase text-neutral-400 tracking-wider">Headline</label>
+                  <input
+                    type="text"
+                    value={data.clients?.headline || ''}
+                    onChange={(e) => updateClients({ headline: e.target.value })}
+                    className="w-full px-4 py-2.5 rounded-xl bg-black/60 border border-white/15 text-xs text-white font-mono"
+                  />
+                </div>
+
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <label className="text-xs font-mono uppercase text-neutral-400 tracking-wider">
+                      Klien ({data.clients?.items?.length || 0})
+                    </label>
+                    <button
+                      onClick={() =>
+                        updateClients({
+                          items: [
+                            ...(data.clients?.items || []),
+                            {
+                              id: `client-${Date.now()}`,
+                              name: 'New Client',
+                              tagline: 'Industry',
+                              url: '',
+                            },
+                          ],
+                        })
+                      }
+                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-neutral-300 text-xs font-medium transition-colors"
+                    >
+                      <Plus className="w-3.5 h-3.5" /> Add Client
+                    </button>
+                  </div>
+
+                  {(data.clients?.items || []).map((client, cIdx) => (
+                    <div
+                      key={client.id}
+                      className="p-4 rounded-xl border border-white/10 bg-white/[0.02] space-y-3"
+                    >
+                      <div className="flex items-start gap-3">
+                        <div className="flex-1 space-y-2">
+                          <input
+                            type="text"
+                            value={client.name}
+                            placeholder="Nama klien"
+                            onChange={(e) => {
+                              const next = [...(data.clients?.items || [])];
+                              next[cIdx] = { ...next[cIdx], name: e.target.value };
+                              updateClients({ items: next });
+                            }}
+                            className="w-full px-3 py-2 rounded-lg bg-black/60 border border-white/15 text-xs text-white font-semibold"
+                          />
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                            <input
+                              type="text"
+                              value={client.tagline}
+                              placeholder="Tagline / industri"
+                              onChange={(e) => {
+                                const next = [...(data.clients?.items || [])];
+                                next[cIdx] = { ...next[cIdx], tagline: e.target.value };
+                                updateClients({ items: next });
+                              }}
+                              className="w-full px-3 py-2 rounded-lg bg-black/60 border border-white/15 text-[11px] text-neutral-300"
+                            />
+                            <input
+                              type="text"
+                              value={client.url}
+                              placeholder="https:// (opsional)"
+                              onChange={(e) => {
+                                const next = [...(data.clients?.items || [])];
+                                next[cIdx] = { ...next[cIdx], url: e.target.value };
+                                updateClients({ items: next });
+                              }}
+                              className="w-full px-3 py-2 rounded-lg bg-black/60 border border-white/15 text-[11px] text-neutral-400 font-mono"
+                            />
+                          </div>
+                        </div>
+                        <button
+                          onClick={() =>
+                            updateClients({
+                              items: (data.clients?.items || []).filter((_, i) => i !== cIdx),
+                            })
+                          }
+                          className="p-2 text-neutral-500 hover:text-rose-400 hover:bg-rose-500/10 rounded transition-colors shrink-0"
+                          title="Remove Client"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
             {/* TAB: HEADLESS JSON API & SYNC */}
             {activeAdminTab === 'headless' && (
               <div className="space-y-6 max-w-4xl">
@@ -1544,6 +1811,56 @@ export const AdminCMSModal: React.FC = () => {
                     <Download className="w-4 h-4" />
                     <span>Download .json Schema</span>
                   </button>
+                </div>
+
+                {/* Per-section export */}
+                <div className="p-5 rounded-xl bg-white/[0.02] border border-white/10 space-y-3">
+                  <h4 className="text-sm font-semibold text-white">Export per Section</h4>
+                  <p className="text-xs text-neutral-400">
+                    Unduh satu section sebagai payload JSON terpisah — berguna untuk migrasi bertahap atau
+                    sinkronisasi parsial.
+                  </p>
+                  <div className="flex flex-wrap gap-2">
+                    {(
+                      [
+                        ['config', 'Agency Config'],
+                        ['theme', 'Theme'],
+                        ['sections', 'Section Order'],
+                        ['hero', 'Hero'],
+                        ['about', 'About'],
+                        ['services', 'Services'],
+                        ['midBanner', 'Mid Banner'],
+                        ['portfolio', 'Portfolio'],
+                        ['workflow', 'Workflow'],
+                        ['testimonials', 'Testimonials'],
+                        ['clients', 'Clients'],
+                        ['contact', 'Contact'],
+                        ['editorial', 'Editorial Overrides'],
+                      ] as const
+                    ).map(([key, label]) => (
+                      <button
+                        key={key}
+                        onClick={() => {
+                          const payload = JSON.stringify(
+                            { [key]: (data as any)[key] ?? null },
+                            null,
+                            2
+                          );
+                          const blob = new Blob([payload], { type: 'application/json' });
+                          const url = URL.createObjectURL(blob);
+                          const a = document.createElement('a');
+                          a.href = url;
+                          a.download = `digitara-${key}.json`;
+                          a.click();
+                          URL.revokeObjectURL(url);
+                          showToast(`${label} exported`);
+                        }}
+                        className="px-3 py-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-neutral-300 hover:text-white text-[11px] font-medium transition-colors border border-white/5"
+                      >
+                        {label}
+                      </button>
+                    ))}
+                  </div>
                 </div>
 
                 {/* Import JSON Box */}
@@ -1620,6 +1937,7 @@ export const AdminCMSModal: React.FC = () => {
           </main>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 };

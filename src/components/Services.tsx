@@ -3,9 +3,10 @@ import { useCMS } from '../context/CMSContext';
 import { ArrowUpRight, Plus, Minus, Check, Sparkle } from 'lucide-react';
 import { ServiceItem } from '../types/cms';
 import { EditableText, DraggableBox } from './editorial/Editable';
+import { Reveal } from './common/Reveal';
 
 export const Services: React.FC = () => {
-  const { data, isSectionLight, updateServices, editorialMode } = useCMS();
+  const { data, isSectionLight, updateServices, editorialMode, darkBg } = useCMS();
   const { services, theme } = data;
   const isLight = isSectionLight('services');
 
@@ -44,13 +45,16 @@ export const Services: React.FC = () => {
       id="services"
       className={`relative py-24 sm:py-32 px-4 sm:px-6 lg:px-8 overflow-hidden transition-colors duration-500 ${isLight
         ? 'bg-white text-black border-t border-neutral-200'
-        : 'bg-[#0A0A0A] text-white border-t border-white/[0.06]'
+        : 'text-white border-t border-white/[0.06]'
         }`}
+      style={isLight ? undefined : { backgroundColor: darkBg }}
       onMouseMove={handleMouseMove}
     >
       <div className="max-w-7xl mx-auto">
         {/* Section Header */}
-        <div
+        <Reveal
+          variant="mask"
+          curtain={isLight ? '#FFFFFF' : darkBg}
           className={`flex flex-col md:flex-row md:items-end justify-between gap-8 pb-16 border-b ${isLight ? 'border-neutral-200' : 'border-white/[0.08]'
             }`}
         >
@@ -106,10 +110,12 @@ export const Services: React.FC = () => {
               <ArrowUpRight className="w-3.5 h-3.5" />
             </a>
           </div>
-        </div>
+        </Reveal>
 
         {/* Column Headers */}
-        <div
+        <Reveal
+          variant="up"
+          delay={80}
           className={`hidden lg:grid grid-cols-12 gap-6 py-5 text-[11px] font-mono uppercase tracking-wider border-b ${isLight ? 'text-neutral-400 border-neutral-200' : 'text-neutral-500 border-white/[0.06]'
             }`}
         >
@@ -125,7 +131,7 @@ export const Services: React.FC = () => {
             <span style={{ color: theme.accentColor }}>■</span>
             <EditableText as="span" value="Mulai Dari" overrideKey="services.col.from" label="Header kolom harga" />
           </div>
-        </div>
+        </Reveal>
 
         {/* Services Interactive List Container */}
         <div className={`relative divide-y ${isLight ? 'divide-neutral-200' : 'divide-white/[0.06]'}`}>
@@ -137,8 +143,8 @@ export const Services: React.FC = () => {
               updateServices({ items: next });
             };
             return (
+              <Reveal key={item.id} variant="up" delay={(sIdx % 3) * 80} className="block">
               <div
-                key={item.id}
                 onMouseEnter={() => setHoveredService(item)}
                 onMouseLeave={() => setHoveredService(null)}
                 className={`group relative transition-all duration-300 ${isLight ? 'hover:bg-neutral-50/80' : 'hover:bg-white/[0.02]'
@@ -214,7 +220,7 @@ export const Services: React.FC = () => {
                     <div
                       className="w-10 h-10 rounded-full border flex items-center justify-center transition-all duration-300 shrink-0 group-hover:scale-105"
                       style={{
-                        borderColor: isLight ? '#E5E7EB' : 'rgba(255,255,255,0.15)',
+                        borderColor: isExpanded ? theme.accentColor : isLight ? '#E5E7EB' : 'rgba(255,255,255,0.15)',
                         backgroundColor: isExpanded ? theme.accentColor : 'transparent',
                         color: isExpanded ? '#FFFFFF' : isLight ? '#000000' : '#FFFFFF',
                       }}
@@ -231,100 +237,105 @@ export const Services: React.FC = () => {
                         }
                       }}
                     >
-                      {isExpanded ? <Minus className="w-4 h-4" /> : <ArrowUpRight className="w-4 h-4" />}
+                      <span className={`dg-icon-toggle inline-flex ${isExpanded ? 'is-open' : ''}`}>
+                        {isExpanded ? <Minus className="w-4 h-4" /> : <ArrowUpRight className="w-4 h-4" />}
+                      </span>
                     </div>
                   </div>
                 </div>
 
                 {/* Expanded Accordion Details */}
-                {isExpanded && (
-                  <div
-                    className={`pb-8 pt-4 px-6 rounded-xl border mb-6 flex flex-col md:flex-row gap-6 justify-between items-start animate-in fade-in duration-300 ${isLight
-                      ? 'bg-neutral-50 border-neutral-200 text-neutral-900 shadow-sm'
-                      : 'bg-white/[0.02] border-white/[0.05] text-white'
-                      }`}
-                    style={{
-                      borderLeftWidth: '3px',
-                      borderLeftColor: theme.accentColor || '#6B5CE7',
-                    }}
-                  >
-                    <div className="max-w-2xl">
-                      <h4 className="text-sm font-semibold mb-2">
-                        <EditableText as="span" value="Scope & Methodology" overrideKey={`services.scopeHeading.${item.id}`} label="Judul scope" />
-                      </h4>
-                      <EditableText
-                        as="p"
-                        value={item.description}
-                        onChange={(v) => patchItem({ description: v })}
-                        label="Deskripsi service"
-                        multiline
-                        className={`text-sm leading-relaxed font-light ${isLight ? 'text-neutral-600' : 'text-neutral-300'}`}
-                      />
-                      <div className={`mt-4 flex flex-wrap gap-4 text-xs ${isLight ? 'text-neutral-600' : 'text-neutral-400'}`}>
-                        {(item.features || []).map((feature, fIdx) => (
-                          <span key={fIdx} className="flex items-center gap-1.5 font-medium">
-                            <Check className="w-3.5 h-3.5" style={{ color: theme.accentColor }} />
-                            <EditableText
-                              as="span"
-                              value={feature}
-                              onChange={(v) => {
-                                const next = [...item.features];
-                                next[fIdx] = v;
-                                patchItem({ features: next });
-                              }}
-                              label="Fitur service"
-                            />
-                            {editorialMode && (
-                              <button
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  patchItem({ features: (item.features || []).filter((_, i) => i !== fIdx) });
-                                }}
-                                className="ml-1 text-[10px] text-red-400 hover:text-red-300"
-                                title="Hapus fitur"
-                              >
-                                ✕
-                              </button>
-                            )}
-                          </span>
-                        ))}
-                        {editorialMode && (
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              patchItem({ features: [...(item.features || []), 'Fitur baru'] });
-                            }}
-                            className="inline-flex items-center gap-1 text-[11px] px-2 py-1 rounded border border-dashed border-[#22C55E]/70 text-[#22C55E]"
-                            title="Tambah fitur"
-                          >
-                            <Plus className="w-3 h-3" /> Tambah fitur
-                          </button>
-                        )}
-                      </div>
-                    </div>
-
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleSelectServiceForBrief(item.name);
-                      }}
-                      className="px-6 py-3 rounded-xl text-xs font-semibold text-white transition-all shadow-lg hover:brightness-110 active:scale-95 whitespace-nowrap self-end md:self-center"
+                <div className={`dg-collapsible ${isExpanded ? 'is-open' : ''}`}>
+                  <div>
+                    <div
+                      className={`dg-accordion-content pb-8 pt-4 px-6 rounded-xl border mb-6 flex flex-col md:flex-row gap-6 justify-between items-start ${isLight
+                        ? 'bg-neutral-50 border-neutral-200 text-neutral-900 shadow-sm'
+                        : 'bg-white/[0.02] border-white/[0.05] text-white'
+                        }`}
                       style={{
-                        backgroundColor: theme.accentColor || '#0A0A0A',
-                        color: theme.accentColor === '#FFFFFF' ? '#000000' : '#FFFFFF',
-                        boxShadow: `0 8px 25px ${theme.accentColor || '#6B5CE7'}35`,
+                        borderLeftWidth: '3px',
+                        borderLeftColor: theme.accentColor || '#6B5CE7',
                       }}
                     >
-                      <EditableText
-                        as="span"
-                        value={`Book ${item.name} →`}
-                        overrideKey={`services.book.${item.id}`}
-                        label="Teks tombol booking"
-                      />
-                    </button>
+                      <div className="max-w-2xl">
+                        <h4 className="text-sm font-semibold mb-2">
+                          <EditableText as="span" value="Scope & Methodology" overrideKey={`services.scopeHeading.${item.id}`} label="Judul scope" />
+                        </h4>
+                        <EditableText
+                          as="p"
+                          value={item.description}
+                          onChange={(v) => patchItem({ description: v })}
+                          label="Deskripsi service"
+                          multiline
+                          className={`text-sm leading-relaxed font-light ${isLight ? 'text-neutral-600' : 'text-neutral-300'}`}
+                        />
+                        <div className={`mt-4 flex flex-wrap gap-4 text-xs ${isLight ? 'text-neutral-600' : 'text-neutral-400'}`}>
+                          {(item.features || []).map((feature, fIdx) => (
+                            <span key={fIdx} className="flex items-center gap-1.5 font-medium">
+                              <Check className="w-3.5 h-3.5" style={{ color: theme.accentColor }} />
+                              <EditableText
+                                as="span"
+                                value={feature}
+                                onChange={(v) => {
+                                  const next = [...item.features];
+                                  next[fIdx] = v;
+                                  patchItem({ features: next });
+                                }}
+                                label="Fitur service"
+                              />
+                              {editorialMode && (
+                                <button
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    patchItem({ features: (item.features || []).filter((_, i) => i !== fIdx) });
+                                  }}
+                                  className="ml-1 text-[10px] text-red-400 hover:text-red-300"
+                                  title="Hapus fitur"
+                                >
+                                  ✕
+                                </button>
+                              )}
+                            </span>
+                          ))}
+                          {editorialMode && (
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                patchItem({ features: [...(item.features || []), 'Fitur baru'] });
+                              }}
+                              className="inline-flex items-center gap-1 text-[11px] px-2 py-1 rounded border border-dashed border-[#22C55E]/70 text-[#22C55E]"
+                              title="Tambah fitur"
+                            >
+                              <Plus className="w-3 h-3" /> Tambah fitur
+                            </button>
+                          )}
+                        </div>
+                      </div>
+
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleSelectServiceForBrief(item.name);
+                        }}
+                        className="px-6 py-3 rounded-xl text-xs font-semibold text-white transition-all shadow-lg hover:brightness-110 active:scale-95 whitespace-nowrap self-end md:self-center"
+                        style={{
+                          backgroundColor: theme.accentColor || '#0A0A0A',
+                          color: theme.accentColor === '#FFFFFF' ? '#000000' : '#FFFFFF',
+                          boxShadow: `0 8px 25px ${theme.accentColor || '#6B5CE7'}35`,
+                        }}
+                      >
+                        <EditableText
+                          as="span"
+                          value={`Book ${item.name} →`}
+                          overrideKey={`services.book.${item.id}`}
+                          label="Teks tombol booking"
+                        />
+                      </button>
+                    </div>
                   </div>
-                )}
+                </div>
               </div>
+              </Reveal>
             );
           })}
         </div>
@@ -345,6 +356,8 @@ export const Services: React.FC = () => {
           <img
             src={hoveredService.previewImage}
             alt={hoveredService.name}
+            loading="lazy"
+            decoding="async"
             referrerPolicy="no-referrer"
             className="w-full h-full object-cover grayscale contrast-125 scale-105"
           />

@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useRef } from 'react';
 import {
   CMSData,
   AgencyConfig,
@@ -13,6 +13,7 @@ import {
   WorkflowData,
   TestimonialsData,
   ContactData,
+  ClientsData,
   ContactInquiry,
   ProjectItem,
 } from '../types/cms';
@@ -37,6 +38,8 @@ interface CMSContextType {
   toastMessage: string | null;
   showToast: (msg: string) => void;
   isSectionLight: (sectionKey: SectionKey) => boolean;
+  darkBg: string;
+  accentContrast: string;
 
   updateConfig: (config: Partial<AgencyConfig>) => void;
   updateTheme: (theme: Partial<ThemeConfig>) => void;
@@ -52,6 +55,7 @@ interface CMSContextType {
   updateWorkflow: (data: Partial<WorkflowData>) => void;
   updateTestimonials: (data: Partial<TestimonialsData>) => void;
   updateContact: (data: Partial<ContactData>) => void;
+  updateClients: (data: Partial<ClientsData>) => void;
 
   addInquiry: (inquiry: {
     name: string;
@@ -66,6 +70,15 @@ interface CMSContextType {
   exportJSON: () => string;
   importJSON: (jsonString: string) => boolean;
   resetToDefault: () => void;
+
+  undo: () => void;
+  redo: () => void;
+  canUndo: boolean;
+  canRedo: boolean;
+  publish: () => void;
+  revertToPublished: () => void;
+  publishedAt: string | null;
+  hasUnpublishedChanges: boolean;
 }
 
 const CMSContext = createContext<CMSContextType | undefined>(undefined);
@@ -76,9 +89,17 @@ export const CMSProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       const saved = localStorage.getItem(STORAGE_KEY);
       if (saved) {
         const parsed = JSON.parse(saved);
-        // Automatic migration: if bgMode was old 'obsidian' or missing, default to 'reference-hybrid'
         if (parsed.theme && (!parsed.theme.bgMode || parsed.theme.bgMode === 'obsidian' || parsed.theme.bgMode === 'carbon')) {
           parsed.theme.bgMode = 'reference-hybrid';
+        }
+        if (parsed.theme && !parsed.theme.customColors) {
+          parsed.theme.customColors = { ...DEFAULT_CMS_DATA.theme.customColors };
+        }
+        // Backfill sections that were introduced after this payload was saved.
+        if (Array.isArray(parsed.sections)) {
+          const existing = new Set(parsed.sections.map((s: any) => s.id));
+          const missing = DEFAULT_CMS_DATA.sections.filter((s) => !existing.has(s.id));
+          parsed.sections = [...parsed.sections, ...missing];
         }
         // Backfill any newly introduced fields with defaults from the current schema
         const mergedServices = {
@@ -108,6 +129,15 @@ export const CMSProvider: React.FC<{ children: React.ReactNode }> = ({ children 
           hero: { ...DEFAULT_CMS_DATA.hero, ...parsed.hero },
           services: mergedServices,
           portfolio: mergedPortfolio,
+          clients: {
+            ...DEFAULT_CMS_DATA.clients,
+            ...(parsed.clients || {}),
+            items: (parsed.clients?.items || DEFAULT_CMS_DATA.clients.items).map((it: any) => ({
+              ...it,
+              tagline: it.tagline ?? '',
+              url: it.url ?? '',
+            })),
+          },
           editorial: {
             ...DEFAULT_CMS_DATA.editorial,
             ...parsed.editorial,
@@ -135,15 +165,179 @@ export const CMSProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }, 3500);
   };
 
+  /* ------------------------------------------------------------------ */
+  /* History (undo / redo) + publish snapshot                          */
+  /* ------------------------------------------------------------------ */
+
+  const dataRef = useRef(data);
+  dataRef.current = data;
+
+  const historyRef = useRef<{ past: CMSData[]; future: CMSData[]; lastPush: number }>({
+    past: [],
+    future: [],
+    lastPush: 0,
+  });
+  const [, forceHistoryRender] = useState(0);
+  const [publishedAt, setPublishedAt] = useState<string | null>(null);
+  const [hasUnpublishedChanges, setHasUnpublishedChanges] = useState(false);
+
+  const PUBLISHED_KEY = 'digitara_cms_published_v1';
+
+  const readPublished = (): (CMSData & { __publishedAt?: string }) | null => {
+    try {
+      const raw = localStorage.getItem(PUBLISHED_KEY);
+      return raw ? (JSON.parse(raw) as CMSData & { __publishedAt?: string }) : null;
+    } catch {
+      return null;
+    }
+  };
+
+  // Load the last published snapshot on boot
+  useEffect(() => {
+    const snap = readPublished();
+    if (snap) {
+      setPublishedAt(snap?.__publishedAt || null);
+      setHasUnpublishedChanges(JSON.stringify(snap) !== JSON.stringify(dataRef.current));
+    } else {
+      // First run: treat the current state as published.
+      try {
+        localStorage.setItem(PUBLISHED_KEY, JSON.stringify({ ...dataRef.current, __publishedAt: new Date().toISOString() }));
+        setPublishedAt(new Date().toISOString());
+      } catch {
+        /* storage full - ignore */
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  /**
+   * Applies a change, recording the previous state on the undo stack.
+   * Rapid successive edits (typing) are coalesced into a single entry.
+   */
+  const commit = (updater: (prev: CMSData) => CMSData, message?: string) => {
+    const now = Date.now();
+    const hist = historyRef.current;
+
+    if (now - hist.lastPush > 700) {
+      hist.past.push(dataRef.current);
+      if (hist.past.length > 60) hist.past.shift();
+      hist.future = [];
+    }
+    hist.lastPush = now;
+
+    setData((prev) => updater(prev));
+    if (message) showToast(message);
+  };
+
+  const undo = () => {
+    const hist = historyRef.current;
+    if (hist.past.length === 0) {
+      showToast('Tidak ada perubahan untuk di-undo');
+      return;
+    }
+    const previous = hist.past.pop()!;
+    hist.future.push(dataRef.current);
+    hist.lastPush = 0;
+    setData(previous);
+    forceHistoryRender((v) => v + 1);
+    showToast('Perubahan di-undo');
+  };
+
+  const redo = () => {
+    const hist = historyRef.current;
+    if (hist.future.length === 0) {
+      showToast('Tidak ada perubahan untuk di-redo');
+      return;
+    }
+    const next = hist.future.pop()!;
+    hist.past.push(dataRef.current);
+    hist.lastPush = 0;
+    setData(next);
+    forceHistoryRender((v) => v + 1);
+    showToast('Perubahan di-redo');
+  };
+
+  const canUndo = historyRef.current.past.length > 0;
+  const canRedo = historyRef.current.future.length > 0;
+
+  const publish = () => {
+    const stamp = new Date().toISOString();
+    try {
+      localStorage.setItem(PUBLISHED_KEY, JSON.stringify({ ...dataRef.current, __publishedAt: stamp }));
+    } catch {
+      showToast('Gagal menyimpan snapshot (storage penuh)');
+      return;
+    }
+    setPublishedAt(stamp);
+    setHasUnpublishedChanges(false);
+    showToast('Konten dipublish — snapshot tersimpan');
+  };
+
+  const revertToPublished = () => {
+    const snap = readPublished();
+    if (!snap) {
+      showToast('Belum ada snapshot yang dipublish');
+      return;
+    }
+    const { __publishedAt, ...rest } = snap as any;
+    historyRef.current.past.push(dataRef.current);
+    historyRef.current.future = [];
+    historyRef.current.lastPush = 0;
+    setData(rest as CMSData);
+    setPublishedAt(__publishedAt || null);
+    setHasUnpublishedChanges(false);
+    showToast('Kembali ke versi yang dipublish');
+  };
+
+  // Track whether the working copy differs from the published snapshot
+  useEffect(() => {
+    const snap = readPublished();
+    if (!snap) return;
+    const { __publishedAt, ...rest } = snap as any;
+    setHasUnpublishedChanges(JSON.stringify(rest) !== JSON.stringify(data));
+  }, [data]);
+
+  // Ctrl/Cmd + Z / Shift + Z for undo & redo
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      const target = e.target as HTMLElement | null;
+      const isTyping =
+        target &&
+        (target.tagName === 'INPUT' ||
+          target.tagName === 'TEXTAREA' ||
+          target.isContentEditable);
+      if (isTyping) return;
+      if (!(e.ctrlKey || e.metaKey)) return;
+      if (e.key.toLowerCase() !== 'z') return;
+      e.preventDefault();
+      if (e.shiftKey) redo();
+      else undo();
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   // Helper to determine if a section should be rendered with Light or Dark theme
   const isSectionLight = (sectionKey: SectionKey): boolean => {
     if (data.theme.bgMode === 'light-minimal') return true;
-    if (data.theme.bgMode === 'dark-obsidian' || data.theme.bgMode === 'midnight') return false;
+    if (data.theme.bgMode === 'dark-obsidian' || data.theme.bgMode === 'midnight' || data.theme.bgMode === 'custom') return false;
     // 'reference-hybrid' matches the uploaded reference image:
     // About, Services, Portfolio, Workflow, Testimonials, Contact are clean, crisp WHITE!
     // Hero, MidBanner, and Footer are Dark cinematic!
-    return ['about', 'services', 'portfolio', 'workflow', 'testimonials', 'contact'].includes(sectionKey);
+    return ['about', 'services', 'portfolio', 'workflow', 'testimonials', 'contact', 'clients'].includes(sectionKey);
   };
+
+  // Shared dark background token so every dark surface reacts to the mode.
+  const darkBg =
+    data.theme.bgMode === 'midnight'
+      ? '#060814'
+      : data.theme.bgMode === 'custom' && data.theme.customColors
+      ? data.theme.customColors.primary
+      : '#0A0A0A';
+
+  // Text/icon color that reads well on top of the accent color.
+  const accentContrast = data.theme.accentColor === '#FFFFFF' ? '#000000' : '#FFFFFF';
 
   // Sync with localStorage
   useEffect(() => {
@@ -157,18 +351,29 @@ export const CMSProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   // Apply theme variables dynamically to the document root
   useEffect(() => {
     const root = document.documentElement;
-    root.style.setProperty('--brand-accent', data.theme.accentColor);
+    if (data.theme.bgMode === 'custom' && data.theme.customColors) {
+      root.style.setProperty('--brand-accent', data.theme.customColors.accent);
+      root.style.setProperty('--brand-bg', data.theme.customColors.primary);
+      root.style.setProperty('--brand-secondary', data.theme.customColors.secondary);
+      root.style.setProperty('--brand-tertiary', data.theme.customColors.tertiary);
+      document.body.style.backgroundColor = data.theme.customColors.primary;
+      document.body.classList.add('custom-theme');
+    } else {
+      root.style.setProperty('--brand-accent', data.theme.accentColor);
+      let bg = '#0A0A0A';
+      if (data.theme.bgMode === 'light-minimal') bg = '#FFFFFF';
+      else if (data.theme.bgMode === 'midnight') bg = '#060814';
+      else if (data.theme.bgMode === 'reference-hybrid') bg = '#0A0A0A';
+      else if (data.theme.bgMode === 'dark-obsidian') bg = '#0A0A0A';
+      root.style.setProperty('--brand-bg', bg);
+      root.style.setProperty('--brand-secondary', bg);
+      root.style.setProperty('--brand-tertiary', bg);
+      document.body.style.backgroundColor = bg;
+      document.body.classList.remove('custom-theme');
+    }
+    document.body.classList.toggle('light-mode', data.theme.bgMode === 'light-minimal');
     root.style.setProperty('--font-heading', `'${data.theme.headingFont}', sans-serif`);
     root.style.setProperty('--font-body', `'${data.theme.bodyFont}', sans-serif`);
-
-    let bg = '#0A0A0A';
-    if (data.theme.bgMode === 'light-minimal') bg = '#FFFFFF';
-    else if (data.theme.bgMode === 'midnight') bg = '#060814';
-    else if (data.theme.bgMode === 'reference-hybrid') bg = '#0A0A0A';
-    else if (data.theme.bgMode === 'dark-obsidian') bg = '#0A0A0A';
-
-    root.style.setProperty('--brand-bg', bg);
-    document.body.style.backgroundColor = bg;
   }, [data.theme]);
 
   // Keyboard shortcut: Alt + A or Cmd/Ctrl + Shift + A to open Headless CMS Studio
@@ -196,29 +401,29 @@ export const CMSProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   }, [editorialMode]);
 
   const updateConfig = (cfg: Partial<AgencyConfig>) => {
-    setData((prev) => ({ ...prev, config: { ...prev.config, ...cfg } }));
-    showToast('Agency settings updated');
+    commit((prev) => ({ ...prev, config: { ...prev.config, ...cfg } }), 'Agency settings updated');
   };
 
   const updateTheme = (thm: Partial<ThemeConfig>) => {
-    setData((prev) => ({ ...prev, theme: { ...prev.theme, ...thm } }));
-    showToast('Theme system updated');
+    commit((prev) => ({ ...prev, theme: { ...prev.theme, ...thm } }), 'Theme system updated');
   };
 
   const updateSections = (sections: SectionMeta[]) => {
-    setData((prev) => ({ ...prev, sections }));
+    commit((prev) => ({ ...prev, sections }));
   };
 
   const toggleSectionVisibility = (id: SectionKey) => {
-    setData((prev) => ({
-      ...prev,
-      sections: prev.sections.map((s) => (s.id === id ? { ...s, enabled: !s.enabled } : s)),
-    }));
-    showToast(`Section visibility toggled`);
+    commit(
+      (prev) => ({
+        ...prev,
+        sections: prev.sections.map((s) => (s.id === id ? { ...s, enabled: !s.enabled } : s)),
+      }),
+      'Section visibility toggled'
+    );
   };
 
   const moveSection = (id: SectionKey, direction: 'up' | 'down') => {
-    setData((prev) => {
+    commit((prev) => {
       const sorted = [...prev.sections].sort((a, b) => a.order - b.order);
       const index = sorted.findIndex((s) => s.id === id);
       if (index < 0) return prev;
@@ -234,72 +439,67 @@ export const CMSProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       targetSec.order = currentOrder;
 
       return { ...prev, sections: [...sorted] };
-    });
-    showToast('Section order re-aligned');
+    }, 'Section order re-aligned');
   };
 
   const updateHero = (hero: Partial<HeroData>) => {
-    setData((prev) => ({ ...prev, hero: { ...prev.hero, ...hero } }));
-    showToast('Hero section updated');
+    commit((prev) => ({ ...prev, hero: { ...prev.hero, ...hero } }), 'Hero section updated');
   };
 
   const updateAbout = (about: Partial<AboutData>) => {
-    setData((prev) => ({ ...prev, about: { ...prev.about, ...about } }));
-    showToast('About section updated');
+    commit((prev) => ({ ...prev, about: { ...prev.about, ...about } }), 'About section updated');
   };
 
   const updateServices = (services: Partial<ServicesData>) => {
-    setData((prev) => ({ ...prev, services: { ...prev.services, ...services } }));
-    showToast('Services updated');
+    commit((prev) => ({ ...prev, services: { ...prev.services, ...services } }), 'Services updated');
   };
 
   const updateMidBanner = (midBanner: Partial<MidBannerData>) => {
-    setData((prev) => ({ ...prev, midBanner: { ...prev.midBanner, ...midBanner } }));
-    showToast('Mid-Banner updated');
+    commit((prev) => ({ ...prev, midBanner: { ...prev.midBanner, ...midBanner } }), 'Mid-Banner updated');
   };
 
   const updatePortfolio = (portfolio: Partial<PortfolioData>) => {
-    setData((prev) => ({ ...prev, portfolio: { ...prev.portfolio, ...portfolio } }));
-    showToast('Portfolio items updated');
+    commit((prev) => ({ ...prev, portfolio: { ...prev.portfolio, ...portfolio } }), 'Portfolio items updated');
   };
 
   const updateWorkflow = (workflow: Partial<WorkflowData>) => {
-    setData((prev) => ({ ...prev, workflow: { ...prev.workflow, ...workflow } }));
-    showToast('Creative workflow updated');
+    commit((prev) => ({ ...prev, workflow: { ...prev.workflow, ...workflow } }), 'Creative workflow updated');
   };
 
   const updateTestimonials = (testimonials: Partial<TestimonialsData>) => {
-    setData((prev) => ({ ...prev, testimonials: { ...prev.testimonials, ...testimonials } }));
-    showToast('Testimonials updated');
+    commit((prev) => ({ ...prev, testimonials: { ...prev.testimonials, ...testimonials } }), 'Testimonials updated');
   };
 
   const updateContact = (contact: Partial<ContactData>) => {
-    setData((prev) => ({ ...prev, contact: { ...prev.contact, ...contact } }));
-    showToast('Contact info updated');
+    commit((prev) => ({ ...prev, contact: { ...prev.contact, ...contact } }), 'Contact info updated');
+  };
+
+  const updateClients = (clients: Partial<ClientsData>) => {
+    commit((prev) => ({ ...prev, clients: { ...prev.clients, ...clients } }), 'Client list updated');
   };
 
   const setEditorialOffset = (id: string, offset: { x: number; y: number }) => {
-    setData((prev) => ({
-      ...prev,
-      editorial: {
-        ...prev.editorial,
-        offsets: { ...(prev.editorial?.offsets || {}), [id]: offset },
-      },
-    }));
+    commit(
+      (prev) => ({
+        ...prev,
+        editorial: {
+          ...prev.editorial,
+          offsets: { ...(prev.editorial?.offsets || {}), [id]: offset },
+        },
+      })
+    );
   };
 
   const resetEditorialOffsets = () => {
-    setData((prev) => ({ ...prev, editorial: { ...prev.editorial, offsets: {} } }));
-    showToast('Semua posisi elemen di-reset');
+    commit((prev) => ({ ...prev, editorial: { ...prev.editorial, offsets: {} } }), 'Semua posisi elemen di-reset');
   };
 
   const resetEditorialTexts = () => {
-    setData((prev) => ({ ...prev, editorial: { ...prev.editorial, texts: {} } }));
-    showToast('Semua teks editorial di-reset');
+    commit((prev) => ({ ...prev, editorial: { ...prev.editorial, texts: {} } }), 'Semua teks editorial di-reset');
   };
 
   const setEditorialText = (id: string, value: string) => {
-    setData((prev) => ({
+    commit((prev) => ({
       ...prev,
       editorial: {
         ...prev.editorial,
@@ -321,27 +521,33 @@ export const CMSProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       submittedAt: new Date().toISOString().replace('T', ' ').substring(0, 16),
       status: 'new',
     };
-    setData((prev) => ({
-      ...prev,
-      inquiries: [newInquiry, ...(prev.inquiries || [])],
-    }));
-    showToast('Brief received! We will reach out within 24 hours.');
+    commit(
+      (prev) => ({
+        ...prev,
+        inquiries: [newInquiry, ...(prev.inquiries || [])],
+      }),
+      'Brief received! We will reach out within 24 hours.'
+    );
   };
 
   const updateInquiryStatus = (id: string, status: ContactInquiry['status']) => {
-    setData((prev) => ({
-      ...prev,
-      inquiries: prev.inquiries.map((inq) => (inq.id === id ? { ...inq, status } : inq)),
-    }));
-    showToast('Inquiry status updated');
+    commit(
+      (prev) => ({
+        ...prev,
+        inquiries: prev.inquiries.map((inq) => (inq.id === id ? { ...inq, status } : inq)),
+      }),
+      'Inquiry status updated'
+    );
   };
 
   const deleteInquiry = (id: string) => {
-    setData((prev) => ({
-      ...prev,
-      inquiries: prev.inquiries.filter((inq) => inq.id !== id),
-    }));
-    showToast('Inquiry removed');
+    commit(
+      (prev) => ({
+        ...prev,
+        inquiries: prev.inquiries.filter((inq) => inq.id !== id),
+      }),
+      'Inquiry removed'
+    );
   };
 
   const exportJSON = () => {
@@ -352,8 +558,7 @@ export const CMSProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     try {
       const parsed = JSON.parse(jsonString);
       if (parsed.config && parsed.hero && parsed.services) {
-        setData(parsed);
-        showToast('Headless CMS state imported successfully!');
+        commit(() => parsed, 'Headless CMS state imported successfully!');
         return true;
       }
       showToast('Invalid JSON structure');
@@ -366,9 +571,7 @@ export const CMSProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   };
 
   const resetToDefault = () => {
-    setData(DEFAULT_CMS_DATA);
-    localStorage.removeItem(STORAGE_KEY);
-    showToast('Reset to original default state');
+    commit(() => DEFAULT_CMS_DATA, 'Reset to original default state');
   };
 
   return (
@@ -390,6 +593,8 @@ export const CMSProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         toastMessage,
         showToast,
         isSectionLight,
+        darkBg,
+        accentContrast,
         updateConfig,
         updateTheme,
         updateSections,
@@ -403,12 +608,21 @@ export const CMSProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         updateWorkflow,
         updateTestimonials,
         updateContact,
+        updateClients,
         addInquiry,
         updateInquiryStatus,
         deleteInquiry,
         exportJSON,
         importJSON,
         resetToDefault,
+        undo,
+        redo,
+        canUndo,
+        canRedo,
+        publish,
+        revertToPublished,
+        publishedAt,
+        hasUnpublishedChanges,
       }}
     >
       {children}
