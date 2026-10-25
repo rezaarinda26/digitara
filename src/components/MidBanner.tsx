@@ -25,7 +25,7 @@ export const MidBanner: React.FC = () => {
       {/* Cinematic Full-Bleed Media Break */}
       <div className={`relative min-h-[70vh] flex flex-col justify-between py-16 px-4 sm:px-6 lg:px-8 border-y ${isLight ? 'border-neutral-200' : 'border-white/[0.08]'}`}>
         {/* Background Image Container */}
-        <Reveal variant="zoom" className={`absolute inset-0 z-0 select-none ${editorialMode ? 'pointer-events-auto' : 'pointer-events-none'}`}>
+        <Reveal variant="zoom" className="absolute inset-0 z-0 select-none pointer-events-none">
           <EditableImage
             value={midBanner.bgImageUrl}
             onChange={(v) => updateMidBanner({ bgImageUrl: v })}

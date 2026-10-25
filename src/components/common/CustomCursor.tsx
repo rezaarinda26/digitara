@@ -31,12 +31,32 @@ export const CustomCursor: React.FC = () => {
     const dot = { x: target.x, y: target.y };
     let visible = false;
 
+    const hide = () => {
+      visible = false;
+      if (ringRef.current) ringRef.current.style.opacity = '0';
+      if (dotRef.current) dotRef.current.style.opacity = '0';
+    };
+
     const onMove = (e: MouseEvent) => {
+      // Ignore spurious events at the very edge of the viewport: when the
+      // pointer leaves for the browser chrome the ring would otherwise be
+      // clipped into a stray line at the top/left edge.
+      if (
+        e.clientX <= 0 ||
+        e.clientY <= 0 ||
+        e.clientX >= window.innerWidth - 1 ||
+        e.clientY >= window.innerHeight - 1
+      ) {
+        hide();
+        return;
+      }
+
       target.x = e.clientX;
       target.y = e.clientY;
       if (!visible) {
         visible = true;
         ring.x = dot.x = target.x;
+        ring.y = dot.y = target.y;
         if (ringRef.current) ringRef.current.style.opacity = '1';
         if (dotRef.current) dotRef.current.style.opacity = '1';
       }
@@ -48,11 +68,15 @@ export const CustomCursor: React.FC = () => {
       setLabel(cursorLabel ? cursorLabel : null);
     };
 
-    const onLeave = () => {
-      visible = false;
-      if (ringRef.current) ringRef.current.style.opacity = '0';
-      if (dotRef.current) dotRef.current.style.opacity = '0';
+    const onLeave = () => hide();
+
+    const onOut = (e: MouseEvent) => {
+      // relatedTarget is null when the pointer crosses the document boundary
+      // (e.g. moving onto the browser toolbar).
+      if (!e.relatedTarget) hide();
     };
+
+    const onBlur = () => hide();
 
     const tick = () => {
       ring.x += (target.x - ring.x) * 0.16;
@@ -70,11 +94,15 @@ export const CustomCursor: React.FC = () => {
 
     window.addEventListener('mousemove', onMove, { passive: true });
     document.addEventListener('mouseleave', onLeave);
+    document.addEventListener('mouseout', onOut);
+    window.addEventListener('blur', onBlur);
     raf = requestAnimationFrame(tick);
 
     return () => {
       window.removeEventListener('mousemove', onMove);
       document.removeEventListener('mouseleave', onLeave);
+      document.removeEventListener('mouseout', onOut);
+      window.removeEventListener('blur', onBlur);
       cancelAnimationFrame(raf);
       document.body.classList.remove('cursor-custom');
     };
@@ -90,7 +118,7 @@ export const CustomCursor: React.FC = () => {
       {/* Trailing ring */}
       <div
         ref={ringRef}
-        className="absolute left-0 top-0 rounded-full transition-[width,height,opacity,background-color,border-color] duration-300 ease-out"
+        className="absolute left-0 top-0 rounded-full transition-[width,height,background-color,border-color] duration-200 ease-out"
         style={{
           width: active ? 46 : 30,
           height: active ? 46 : 30,
@@ -99,11 +127,20 @@ export const CustomCursor: React.FC = () => {
           opacity: 0,
           willChange: 'transform',
         }}
-      />
+      >
+        {label && (
+          <div
+            className="absolute bottom-full left-1/2 mb-2 -translate-x-1/2 whitespace-nowrap rounded-full px-2.5 py-1 text-[10px] font-mono font-semibold text-white"
+            style={{ backgroundColor: accent }}
+          >
+            {label}
+          </div>
+        )}
+      </div>
       {/* Solid dot */}
       <div
         ref={dotRef}
-        className="absolute left-0 top-0 rounded-full transition-[width,height,opacity] duration-200 ease-out"
+        className="absolute left-0 top-0 rounded-full transition-[width,height] duration-200 ease-out"
         style={{
           width: active ? 5 : 6,
           height: active ? 5 : 6,
@@ -113,11 +150,6 @@ export const CustomCursor: React.FC = () => {
           boxShadow: isLight ? `0 0 0 1px ${accent}30` : `0 0 10px ${accent}90`,
         }}
       />
-      {label && (
-        <div className="absolute left-0 top-0 -translate-y-[38px] whitespace-nowrap rounded-full px-2.5 py-1 text-[10px] font-mono font-semibold text-white" style={{ backgroundColor: accent }}>
-          {label}
-        </div>
-      )}
     </div>
   );
 };

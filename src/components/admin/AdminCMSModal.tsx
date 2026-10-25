@@ -67,6 +67,7 @@ export const AdminCMSModal: React.FC = () => {
     canRedo,
     publish,
     revertToPublished,
+    applyToCode,
     publishedAt,
     hasUnpublishedChanges,
     resetToDefault,
@@ -75,6 +76,7 @@ export const AdminCMSModal: React.FC = () => {
 
   const [importJsonText, setImportJsonText] = useState('');
   const [copySuccess, setCopySuccess] = useState(false);
+  const [applying, setApplying] = useState(false);
   const { isMounted, isClosing } = usePresence(isAdminOpen, 220);
   const isLight = data.theme.bgMode === 'light-minimal';
   const modalRef = useRef<HTMLDivElement>(null);
@@ -82,10 +84,20 @@ export const AdminCMSModal: React.FC = () => {
   // Prevent background scroll while the CMS modal is open
   useEffect(() => {
     if (!isMounted) return;
-    const prev = document.body.style.overflow;
-    document.body.style.overflow = 'hidden';
+    const body = document.body;
+    const html = document.documentElement;
+    const prevOverflow = body.style.overflow;
+    const prevPaddingRight = body.style.paddingRight;
+    const scrollbarWidth = window.innerWidth - html.clientWidth;
+    body.style.overflow = 'hidden';
+    if (scrollbarWidth > 0) {
+      body.style.paddingRight = `${scrollbarWidth}px`;
+    }
+    html.style.overflow = 'hidden';
     return () => {
-      document.body.style.overflow = prev;
+      body.style.overflow = prevOverflow;
+      body.style.paddingRight = prevPaddingRight;
+      html.style.overflow = '';
     };
   }, [isMounted]);
 
@@ -132,6 +144,16 @@ export const AdminCMSModal: React.FC = () => {
     a.click();
     URL.revokeObjectURL(url);
     showToast('Downloaded CMS JSON export file');
+  };
+
+  const handleApplyToCode = async () => {
+    if (applying) return;
+    setApplying(true);
+    try {
+      await applyToCode();
+    } finally {
+      setApplying(false);
+    }
   };
 
   return createPortal(
@@ -1311,10 +1333,35 @@ export const AdminCMSModal: React.FC = () => {
                       key={proj.id}
                       className="p-5 rounded-xl bg-white/[0.03] border border-white/10 space-y-4"
                     >
-                      <div className="flex items-center justify-between">
-                        <span className="text-xs font-mono text-neutral-400">
-                          {proj.category} · ©{proj.year}
-                        </span>
+                      <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-1">
+                          <button
+                            type="button"
+                            disabled={idx === 0}
+                            onClick={() => {
+                              const newItems = [...data.portfolio.items];
+                              [newItems[idx - 1], newItems[idx]] = [newItems[idx], newItems[idx - 1]];
+                              updatePortfolio({ items: newItems });
+                            }}
+                            className="p-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-neutral-400 hover:text-white disabled:opacity-30 disabled:pointer-events-none transition-colors"
+                            title="Pindahkan ke atas"
+                          >
+                            <ArrowUp className="w-3.5 h-3.5" />
+                          </button>
+                          <button
+                            type="button"
+                            disabled={idx === data.portfolio.items.length - 1}
+                            onClick={() => {
+                              const newItems = [...data.portfolio.items];
+                              [newItems[idx + 1], newItems[idx]] = [newItems[idx], newItems[idx + 1]];
+                              updatePortfolio({ items: newItems });
+                            }}
+                            className="p-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-neutral-400 hover:text-white disabled:opacity-30 disabled:pointer-events-none transition-colors"
+                            title="Pindahkan ke bawah"
+                          >
+                            <ArrowDown className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
                         <button
                           onClick={() => {
                             updatePortfolio({
@@ -1793,6 +1840,25 @@ export const AdminCMSModal: React.FC = () => {
                     Export your complete website content model, import backup schemas, or integrate with headless API pipelines.
                   </p>
                 </div>
+
+                {import.meta.env.DEV && (
+                  <div className="p-5 rounded-xl bg-[#6B5CE7]/10 border border-[#6B5CE7]/30 space-y-3">
+                    <h4 className="text-sm font-semibold text-white">Apply to Codebase (Dev)</h4>
+                    <p className="text-xs text-neutral-400">
+                      Tulis konten saat ini ke{' '}
+                      <code className="text-[#A79CFF]">src/data/appliedCMS.json</code>, kosongkan
+                      localStorage, lalu muat ulang. Setelah itu semua browser dan build memakai data ini.
+                    </p>
+                    <button
+                      onClick={handleApplyToCode}
+                      disabled={applying}
+                      className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[#6B5CE7] hover:bg-[#5A4CC7] disabled:opacity-60 disabled:cursor-not-allowed text-white text-xs font-semibold transition-colors"
+                    >
+                      <Code2 className="w-4 h-4" />
+                      <span>{applying ? 'Menerapkan…' : 'Apply ke Kode & Kosongkan localStorage'}</span>
+                    </button>
+                  </div>
+                )}
 
                 <div className="flex flex-wrap gap-3">
                   <button

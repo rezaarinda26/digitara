@@ -17,9 +17,11 @@ import {
   ContactInquiry,
   ProjectItem,
 } from '../types/cms';
-import { DEFAULT_CMS_DATA } from '../data/defaultCMS';
+import { DEFAULT_CMS_DATA, APPLIED_CMS_VERSION } from '../data/defaultCMS';
 
 const STORAGE_KEY = 'digitara_headless_cms_v1';
+const PUBLISHED_KEY = 'digitara_cms_published_v1';
+const DRAFT_VERSION_KEY = 'digitara_cms_applied_version_v1';
 
 /** Mixes a hex colour towards white. `amount` 0 = unchanged, 1 = white. */
 const lightenHex = (hex: string, amount: number): string => {
@@ -42,6 +44,8 @@ interface CMSContextType {
   setActiveAdminTab: (tab: string) => void;
   editorialMode: boolean;
   setEditorialMode: (active: boolean) => void;
+  editorialUIHidden: boolean;
+  setEditorialUIHidden: (hidden: boolean) => void;
   setEditorialOffset: (id: string, offset: { x: number; y: number }) => void;
   resetEditorialOffsets: () => void;
   resetEditorialTexts: () => void;
@@ -92,6 +96,7 @@ interface CMSContextType {
   canRedo: boolean;
   publish: () => void;
   revertToPublished: () => void;
+  applyToCode: () => Promise<boolean>;
   publishedAt: string | null;
   hasUnpublishedChanges: boolean;
 }
@@ -101,7 +106,20 @@ const CMSContext = createContext<CMSContextType | undefined>(undefined);
 export const CMSProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [data, setData] = useState<CMSData>(() => {
     try {
-      const saved = localStorage.getItem(STORAGE_KEY);
+      const draftVersion = localStorage.getItem(DRAFT_VERSION_KEY);
+
+      // Anything stored against an older applied snapshot is stale: both the
+      // draft and the published snapshot must go, otherwise browsers that
+      // visited before the last "Apply to Code" keep showing their old copy or
+      // the "unpublished changes" badge. The code snapshot always wins.
+      const stale = !!APPLIED_CMS_VERSION && draftVersion !== APPLIED_CMS_VERSION;
+      if (stale) {
+        localStorage.removeItem(STORAGE_KEY);
+        localStorage.removeItem(PUBLISHED_KEY);
+      }
+      localStorage.setItem(DRAFT_VERSION_KEY, APPLIED_CMS_VERSION);
+
+      const saved = stale ? null : localStorage.getItem(STORAGE_KEY);
       if (saved) {
         const parsed = JSON.parse(saved);
         if (parsed.theme && (!parsed.theme.bgMode || parsed.theme.bgMode === 'obsidian' || parsed.theme.bgMode === 'carbon')) {
@@ -170,6 +188,7 @@ export const CMSProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [isAdminOpen, setIsAdminOpen] = useState(false);
   const [activeAdminTab, setActiveAdminTab] = useState('theme');
   const [editorialMode, setEditorialMode] = useState(false);
+  const [editorialUIHidden, setEditorialUIHidden] = useState(false);
   const [activeProjectModal, setActiveProjectModal] = useState<ProjectItem | null>(null);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
@@ -186,6 +205,8 @@ export const CMSProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   const dataRef = useRef(data);
   dataRef.current = data;
+  const storageErrorRef = useRef(false);
+  const skipInitialSaveRef = useRef(true);
 
   const historyRef = useRef<{ past: CMSData[]; future: CMSData[]; lastPush: number }>({
     past: [],
@@ -195,8 +216,6 @@ export const CMSProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [, forceHistoryRender] = useState(0);
   const [publishedAt, setPublishedAt] = useState<string | null>(null);
   const [hasUnpublishedChanges, setHasUnpublishedChanges] = useState(false);
-
-  const PUBLISHED_KEY = 'digitara_cms_published_v1';
 
   const readPublished = (): (CMSData & { __publishedAt?: string }) | null => {
     try {
@@ -288,6 +307,32 @@ export const CMSProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     showToast('Konten dipublish — snapshot tersimpan');
   };
 
+  /**
+   * Dev-only: writes the current content into `src/data/appliedCMS.json` (via
+   * the Vite middleware) and clears the local draft so the applied snapshot
+   * becomes the single source of truth for every browser and every build.
+   */
+  const applyToCode = async (): Promise<boolean> => {
+    try {
+      const res = await fetch('/__cms/apply', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(dataRef.current),
+      });
+      if (!res.ok) throw new Error(`Apply failed with status ${res.status}`);
+      localStorage.removeItem(STORAGE_KEY);
+      localStorage.removeItem(PUBLISHED_KEY);
+      localStorage.removeItem(DRAFT_VERSION_KEY);
+      showToast('Konten diterapkan ke kode. Memuat ulang…');
+      setTimeout(() => window.location.reload(), 500);
+      return true;
+    } catch (e) {
+      console.error('Failed to apply CMS data to code:', e);
+      showToast('Gagal menerapkan ke kode. Jalankan lewat `npm run dev` (dev server).');
+      return false;
+    }
+  };
+
   const revertToPublished = () => {
     const snap = readPublished();
     if (!snap) {
@@ -361,11 +406,29 @@ export const CMSProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   // Sync with localStorage
   useEffect(() => {
+    // On boot there is nothing new to persist: the state either came from the
+    // localStorage draft we just read or from the applied code snapshot. Writing
+    // the applied snapshot back would be redundant and can overflow the quota
+    // for content that is already baked into the bundle.
+    if (skipInitialSaveRef.current) {
+      skipInitialSaveRef.current = false;
+      return;
+    }
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+      localStorage.setItem(DRAFT_VERSION_KEY, APPLIED_CMS_VERSION);
+      storageErrorRef.current = false;
     } catch (e) {
       console.error('Failed to save to localStorage:', e);
+      // Only warn once per failure streak so typing doesn't spam toasts.
+      if (!storageErrorRef.current) {
+        storageErrorRef.current = true;
+        showToast(
+          'Penyimpanan browser penuh — perubahan TERAKHIR belum tersimpan. Export JSON sekarang atau perkecil gambar.'
+        );
+      }
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [data]);
 
   // Apply theme variables dynamically to the document root
@@ -396,17 +459,34 @@ export const CMSProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     root.style.setProperty('--font-body', `'${data.theme.bodyFont}', sans-serif`);
   }, [data.theme]);
 
-  // Keyboard shortcut: Alt + A or Cmd/Ctrl + Shift + A to open Headless CMS Studio
+  // Keyboard shortcut: Alt + A or Cmd/Ctrl + Shift + A
+  // - When editorial mode is OFF: toggle CMS Studio
+  // - When editorial mode is ON: toggle editorial UI overlay (outlines, toolbar)
+  //   so the user can preview the clean design underneath
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if ((e.altKey && e.key.toLowerCase() === 'a') || (e.ctrlKey && e.shiftKey && e.key.toLowerCase() === 'a')) {
         e.preventDefault();
-        setIsAdminOpen((prev) => !prev);
+        if (editorialMode) {
+          setEditorialUIHidden((prev) => !prev);
+        } else {
+          setIsAdminOpen((prev) => !prev);
+        }
       }
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, []);
+  }, [editorialMode]);
+
+  useEffect(() => {
+    document.body.classList.toggle('editorial-hidden', editorialUIHidden);
+    return () => document.body.classList.remove('editorial-hidden');
+  }, [editorialUIHidden]);
+
+  const handleSetEditorialMode = (active: boolean) => {
+    setEditorialMode(active);
+    if (!active) setEditorialUIHidden(false);
+  };
 
   // Exit editorial mode with Escape
   useEffect(() => {
@@ -414,6 +494,7 @@ export const CMSProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     const handleEscape = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
         setEditorialMode(false);
+        setEditorialUIHidden(false);
       }
     };
     window.addEventListener('keydown', handleEscape);
@@ -603,7 +684,9 @@ export const CMSProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         activeAdminTab,
         setActiveAdminTab,
         editorialMode,
-        setEditorialMode,
+        setEditorialMode: handleSetEditorialMode,
+        editorialUIHidden,
+        setEditorialUIHidden,
         setEditorialOffset,
         resetEditorialOffsets,
         resetEditorialTexts,
@@ -642,6 +725,7 @@ export const CMSProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         canRedo,
         publish,
         revertToPublished,
+        applyToCode,
         publishedAt,
         hasUnpublishedChanges,
       }}

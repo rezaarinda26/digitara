@@ -3,9 +3,9 @@ import { useCMS } from '../../context/CMSContext';
 import { Pencil, MousePointer2, Move, ImagePlus, RotateCcw, Check, Settings2 } from 'lucide-react';
 
 export const EditorialToolbar: React.FC = () => {
-  const { editorialMode, setEditorialMode, setIsAdminOpen, resetEditorialOffsets, resetEditorialTexts, data, isAdminOpen } = useCMS();
+  const { editorialMode, setEditorialMode, setIsAdminOpen, resetEditorialOffsets, resetEditorialTexts, data, isAdminOpen, editorialUIHidden } = useCMS();
 
-  if (!editorialMode || isAdminOpen) return null;
+  if (!editorialMode || isAdminOpen || editorialUIHidden) return null;
 
   const offsetCount = Object.keys(data.editorial?.offsets || {}).length;
   const textCount = Object.keys(data.editorial?.texts || {}).length;

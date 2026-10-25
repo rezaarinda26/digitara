@@ -5,7 +5,7 @@ import { useCMS } from '../../context/CMSContext';
  * Compress an uploaded image into a reasonably sized JPEG data URL so it can be
  * persisted inside the CMS (localStorage) without blowing the storage quota.
  */
-export const compressImage = (file: File, maxDim = 1600, quality = 0.85): Promise<string> =>
+export const compressImage = (file: File, maxDim = 1400, quality = 0.8): Promise<string> =>
   new Promise((resolve, reject) => {
     const reader = new FileReader();
     reader.onload = () => {
@@ -24,7 +24,13 @@ export const compressImage = (file: File, maxDim = 1600, quality = 0.85): Promis
           return;
         }
         ctx.drawImage(img, 0, 0, width, height);
-        resolve(canvas.toDataURL('image/jpeg', quality));
+        // WebP is ~30% smaller than JPEG at the same quality. Browsers that
+        // don't support it silently return a PNG (huge), so fall back to JPEG.
+        let dataUrl = canvas.toDataURL('image/webp', quality);
+        if (!dataUrl.startsWith('data:image/webp')) {
+          dataUrl = canvas.toDataURL('image/jpeg', quality);
+        }
+        resolve(dataUrl);
       };
       img.onerror = () => reject(new Error('Could not load image'));
       img.src = reader.result as string;
@@ -216,7 +222,7 @@ export const EditableImage: React.FC<EditableImageProps> = ({
       <img
         {...imgProps}
         ref={imgRef}
-        className={`${className} cursor-pointer ring-2 ring-[#6B5CE7] hover:ring-4 ring-offset-1 ring-offset-black/40 transition-all`}
+        className={`${className} cursor-pointer pointer-events-auto ring-2 ring-[#6B5CE7] hover:ring-4 ring-offset-1 ring-offset-black/40 transition-all`}
         title={label ? `Klik untuk ganti foto: ${label}` : 'Klik untuk ganti foto'}
         onClick={(e) => {
           e.preventDefault();

@@ -230,6 +230,25 @@ export const CommandPalette: React.FC = () => {
     }
   };
 
+  useEffect(() => {
+    if (!isMounted) return;
+    const body = document.body;
+    const html = document.documentElement;
+    const prevOverflow = body.style.overflow;
+    const prevPaddingRight = body.style.paddingRight;
+    const scrollbarWidth = window.innerWidth - html.clientWidth;
+    body.style.overflow = 'hidden';
+    if (scrollbarWidth > 0) {
+      body.style.paddingRight = `${scrollbarWidth}px`;
+    }
+    html.style.overflow = 'hidden';
+    return () => {
+      body.style.overflow = prevOverflow;
+      body.style.paddingRight = prevPaddingRight;
+      html.style.overflow = '';
+    };
+  }, [isMounted]);
+
   // Keep the highlighted row in view
   useEffect(() => {
     const el = listRef.current?.querySelector<HTMLElement>('[data-active="true"]');

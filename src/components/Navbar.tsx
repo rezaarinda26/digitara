@@ -18,6 +18,14 @@ export const Navbar: React.FC = () => {
   const navLinkHover = useDarkText ? 'hover:text-black' : 'hover:text-white';
   const navLinkUnderline = useDarkText ? 'bg-black' : 'bg-white';
 
+  // Shared glass treatment for the desktop bar and the mobile drawer so both
+  // surfaces always stay in sync (and avoid the backdrop-filter artifact).
+  const glassStyle: React.CSSProperties = {
+    backgroundColor: `${darkBg}E6`,
+    backgroundImage:
+      'linear-gradient(to bottom, rgba(255,255,255,0.06) 0%, rgba(255,255,255,0.02) 45%, rgba(0,0,0,0.10) 100%)',
+  };
+
   useEffect(() => {
     const onScroll = () => {
       setScrolled(window.scrollY > 20);
@@ -48,13 +56,27 @@ export const Navbar: React.FC = () => {
 
   return (
     <header
-      className={`fixed top-0 left-0 right-0 z-40 transition-all duration-300 ${
-        scrolled
-          ? 'backdrop-blur-md border-b border-white/[0.08] py-3.5 shadow-2xl'
-          : 'bg-transparent py-5'
+      className={`fixed top-0 left-0 right-0 z-40 transition-[padding] duration-300 ${
+        scrolled ? 'py-3.5' : 'py-5'
       }`}
-      style={scrolled ? { backgroundColor: `${darkBg}D9` } : undefined}
     >
+      {/* Glass layer without backdrop-filter. Chromium on Windows renders
+          backdrop-filter with an occasional unfiltered vertical band; a
+          translucent fill plus a soft gradient keeps the glass look without
+          that artifact. */}
+      {scrolled && (
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute inset-0 -z-10"
+          style={glassStyle}
+        />
+      )}
+      <div
+        aria-hidden="true"
+        className={`pointer-events-none absolute inset-x-0 bottom-0 h-px bg-white/[0.08] transition-opacity duration-300 ${
+          scrolled ? 'opacity-100' : 'opacity-0'
+        }`}
+      />
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between gap-8">
           {/* Zone 1: Single element brand mark */}
@@ -157,7 +179,7 @@ export const Navbar: React.FC = () => {
 
       {/* Mobile Drawer Menu */}
       {mobileMenuOpen && (
-        <div className="md:hidden fixed inset-x-0 top-[65px] backdrop-blur-xl border-b border-white/10 px-6 py-6 flex flex-col gap-4 animate-slide-in-top" style={{ backgroundColor: `${darkBg}F2` }}>
+        <div className="md:hidden fixed inset-x-0 top-[65px] border-b border-white/10 px-6 py-6 flex flex-col gap-4 animate-slide-in-top" style={glassStyle}>
           <nav className="flex flex-col gap-4">
             {navLinks.map((link) => (
               <a

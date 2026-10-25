@@ -41,7 +41,6 @@ export const ScrollProgress: React.FC = () => {
         style={{
           transform: 'scaleX(0)',
           background: `linear-gradient(90deg, ${accent} 0%, ${accent}CC 55%, ${accent}88 100%)`,
-          boxShadow: `0 0 12px ${accent}80`,
         }}
       />
     </div>

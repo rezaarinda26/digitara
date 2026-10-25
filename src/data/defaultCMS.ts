@@ -1,6 +1,7 @@
 import { CMSData } from '../types/cms';
+import appliedCMS from './appliedCMS.json';
 
-export const DEFAULT_CMS_DATA: CMSData = {
+const BASE_CMS_DATA: CMSData = {
   config: {
     name: 'DIGITARA',
     subtext: 'NUANSA DIGITARA TEKNOLOGI',
@@ -440,3 +441,39 @@ export const DEFAULT_CMS_DATA: CMSData = {
     texts: {},
   },
 };
+
+const isPlainObject = (value: unknown): value is Record<string, unknown> =>
+  typeof value === 'object' && value !== null && !Array.isArray(value);
+
+/**
+ * Deep-merges a saved snapshot over the base defaults. Arrays are replaced
+ * wholesale (a saved list is intentional), while objects are filled in so new
+ * fields added to the schema still get their default values.
+ */
+const mergeOverrides = <T,>(base: T, override: unknown): T => {
+  if (!isPlainObject(base) || !isPlainObject(override)) {
+    return (override === undefined ? base : (override as T));
+  }
+  const merged: Record<string, unknown> = { ...base };
+  for (const [key, value] of Object.entries(override)) {
+    merged[key] = mergeOverrides((base as Record<string, unknown>)[key], value);
+  }
+  return merged as T;
+};
+
+const appliedSnapshot = appliedCMS as { __appliedAt?: string } & Record<string, unknown>;
+const { __appliedAt, ...appliedData } = appliedSnapshot;
+
+/**
+ * Timestamp of the last "Apply to Code". Local drafts saved against a
+ * different version are discarded so the code snapshot wins everywhere.
+ */
+export const APPLIED_CMS_VERSION: string =
+  typeof __appliedAt === 'string' ? __appliedAt : '';
+
+/**
+ * The content every visitor gets. `appliedCMS.json` is written by the CMS
+ * "Apply to Code" action, so the latest content ships with the build instead
+ * of living only in one browser's localStorage.
+ */
+export const DEFAULT_CMS_DATA: CMSData = mergeOverrides(BASE_CMS_DATA, appliedData);

@@ -52,10 +52,20 @@ export const Portfolio: React.FC = () => {
   // Prevent background scroll while the modal is open
   useEffect(() => {
     if (!modalMounted) return;
-    const prev = document.body.style.overflow;
-    document.body.style.overflow = 'hidden';
+    const body = document.body;
+    const html = document.documentElement;
+    const prevOverflow = body.style.overflow;
+    const prevPaddingRight = body.style.paddingRight;
+    const scrollbarWidth = window.innerWidth - html.clientWidth;
+    body.style.overflow = 'hidden';
+    if (scrollbarWidth > 0) {
+      body.style.paddingRight = `${scrollbarWidth}px`;
+    }
+    html.style.overflow = 'hidden';
     return () => {
-      document.body.style.overflow = prev;
+      body.style.overflow = prevOverflow;
+      body.style.paddingRight = prevPaddingRight;
+      html.style.overflow = '';
     };
   }, [modalMounted]);
 
