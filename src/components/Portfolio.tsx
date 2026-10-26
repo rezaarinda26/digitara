@@ -8,6 +8,61 @@ import { usePresence } from '../hooks/usePresence';
 import { useFocusTrap } from '../hooks/useFocusTrap';
 import { Reveal } from './common/Reveal';
 
+type CardLayout = { span: string; size: 'lg' | 'md' | 'sm' };
+
+const SPAN_CLASS = {
+  3: 'sm:col-span-1 lg:col-span-3',
+  4: 'sm:col-span-1 lg:col-span-4',
+  5: 'sm:col-span-1 lg:col-span-5',
+  7: 'sm:col-span-1 lg:col-span-7',
+  8: 'sm:col-span-2 lg:col-span-8 lg:col-start-3',
+} as const;
+
+const CARD_TILTS = [-3.4, 2.2, -1.8, 2.8, -2.6, 2, -2.2, 3, -2.8];
+
+const ROW_PATTERNS: (3 | 4 | 5)[][] = [
+  [5, 4, 3],
+  [3, 4, 5],
+  [4, 5, 3],
+];
+
+const buildCardLayouts = (count: number): CardLayout[] => {
+  const make = (span: keyof typeof SPAN_CLASS, size: CardLayout['size']): CardLayout => ({
+    span: SPAN_CLASS[span],
+    size,
+  });
+
+  const layouts: CardLayout[] = [];
+  let remaining = count;
+  let row = 0;
+
+  while (remaining > 0) {
+    if (remaining === 1) {
+      layouts.push(make(8, 'lg'));
+      remaining = 0;
+    } else if (remaining === 2) {
+      layouts.push(make(7, 'lg'), make(5, 'md'));
+      remaining = 0;
+    } else {
+      const pattern = ROW_PATTERNS[row % ROW_PATTERNS.length];
+      layouts.push(...pattern.map((span) => make(span, span >= 5 ? 'lg' : span === 4 ? 'md' : 'sm')));
+      remaining -= 3;
+      row += 1;
+    }
+  }
+
+  // On the 2-column tablet grid an odd card count leaves a lone half-width
+  // card at the end; let the final card close the row instead.
+  if (count > 1 && count % 2 === 1) {
+    const last = layouts[layouts.length - 1];
+    if (!last.span.includes('sm:col-span-2')) {
+      last.span = last.span.replace('sm:col-span-1', 'sm:col-span-2');
+    }
+  }
+
+  return layouts;
+};
+
 export const Portfolio: React.FC = () => {
   const { data, activeProjectModal, setActiveProjectModal, isSectionLight, updatePortfolio, editorialMode, darkBg, accentText } = useCMS();
   const { portfolio, theme } = data;
@@ -32,6 +87,8 @@ export const Portfolio: React.FC = () => {
     activeCategory === 'All'
       ? portfolio.items
       : portfolio.items.filter((item) => item.category === activeCategory);
+
+  const cardLayouts = buildCardLayouts(filteredItems.length);
 
   const patchActiveProject = (patch: Partial<ProjectItem>) => {
     if (!activeProjectModal) return;
@@ -173,203 +230,231 @@ export const Portfolio: React.FC = () => {
           </div>
         </Reveal>
 
-        {/* Filter Segmented Controls with Accent Impact */}
-        <Reveal variant="up" delay={100} className="mt-8 flex flex-wrap items-center gap-2.5">
-          {categories.map((cat) => {
-            const isActive = activeCategory === cat;
-            return (
-              <button
-                key={cat}
-                onClick={() => setActiveCategory(cat)}
-                className={`relative overflow-hidden px-5 py-2 rounded-full text-xs font-medium cursor-pointer border transition-all duration-300 ease-out active:scale-90 hover:-translate-y-0.5 ${
-                  isActive
-                    ? 'text-white font-semibold shadow-md scale-105'
-                    : isLight
-                    ? 'bg-neutral-100 text-neutral-600 hover:text-black border-neutral-200 hover:border-neutral-400 hover:shadow-md'
-                    : 'bg-white/[0.04] text-neutral-400 hover:text-white hover:bg-white/[0.08] border-white/[0.06] hover:shadow-md'
-                }`}
-                style={
-                  isActive
-                    ? {
-                        backgroundColor: theme.accentColor || '#6B5CE7',
-                        borderColor: theme.accentColor || '#6B5CE7',
-                        color: theme.accentColor === '#FFFFFF' ? '#000000' : '#FFFFFF',
-                        boxShadow: `0 6px 20px ${theme.accentColor || '#6B5CE7'}40`,
-                      }
-                    : {}
-                }
-              >
-                <span className="relative z-10">{cat}</span>
-                {isActive && (
-                  <span
-                    className="absolute inset-0 z-0 animate-filter-pop"
-                    style={{ backgroundColor: theme.accentColor || '#6B5CE7' }}
-                  />
-                )}
-              </button>
-            );
-          })}
+        {/* Controls Bar: Category Filters */}
+        <Reveal variant="up" delay={100} className="mt-8 flex flex-wrap items-center justify-between gap-4">
+          {/* Categories */}
+          <div className="flex flex-wrap items-center gap-2">
+            {categories.map((cat) => {
+              const isActive = activeCategory === cat;
+              return (
+                <button
+                  key={cat}
+                  onClick={() => setActiveCategory(cat)}
+                  className={`relative overflow-hidden px-4 sm:px-5 py-2 rounded-full text-xs font-medium cursor-pointer border transition-all duration-300 ease-out active:scale-90 hover:-translate-y-0.5 ${
+                    isActive
+                      ? 'text-white font-semibold shadow-md scale-105'
+                      : isLight
+                      ? 'bg-neutral-100 text-neutral-600 hover:text-black border-neutral-200 hover:border-neutral-400 hover:shadow-md'
+                      : 'bg-white/[0.04] text-neutral-400 hover:text-white hover:bg-white/[0.08] border-white/[0.06] hover:shadow-md'
+                  }`}
+                  style={
+                    isActive
+                      ? {
+                          backgroundColor: theme.accentColor || '#6B5CE7',
+                          borderColor: theme.accentColor || '#6B5CE7',
+                          color: theme.accentColor === '#FFFFFF' ? '#000000' : '#FFFFFF',
+                          boxShadow: `0 6px 20px ${theme.accentColor || '#6B5CE7'}40`,
+                        }
+                      : {}
+                  }
+                >
+                  <span className="relative z-10">{cat}</span>
+                  {isActive && (
+                    <span
+                      className="absolute inset-0 z-0 animate-filter-pop"
+                      style={{ backgroundColor: theme.accentColor || '#6B5CE7' }}
+                    />
+                  )}
+                </button>
+              );
+            })}
+          </div>
         </Reveal>
 
-        {/* 2-Column Aesthetic Project Grid */}
-        <div key={activeCategory} className="mt-12 grid grid-cols-1 md:grid-cols-2 gap-8 lg:gap-12 animate-filter-grid">
-          {filteredItems.map((project) => {
-            const pIdx = portfolio.items.findIndex((p) => p.id === project.id);
-            const patchProject = (patch: Partial<ProjectItem>) => {
-              if (pIdx < 0) return;
-              const next = [...portfolio.items];
-              next[pIdx] = { ...next[pIdx], ...patch };
-              updatePortfolio({ items: next });
-            };
-            return (
-            <Reveal
-              key={project.id}
-              variant="up"
-              delay={(pIdx % 2) * 90}
-              className="flex"
-            >
+        {/* Project Grid Collage */}
+        <div className="relative mt-14 sm:mt-20">
+          <div
+            aria-hidden="true"
+            className="pointer-events-none absolute inset-x-0 top-10 bottom-0 rounded-[34px] sm:rounded-[48px]"
+            style={{
+              background: isLight
+                ? `radial-gradient(130% 120% at 12% 0%, color-mix(in srgb, ${theme.accentColor} 42%, #ffffff) 0%, ${theme.accentColor} 45%, color-mix(in srgb, ${theme.accentColor} 76%, #000000) 100%)`
+                : `radial-gradient(130% 120% at 15% 0%, color-mix(in srgb, ${theme.accentColor} 34%, ${darkBg}) 0%, ${darkBg} 65%)`,
+              boxShadow: `0 40px 90px -50px ${theme.accentColor}AA`,
+            }}
+          />
+          <div className="relative px-3 py-10 sm:px-8 sm:py-14 lg:px-12">
             <div
-              onClick={() => {
-                setActiveProjectModal(project);
-              }}
-              className={`group w-full cursor-pointer flex flex-col rounded-2xl overflow-hidden border transition-all duration-500 ${
-                isLight
-                  ? 'bg-neutral-50/80 border-neutral-200 hover:shadow-2xl'
-                  : 'bg-white/[0.02] border-white/[0.06]'
-              }`}
-              style={{
-                transition: 'border-color 0.3s, transform 0.3s, box-shadow 0.3s',
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.borderColor = `${theme.accentColor}80`;
-                e.currentTarget.style.boxShadow = `0 15px 35px ${theme.accentColor}18`;
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.borderColor = isLight ? '#E5E7EB' : 'rgba(255,255,255,0.06)';
-                e.currentTarget.style.boxShadow = 'none';
-              }}
+              key={activeCategory}
+              className="grid animate-filter-grid grid-cols-1 items-start gap-5 sm:grid-cols-2 sm:gap-6 lg:grid-cols-12 lg:items-end lg:gap-x-6 lg:gap-y-4"
             >
-              {/* Image Frame with Zoom */}
-              <div className="relative aspect-video overflow-hidden bg-neutral-900">
-                <EditableImage
-                  value={project.imageUrl}
-                  onChange={(v) => patchProject({ imageUrl: v })}
-                  label="Foto project"
-                  alt={project.title}
-                  className="w-full h-full object-cover group-hover:scale-[1.04] filter brightness-95 group-hover:brightness-100"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-80 group-hover:opacity-30 transition-opacity duration-300 pointer-events-none" />
-
-                {/* Corner Project Year Tag with Accent Pill Accent */}
-                <div
-                  className="absolute top-4 right-4 px-3 py-1 rounded-md bg-black/75 backdrop-blur-md text-[11px] font-mono text-white border"
-                  style={{ borderColor: `${theme.accentColor}50` }}
-                >
-                  ©<EditableText
-                    as="span"
-                    value={project.year}
-                    onChange={(v) => patchProject({ year: v })}
-                    label="Tahun project"
-                  />
-                </div>
-
-                {editorialMode && (
-                  <button
-                    type="button"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setActiveProjectModal(project);
-                    }}
-                    className="absolute top-4 left-4 flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-[#6B5CE7] hover:bg-[#7d6fec] text-white text-[11px] font-semibold shadow-lg cursor-pointer transition-all duration-200 hover:scale-105 active:scale-95"
-                    title="Buka & edit detail case study"
+              {filteredItems.map((project, fIdx) => {
+                const pIdx = portfolio.items.findIndex((p) => p.id === project.id);
+                const patchProject = (patch: Partial<ProjectItem>) => {
+                  if (pIdx < 0) return;
+                  const next = [...portfolio.items];
+                  next[pIdx] = { ...next[pIdx], ...patch };
+                  updatePortfolio({ items: next });
+                };
+                const featured = filteredItems[0]?.id === project.id;
+                const layout = cardLayouts[fIdx] ?? cardLayouts[cardLayouts.length - 1];
+                const tagLimit = layout.size === 'lg' ? 4 : layout.size === 'md' ? 3 : 2;
+                const tilt = CARD_TILTS[fIdx % CARD_TILTS.length];
+                return (
+                  <Reveal
+                    key={project.id}
+                    variant="up"
+                    delay={(fIdx % 3) * 80}
+                    className={`block ${layout.span}`}
                   >
-                    <Pencil className="w-3 h-3" />
-                    Edit Detail
-                  </button>
-                )}
-              </div>
-
-              {/* Card Meta Content */}
-              <div className="p-6 sm:p-8 flex flex-col justify-between flex-grow">
-                <div>
-                  <div className="flex items-center justify-between gap-4">
-                    <EditableText
-                      as="h3"
-                      value={project.title}
-                      onChange={(v) => patchProject({ title: v })}
-                      label="Judul project"
-                      className={`text-2xl sm:text-3xl font-bold transition-colors ${
-                        isLight ? 'text-neutral-950 group-hover:text-black' : 'text-white'
-                      }`}
-                    />
-                    <div
-                      className="w-11 h-11 rounded-full border flex items-center justify-center transition-all duration-300 shrink-0 group-hover:scale-105"
-                      style={{
-                        borderColor: isLight ? '#E5E7EB' : 'rgba(255,255,255,0.15)',
-                        color: isLight ? '#000000' : '#FFFFFF',
+                    <article
+                      onClick={() => setActiveProjectModal(project)}
+                      onKeyDown={(e) => {
+                        if (e.target !== e.currentTarget) return;
+                        if (e.key === 'Enter' || e.key === ' ') {
+                          e.preventDefault();
+                          setActiveProjectModal(project);
+                        }
                       }}
-                      onMouseEnter={(e) => {
-                        e.currentTarget.style.backgroundColor = theme.accentColor;
-                        e.currentTarget.style.borderColor = theme.accentColor;
-                        e.currentTarget.style.color = '#FFFFFF';
-                      }}
-                      onMouseLeave={(e) => {
-                        e.currentTarget.style.backgroundColor = 'transparent';
-                        e.currentTarget.style.borderColor = isLight ? '#E5E7EB' : 'rgba(255,255,255,0.15)';
-                        e.currentTarget.style.color = isLight ? '#000000' : '#FFFFFF';
-                      }}
+                      role="button"
+                      tabIndex={0}
+                      aria-label={`Buka case study ${project.title}`}
+                      style={{ '--tilt': `${tilt}deg` } as React.CSSProperties}
+                      className={`portfolio-card group relative cursor-pointer rounded-[26px] p-2.5 transition-colors duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/70 sm:p-3 ${
+                        isLight
+                          ? 'bg-white text-neutral-950 shadow-[0_22px_45px_-20px_rgba(10,10,10,0.55)] hover:shadow-[0_32px_60px_-24px_rgba(10,10,10,0.6)]'
+                          : 'border border-white/10 bg-[#141416] text-white shadow-[0_24px_50px_-22px_rgba(0,0,0,0.9)]'
+                      } ${featured ? 'ring-1 ring-white/25' : ''}`}
                     >
-                      <ArrowUpRight className="w-4 h-4" />
-                    </div>
-                  </div>
+                      <div
+                        className={`relative aspect-[16/9] overflow-hidden rounded-[18px] ${
+                          isLight ? 'bg-neutral-100' : 'bg-neutral-900'
+                        }`}
+                      >
+                        <EditableImage
+                          value={project.imageUrl}
+                          onChange={(v) => patchProject({ imageUrl: v })}
+                          label="Foto project"
+                          alt={project.title}
+                          className="w-full h-full object-cover transition-transform duration-[900ms] ease-out group-hover:scale-[1.06] group-hover:brightness-105"
+                        />
+                        <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
 
-                  <EditableText
-                    as="p"
-                    value={project.summary}
-                    onChange={(v) => patchProject({ summary: v })}
-                    label="Ringkasan project"
-                    multiline
-                    className={`mt-3 text-sm font-light line-clamp-2 ${
-                      isLight ? 'text-neutral-600' : 'text-neutral-400'
-                    }`}
-                  />
-                </div>
+                        {editorialMode && (
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setActiveProjectModal(project);
+                            }}
+                            className="absolute top-3 right-3 flex items-center gap-1.5 rounded-full bg-[#6B5CE7] px-3 py-1.5 text-[10px] font-semibold text-white shadow-lg transition-all duration-200 hover:scale-105 hover:bg-[#7d6fec] active:scale-95"
+                            title="Buka & edit detail case study"
+                          >
+                            <Pencil className="w-3 h-3" />
+                            Edit Detail
+                          </button>
+                        )}
+                      </div>
 
-                {/* Tags unboxed */}
-                <div
-                  className={`mt-6 pt-4 border-t flex items-center justify-between text-xs ${
-                    isLight ? 'border-neutral-200 text-neutral-500' : 'border-white/[0.06] text-neutral-400'
-                  }`}
-                >
-                  <div className="flex flex-wrap gap-x-2 gap-y-1">
-                    {project.tags.map((tag, tIdx) => (
-                      <span key={tIdx} className={isLight ? 'hover:text-black' : 'hover:text-neutral-200'}>
+                      <div className="px-1.5 pb-1 pt-4 sm:px-2.5">
+                        <p className={`font-mono text-[10px] uppercase tracking-[0.18em] ${isLight ? 'text-neutral-500' : 'text-neutral-500'}`}>
+                          <EditableText
+                            as="span"
+                            value={project.category}
+                            onChange={(v) => patchProject({ category: v })}
+                            label="Kategori project"
+                          />
+                        </p>
+
                         <EditableText
-                          as="span"
-                          value={tag}
-                          onChange={(v) => {
-                            const next = [...project.tags];
-                            next[tIdx] = v;
-                            patchProject({ tags: next });
-                          }}
-                          label="Tag project"
-                        />{' '}
-                        {tIdx < project.tags.length - 1 ? '·' : ''}
-                      </span>
-                    ))}
-                  </div>
-                  <span
-                    className="font-mono text-xs uppercase shrink-0 font-bold tracking-wide"
-                    style={{ color: isLight ? theme.accentColor : accentText }}
-                  >
-                    <EditableText as="span" value="Case Study →" overrideKey={`portfolio.caseStudyCta.${project.id}`} label="Teks Case Study" />
-                  </span>
-                </div>
-              </div>
+                          as="h3"
+                          value={project.title}
+                          onChange={(v) => patchProject({ title: v })}
+                          label="Judul project"
+                          className={`mt-1 leading-tight font-bold ${
+                            layout.size === 'lg'
+                              ? 'text-2xl sm:text-3xl'
+                              : layout.size === 'md'
+                              ? 'text-xl sm:text-2xl'
+                              : 'text-lg sm:text-xl'
+                          }`}
+                        />
+
+                        {layout.size !== 'sm' && (
+                          <EditableText
+                            as="p"
+                            value={project.summary}
+                            onChange={(v) => patchProject({ summary: v })}
+                            label="Ringkasan project"
+                            multiline
+                            className={`mt-2 line-clamp-2 text-xs font-light sm:text-sm ${isLight ? 'text-neutral-600' : 'text-neutral-400'}`}
+                          />
+                        )}
+
+                        <div className="mt-3 flex flex-wrap gap-1.5">
+                          {project.tags.slice(0, tagLimit).map((tag, tIdx) => (
+                            <span
+                              key={tIdx}
+                              className={`rounded-full px-2 py-0.5 text-[10px] font-medium ${isLight ? 'bg-neutral-100 text-neutral-600' : 'bg-white/[0.06] text-neutral-400'}`}
+                            >
+                              <EditableText
+                                as="span"
+                                value={tag}
+                                onChange={(v) => {
+                                  const next = [...project.tags];
+                                  next[tIdx] = v;
+                                  patchProject({ tags: next });
+                                }}
+                                label="Tag project"
+                              />
+                            </span>
+                          ))}
+                          {project.tags.length > tagLimit && (
+                            <span className={`rounded-full px-2 py-0.5 text-[10px] font-medium ${isLight ? 'bg-neutral-100 text-neutral-500' : 'bg-white/[0.06] text-neutral-500'}`}>
+                              +{project.tags.length - tagLimit}
+                            </span>
+                          )}
+                        </div>
+
+                        <div className="mt-4 flex items-end justify-between gap-3">
+                          <span className={`font-mono text-[11px] ${isLight ? 'text-neutral-500' : 'text-neutral-500'}`}>
+                            ©<EditableText
+                              as="span"
+                              value={project.year}
+                              onChange={(v) => patchProject({ year: v })}
+                              label="Tahun project"
+                            />
+                          </span>
+
+                          {featured ? (
+                            <span
+                              className="inline-flex items-center gap-1.5 rounded-full px-3.5 py-2 text-[11px] font-semibold shadow-sm transition-transform duration-300 group-hover:-translate-y-0.5"
+                              style={{
+                                backgroundColor: theme.accentColor,
+                                color: theme.accentColor === '#FFFFFF' ? '#000000' : '#FFFFFF',
+                              }}
+                            >
+                              <EditableText as="span" value="View Case Study" overrideKey="portfolio.cardCta" label="Teks CTA kartu" />
+                              <ArrowUpRight className="h-3.5 w-3.5" />
+                            </span>
+                          ) : (
+                            <span
+                              className={`grid h-10 w-10 shrink-0 place-items-center rounded-full transition-all duration-300 group-hover:rotate-90 group-hover:scale-105 ${
+                                isLight ? 'bg-neutral-950 text-white' : 'bg-white text-neutral-950'
+                              }`}
+                              aria-hidden="true"
+                            >
+                              <Plus className="h-4 w-4" />
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    </article>
+                  </Reveal>
+                );
+              })}
             </div>
-            </Reveal>
-            );
-          })}
+          </div>
         </div>
       </div>
 

@@ -220,6 +220,37 @@
   animation: dg-filter-grid 400ms cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
+/* Portfolio collage cards: each card keeps a slight tilt (set via --tilt) and
+   straightens while lifting on hover. Rotation lives here instead of inline so
+   the hover state can override it cleanly. */
+.portfolio-card {
+  transform: rotate(var(--tilt, 0deg));
+  transform-origin: 50% 60%;
+  transition: transform 520ms cubic-bezier(0.22, 1, 0.36, 1),
+    box-shadow 400ms ease, background-color 300ms ease, border-color 300ms ease;
+  will-change: transform;
+}
+
+@media (max-width: 639.98px) {
+  .portfolio-card {
+    transform: none;
+  }
+}
+
+@media (min-width: 640px) {
+  .portfolio-card:hover {
+    transform: rotate(0deg) translateY(-8px) scale(1.015);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .portfolio-card,
+  .portfolio-card:hover {
+    transform: none;
+    transition: none;
+  }
+}
+
 /* Scroll-reveal: elements start hidden/offset and animate in when they enter
    the viewport (toggled by the Reveal component adding .is-visible). */
 .reveal {
