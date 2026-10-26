@@ -3,9 +3,10 @@ import { useCMS } from '../context/CMSContext';
 import { Logo } from './Logo';
 import { ArrowUpRight, ArrowUp } from 'lucide-react';
 import { EditableText } from './editorial/Editable';
+import { SWISS } from '../theme/swiss';
 
 export const Footer: React.FC = () => {
-  const { data, isSectionLight, darkBg } = useCMS();
+  const { data, isSectionLight, darkBg, isSwiss } = useCMS();
   const { config } = data;
   const isLight = isSectionLight('footer');
 
@@ -55,11 +56,18 @@ export const Footer: React.FC = () => {
             <a
               href="#contact"
               className="px-7 py-3.5 rounded-full text-xs font-semibold hover:brightness-110 transition-all flex items-center gap-2 shadow-xl active:scale-95"
-              style={{
-                backgroundColor: data.theme.accentColor || '#FFFFFF',
-                color: data.theme.accentColor === '#FFFFFF' ? '#000000' : '#FFFFFF',
-                boxShadow: `0 8px 25px ${data.theme.accentColor || '#6B5CE7'}35`,
-              }}
+              style={
+                isSwiss
+                  ? // Paper on cobalt, cobalt on paper: two inks, no glow.
+                    isLight
+                      ? { backgroundColor: SWISS.blue, color: SWISS.paper }
+                      : { backgroundColor: SWISS.paper, color: SWISS.blue }
+                  : {
+                      backgroundColor: data.theme.accentColor || '#FFFFFF',
+                      color: data.theme.accentColor === '#FFFFFF' ? '#000000' : '#FFFFFF',
+                      boxShadow: `0 8px 25px ${data.theme.accentColor || '#6B5CE7'}35`,
+                    }
+              }
             >
               <EditableText as="span" value="Start A Conversation" overrideKey="footer.cta" label="Teks CTA footer" />
               <ArrowUpRight className="w-3.5 h-3.5" />

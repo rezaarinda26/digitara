@@ -20,6 +20,7 @@ const BASE_CMS_DATA: CMSData = {
   },
   theme: {
     bgMode: 'reference-hybrid',
+    uiStyle: 'classic',
     accentColor: '#6B5CE7', // Digitara brand purple
     headingFont: 'Plus Jakarta Sans',
     bodyFont: 'Plus Jakarta Sans',

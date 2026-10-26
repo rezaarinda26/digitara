@@ -17,6 +17,7 @@
   },
   "theme": {
     "bgMode": "reference-hybrid",
+    "uiStyle": "swiss",
     "accentColor": "#2563EB",
     "headingFont": "Plus Jakarta Sans",
     "bodyFont": "Plus Jakarta Sans",
@@ -694,5 +695,5 @@
       "portfolio.caseStudyCta.proj-6": "learn more →"
     }
   },
-  "__appliedAt": "2026-10-26T03:50:20.094Z"
+  "__appliedAt": "2026-10-26T08:13:03.635Z"
 }

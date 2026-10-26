@@ -275,7 +275,7 @@ export const Portfolio: React.FC = () => {
         <div className="relative mt-14 sm:mt-20">
           <div
             aria-hidden="true"
-            className="pointer-events-none absolute inset-x-0 top-10 bottom-0 rounded-[34px] sm:rounded-[48px]"
+            className="portfolio-stage pointer-events-none absolute inset-x-0 top-10 bottom-0 rounded-[34px] sm:rounded-[48px]"
             style={{
               background: isLight
                 ? `radial-gradient(130% 120% at 12% 0%, color-mix(in srgb, ${theme.accentColor} 42%, #ffffff) 0%, ${theme.accentColor} 45%, color-mix(in srgb, ${theme.accentColor} 76%, #000000) 100%)`

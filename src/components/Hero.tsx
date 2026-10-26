@@ -3,6 +3,8 @@ import { useCMS } from '../context/CMSContext';
 import { ArrowUpRight } from 'lucide-react';
 import { HeroTextSize, HeroEditorialSize } from '../types/cms';
 import { EditableText, EditableImage, DraggableBox } from './editorial/Editable';
+import { SwissBars } from './common/SwissBars';
+import { SWISS } from '../theme/swiss';
 import { useReducedMotion } from '../hooks/useReducedMotion';
 import { useAnimatedScroll } from '../hooks/useAnimatedScroll';
 
@@ -20,7 +22,7 @@ const editorialSizeClasses: Record<HeroEditorialSize, string> = {
 };
 
 export const Hero: React.FC = () => {
-  const { data, editorialMode, updateHero, isSectionLight, darkBg, accentText } = useCMS();
+  const { data, editorialMode, updateHero, isSectionLight, darkBg, accentText, isSwiss } = useCMS();
   const { hero, theme } = data;
   const isLight = isSectionLight('hero');
   const [imageError, setImageError] = useState(false);
@@ -81,59 +83,69 @@ export const Hero: React.FC = () => {
       }`}
       style={isLight ? undefined : { backgroundColor: darkBg }}
     >
+      {/* Swiss style: a flat cobalt field with the diagonal bar composition
+          instead of glow blobs and the cinematic photo. */}
+      {isSwiss && <SwissBars />}
+
       {/* Dynamic Ambient Glow matching brand accent color */}
-      <div
-        className="absolute top-1/4 right-1/4 w-[500px] h-[500px] rounded-full blur-[160px] opacity-25 pointer-events-none transition-all duration-700"
-        style={{ backgroundColor: theme.accentColor || '#6B5CE7' }}
-      />
-      <div
-        className="absolute bottom-1/3 left-10 w-[350px] h-[350px] rounded-full blur-[140px] opacity-15 pointer-events-none transition-all duration-700"
-        style={{ backgroundColor: theme.accentColor || '#6B5CE7' }}
-      />
+      {!isSwiss && (
+        <>
+          <div
+            className="absolute top-1/4 right-1/4 w-[500px] h-[500px] rounded-full blur-[160px] opacity-25 pointer-events-none transition-all duration-700"
+            style={{ backgroundColor: theme.accentColor || '#6B5CE7' }}
+          />
+          <div
+            className="absolute bottom-1/3 left-10 w-[350px] h-[350px] rounded-full blur-[140px] opacity-15 pointer-events-none transition-all duration-700"
+            style={{ backgroundColor: theme.accentColor || '#6B5CE7' }}
+          />
+        </>
+      )}
 
       {/* Cinematic Background Image Container with Gradient Scrim */}
-      <div className={`absolute inset-0 z-0 overflow-hidden select-none ${editorialMode ? 'pointer-events-auto' : 'pointer-events-none'}`}>
-        {!imageError && hero.bgImageUrl ? (
-          <div
-            ref={bgRef}
-            className={`w-full h-full will-change-transform ${
-              isLight ? 'opacity-10' : 'opacity-50'
-            }`}
-          >
-            <EditableImage
-              value={hero.bgImageUrl}
-              onChange={(v) => updateHero({ bgImageUrl: v })}
-              label="Background Hero"
-              alt="Cinematic digital agency background"
-              priority
-              onError={() => setImageError(true)}
-              className="w-full h-full object-cover object-center scale-105 transform"
+      {!isSwiss && (
+        <div className={`absolute inset-0 z-0 overflow-hidden select-none ${editorialMode ? 'pointer-events-auto' : 'pointer-events-none'}`}>
+          {!imageError && hero.bgImageUrl ? (
+            <div
+              ref={bgRef}
+              className={`w-full h-full will-change-transform ${
+                isLight ? 'opacity-10' : 'opacity-50'
+              }`}
+            >
+              <EditableImage
+                value={hero.bgImageUrl}
+                onChange={(v) => updateHero({ bgImageUrl: v })}
+                label="Background Hero"
+                alt="Cinematic digital agency background"
+                priority
+                onError={() => setImageError(true)}
+                className="w-full h-full object-cover object-center scale-105 transform"
+              />
+            </div>
+          ) : (
+            <div
+              className={`w-full h-full ${
+                isLight
+                  ? 'bg-gradient-to-br from-neutral-50 via-white to-neutral-100'
+                  : 'bg-gradient-to-br from-[#121024] via-[#0A0A0A] to-[#171520]'
+              }`}
             />
-          </div>
-        ) : (
-          <div
-            className={`w-full h-full ${
-              isLight
-                ? 'bg-gradient-to-br from-neutral-50 via-white to-neutral-100'
-                : 'bg-gradient-to-br from-[#121024] via-[#0A0A0A] to-[#171520]'
-            }`}
-          />
-        )}
+          )}
 
-        {/* Sophisticated Dark Vignette & Gradient Overlays */}
-        {isLight ? (
-          <>
-            <div className="absolute inset-0 bg-gradient-to-t from-white via-white/70 to-white/40 pointer-events-none" />
-            <div className="absolute inset-0 bg-grain pointer-events-none opacity-10" />
-          </>
-        ) : (
-          <>
-            <div className="absolute inset-0 bg-gradient-to-t from-[#0A0A0A] via-[#0A0A0A]/60 to-transparent pointer-events-none" />
-            <div className="absolute inset-0 bg-gradient-to-r from-[#0A0A0A] via-transparent to-[#0A0A0A]/80 pointer-events-none" />
-            <div className="absolute inset-0 bg-grain pointer-events-none opacity-40" />
-          </>
-        )}
-      </div>
+          {/* Sophisticated Dark Vignette & Gradient Overlays */}
+          {isLight ? (
+            <>
+              <div className="absolute inset-0 bg-gradient-to-t from-white via-white/70 to-white/40 pointer-events-none" />
+              <div className="absolute inset-0 bg-grain pointer-events-none opacity-10" />
+            </>
+          ) : (
+            <>
+              <div className="absolute inset-0 bg-gradient-to-t from-[#0A0A0A] via-[#0A0A0A]/60 to-transparent pointer-events-none" />
+              <div className="absolute inset-0 bg-gradient-to-r from-[#0A0A0A] via-transparent to-[#0A0A0A]/80 pointer-events-none" />
+              <div className="absolute inset-0 bg-grain pointer-events-none opacity-40" />
+            </>
+          )}
+        </div>
+      )}
 
       {/* Top Floating Row: Corner Showcase Card & Right Chapter Index */}
       <div
@@ -146,13 +158,19 @@ export const Hero: React.FC = () => {
             id="hero-floating-card"
             label="Kartu showcase hero"
             href={hero.floatingCard.linkUrl || '#portfolio'}
-            className={`group flex items-center gap-3.5 p-2 pr-4 backdrop-blur-xl border rounded-xl transition-all duration-300 max-w-xs shadow-2xl active:scale-98 ${
-              isLight
+            className={`group flex items-center gap-3.5 p-2 pr-4 border transition-all duration-300 max-w-xs active:scale-98 ${
+              isSwiss
+                ? ''
+                : 'backdrop-blur-xl rounded-xl shadow-2xl'
+            } ${
+              isSwiss
+                ? 'bg-white/[0.06] hover:bg-white/[0.1]'
+                : isLight
                 ? 'bg-neutral-50 hover:bg-neutral-100 border-neutral-200'
                 : 'bg-white/[0.05] hover:bg-white/[0.09] border-white/10 hover:border-white/30'
             }`}
             style={{
-              borderColor: `${theme.accentColor}30`,
+              borderColor: isSwiss ? SWISS.ruleOnBlue : `${theme.accentColor}30`,
             }}
           >
             <div className={`relative w-14 h-14 rounded-lg overflow-hidden shrink-0 bg-neutral-900 border ${isLight ? 'border-neutral-200' : 'border-white/10'}`}>
@@ -259,7 +277,7 @@ export const Hero: React.FC = () => {
             label="Headline utama"
             className={`${headlineSize} min-w-0 font-extrabold tracking-tighter uppercase select-none leading-[0.9] break-words ${introClass(
               2
-            )} ${isLight ? 'text-neutral-950' : 'text-white'}`}
+            )} ${isSwiss ? 'text-[#F1F0EA]' : isLight ? 'text-neutral-950' : 'text-white'}`}
           />
 
           {/* Bottom Line "DIGITAL" with vibrant luminous accent gradient */}
@@ -271,14 +289,24 @@ export const Hero: React.FC = () => {
               label="Headline accent"
               className={`${headlineSize} min-w-0 font-extrabold tracking-tighter uppercase select-none leading-[0.9] break-words ${introClass(
                 3
-              )} ${isLight ? 'text-neutral-950' : 'text-transparent bg-clip-text dg-shimmer'}`}
+              )} ${
+                isSwiss
+                  ? 'text-[#F1F0EA]'
+                  : isLight
+                  ? 'text-neutral-950'
+                  : 'text-transparent bg-clip-text dg-shimmer'
+              }`}
               editStyle={
-                isLight
+                isSwiss
+                  ? { color: SWISS.paper, backgroundImage: 'none' }
+                  : isLight
                   ? { color: '#0A0A0A', backgroundImage: 'none' }
                   : { WebkitTextFillColor: '#FFFFFF', color: '#FFFFFF', backgroundImage: 'none' }
               }
               style={
-                isLight
+                isSwiss
+                  ? { color: SWISS.paper }
+                  : isLight
                   ? { color: '#0A0A0A' }
                   : {
                       backgroundImage: `linear-gradient(120deg, #FFFFFF 25%, ${theme.accentColor || '#6B5CE7'} 50%, #FFFFFF 75%)`,
@@ -293,7 +321,10 @@ export const Hero: React.FC = () => {
 
       {/* Bottom Row: Editorial Description & High-Impact CTA */}
       <div
-        className={`relative z-10 max-w-7xl mx-auto w-full border-t pt-6 flex flex-col md:flex-row md:items-end justify-between gap-6 ${introClass(4)} ${isLight ? 'border-neutral-200' : 'border-white/10'}`}
+        className={`relative z-10 max-w-7xl mx-auto w-full border-t pt-6 flex flex-col md:flex-row md:items-end justify-between gap-6 ${introClass(4)} ${
+          isSwiss ? '' : isLight ? 'border-neutral-200' : 'border-white/10'
+        }`}
+        style={isSwiss ? { borderColor: SWISS.ruleOnBlue } : undefined}
       >
         <EditableText
           as="p"
@@ -312,12 +343,18 @@ export const Hero: React.FC = () => {
             id="hero-cta"
             label="Tombol CTA Hero"
             href={hero.ctaLink || '#portfolio'}
-            className="group inline-flex items-center gap-3 px-7 py-3.5 text-xs sm:text-sm font-semibold tracking-wide rounded-full transition-all duration-300 active:scale-95 shadow-xl hover:brightness-110 cursor-pointer"
-            style={{
-              backgroundColor: theme.accentColor || '#FFFFFF',
-              color: theme.accentColor === '#FFFFFF' ? '#000000' : '#FFFFFF',
-              boxShadow: `0 10px 30px ${theme.accentColor || '#6B5CE7'}40`,
-            }}
+            className={`group inline-flex items-center gap-3 px-7 py-3.5 text-xs sm:text-sm font-semibold tracking-wide transition-all duration-300 active:scale-95 cursor-pointer ${
+              isSwiss ? 'hover:opacity-85' : 'rounded-full shadow-xl hover:brightness-110'
+            }`}
+            style={
+              isSwiss
+                ? { backgroundColor: SWISS.paper, color: SWISS.blue }
+                : {
+                    backgroundColor: theme.accentColor || '#FFFFFF',
+                    color: theme.accentColor === '#FFFFFF' ? '#000000' : '#FFFFFF',
+                    boxShadow: `0 10px 30px ${theme.accentColor || '#6B5CE7'}40`,
+                  }
+            }
           >
             <EditableText
               as="span"
@@ -327,10 +364,14 @@ export const Hero: React.FC = () => {
             />
             <span
               className="w-7 h-7 rounded-full flex items-center justify-center transition-transform duration-300 group-hover:rotate-45"
-              style={{
-                backgroundColor: theme.accentColor === '#FFFFFF' ? '#000000' : 'rgba(0,0,0,0.3)',
-                color: '#FFFFFF',
-              }}
+              style={
+                isSwiss
+                  ? { backgroundColor: SWISS.blue, color: SWISS.paper }
+                  : {
+                      backgroundColor: theme.accentColor === '#FFFFFF' ? '#000000' : 'rgba(0,0,0,0.3)',
+                      color: '#FFFFFF',
+                    }
+              }
             >
               <ArrowUpRight className="w-3.5 h-3.5" />
             </span>

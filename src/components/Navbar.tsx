@@ -3,10 +3,11 @@ import { useCMS } from '../context/CMSContext';
 import { Logo } from './Logo';
 import { ArrowUpRight, Menu, X, Settings2 } from 'lucide-react';
 import { EditableText } from './editorial/Editable';
+import { SWISS } from '../theme/swiss';
 import { useScrollSpy } from '../hooks/useScrollSpy';
 
 export const Navbar: React.FC = () => {
-  const { data, setIsAdminOpen, darkBg, isSectionLight } = useCMS();
+  const { data, setIsAdminOpen, darkBg, isSectionLight, isSwiss } = useCMS();
   const [scrolled, setScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
@@ -16,15 +17,24 @@ export const Navbar: React.FC = () => {
   const useDarkText = !scrolled && heroIsLight;
   const navLinkText = useDarkText ? 'text-neutral-600' : 'text-neutral-300';
   const navLinkHover = useDarkText ? 'hover:text-black' : 'hover:text-white';
-  const navLinkUnderline = useDarkText ? 'bg-black' : 'bg-white';
+  const navLinkUnderline = useDarkText
+    ? 'bg-black'
+    : isSwiss
+    ? 'bg-[#F1F0EA]'
+    : 'bg-white';
 
   // Shared glass treatment for the desktop bar and the mobile drawer so both
   // surfaces always stay in sync (and avoid the backdrop-filter artifact).
-  const glassStyle: React.CSSProperties = {
-    backgroundColor: `${darkBg}E6`,
-    backgroundImage:
-      'linear-gradient(to bottom, rgba(255,255,255,0.06) 0%, rgba(255,255,255,0.02) 45%, rgba(0,0,0,0.10) 100%)',
-  };
+  // The Swiss style system is flat: a solid ink block with a hairline rule
+  // instead of a translucent gradient.
+  const glassStyle: React.CSSProperties = isSwiss
+    ? { backgroundColor: SWISS.blue, backgroundImage: 'none' }
+    : {
+        backgroundColor: `${darkBg}E6`,
+        backgroundImage:
+          'linear-gradient(to bottom, rgba(255,255,255,0.06) 0%, rgba(255,255,255,0.02) 45%, rgba(0,0,0,0.10) 100%)',
+      };
+  const hairline = isSwiss ? SWISS.ruleOnBlue : 'rgba(255,255,255,0.08)';
 
   useEffect(() => {
     const onScroll = () => {
@@ -73,9 +83,10 @@ export const Navbar: React.FC = () => {
       )}
       <div
         aria-hidden="true"
-        className={`pointer-events-none absolute inset-x-0 bottom-0 h-px bg-white/[0.08] transition-opacity duration-300 ${
+        className={`pointer-events-none absolute inset-x-0 bottom-0 h-px transition-opacity duration-300 ${
           scrolled ? 'opacity-100' : 'opacity-0'
         }`}
+        style={{ backgroundColor: hairline }}
       />
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between gap-8">
@@ -132,10 +143,16 @@ export const Navbar: React.FC = () => {
             {/* Quick CMS Admin Trigger */}
             <button
               onClick={() => setIsAdminOpen(true)}
-              className={`flex items-center gap-1.5 px-3 py-2 text-xs font-medium border rounded-lg transition-all duration-200 focus-visible:ring-2 focus-visible:ring-white/30 ${
-                useDarkText
-                  ? 'text-neutral-600 hover:text-black bg-black/[0.04] hover:bg-black/[0.08] border-black/[0.08]'
-                  : 'text-neutral-400 hover:text-white bg-white/[0.04] hover:bg-white/[0.08] border-white/[0.08]'
+              className={`flex items-center gap-1.5 px-3 py-2 text-xs font-medium border transition-all duration-200 focus-visible:ring-2 focus-visible:ring-white/30 ${
+                isSwiss
+                  ? useDarkText
+                    ? 'text-[#0B2B6B] hover:bg-[#0B2B6B]/10 border-[#0B2B6B]/15'
+                    : 'text-[#F1F0EA] hover:bg-[#F1F0EA]/10 border-[#F1F0EA]/20'
+                  : `rounded-lg ${
+                      useDarkText
+                        ? 'text-neutral-600 hover:text-black bg-black/[0.04] hover:bg-black/[0.08] border-black/[0.08]'
+                        : 'text-neutral-400 hover:text-white bg-white/[0.04] hover:bg-white/[0.08] border-white/[0.08]'
+                    }`
               }`}
               title="Open Headless CMS Studio (Shortcut: Alt+A)"
               aria-label="Open Headless CMS Admin"
@@ -153,11 +170,17 @@ export const Navbar: React.FC = () => {
                 e.preventDefault();
                 handleNavClick('#contact');
               }}
-              className="group flex items-center gap-2 px-4 py-2 text-xs font-semibold tracking-wide active:scale-95 rounded-lg transition-all duration-200 whitespace-nowrap shadow-sm hover:opacity-90"
-              style={{
-                backgroundColor: data.theme.accentColor || '#FFFFFF',
-                color: data.theme.accentColor === '#FFFFFF' ? '#000000' : '#FFFFFF',
-              }}
+              className={`group flex items-center gap-2 px-4 py-2 text-xs font-semibold tracking-wide active:scale-95 transition-all duration-200 whitespace-nowrap ${
+                isSwiss ? 'hover:opacity-85' : 'rounded-lg shadow-sm hover:opacity-90'
+              }`}
+              style={
+                isSwiss
+                  ? { backgroundColor: SWISS.paper, color: SWISS.blue }
+                  : {
+                      backgroundColor: data.theme.accentColor || '#FFFFFF',
+                      color: data.theme.accentColor === '#FFFFFF' ? '#000000' : '#FFFFFF',
+                    }
+              }
             >
               <EditableText as="span" value="Let's Talk" overrideKey="nav.letsTalk" label="Teks tombol Let's Talk" />
               <ArrowUpRight className="w-3.5 h-3.5 transition-transform duration-200 group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
@@ -166,7 +189,7 @@ export const Navbar: React.FC = () => {
             {/* Mobile Hamburger Toggle */}
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className={`md:hidden p-2 rounded-lg focus-visible:ring-2 focus-visible:ring-white/20 ${
+              className={`md:hidden p-2 ${isSwiss ? '' : 'rounded-lg'} focus-visible:ring-2 focus-visible:ring-white/20 ${
                 useDarkText ? 'text-neutral-600 hover:text-black' : 'text-neutral-400 hover:text-white'
               }`}
               aria-label="Toggle Navigation Menu"
@@ -179,7 +202,10 @@ export const Navbar: React.FC = () => {
 
       {/* Mobile Drawer Menu */}
       {mobileMenuOpen && (
-        <div className="md:hidden fixed inset-x-0 top-[65px] border-b border-white/10 px-6 py-6 flex flex-col gap-4 animate-slide-in-top" style={glassStyle}>
+        <div
+          className="md:hidden fixed inset-x-0 top-[65px] border-b px-6 py-6 flex flex-col gap-4 animate-slide-in-top"
+          style={{ ...glassStyle, borderBottomColor: hairline }}
+        >
           <nav className="flex flex-col gap-4">
             {navLinks.map((link) => (
               <a
@@ -202,7 +228,9 @@ export const Navbar: React.FC = () => {
                 setMobileMenuOpen(false);
                 setIsAdminOpen(true);
               }}
-              className="w-full flex items-center justify-center gap-2 py-3 text-sm font-medium text-neutral-300 bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg"
+              className={`w-full flex items-center justify-center gap-2 py-3 text-sm font-medium border ${
+                isSwiss ? '' : 'rounded-lg'
+              } ${isSwiss ? 'text-[#F1F0EA] bg-transparent border-[#F1F0EA]/20' : 'text-neutral-300 bg-white/5 hover:bg-white/10 border-white/10'}`}
             >
               <Settings2 className="w-4 h-4" />
               <EditableText as="span" value="Headless CMS Admin Panel" overrideKey="nav.cmsPanelMobile" label="Teks panel CMS" />
@@ -214,7 +242,9 @@ export const Navbar: React.FC = () => {
                 e.preventDefault();
                 handleNavClick('#contact');
               }}
-              className="w-full flex items-center justify-center gap-2 py-3 text-sm font-semibold text-black bg-white rounded-lg hover:bg-neutral-200"
+              className={`w-full flex items-center justify-center gap-2 py-3 text-sm font-semibold hover:bg-neutral-200 ${
+                isSwiss ? 'text-[#0B2B6B] bg-[#F1F0EA]' : 'text-black bg-white rounded-lg'
+              }`}
             >
               <EditableText as="span" value="Start A Project" overrideKey="nav.startProject" label="Teks Start A Project" />
               <ArrowUpRight className="w-4 h-4" />

@@ -5,7 +5,7 @@ import { EditableText } from './editorial/Editable';
 import { Reveal } from './common/Reveal';
 
 export const Clients: React.FC = () => {
-  const { data, isSectionLight, updateClients, darkBg } = useCMS();
+  const { data, isSectionLight, updateClients, darkBg, isSwiss } = useCMS();
   const { clients, theme } = data;
   const isLight = isSectionLight('clients');
   const accent = theme.accentColor || '#6B5CE7';
@@ -74,14 +74,16 @@ export const Clients: React.FC = () => {
                       : 'bg-white/[0.02] border-white/[0.06] hover:border-white/25 hover:bg-white/[0.05]'
                   }`}
                 >
-                  {/* Accent sweep on hover */}
-                  <span
-                    className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-400 pointer-events-none"
-                    style={{
-                      background: `radial-gradient(120% 100% at 50% 0%, ${accent}1F 0%, transparent 70%)`,
-                    }}
-                    aria-hidden="true"
-                  />
+                  {/* Accent sweep on hover (classic only — Swiss cards stay flat) */}
+                  {!isSwiss && (
+                    <span
+                      className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-400 pointer-events-none"
+                      style={{
+                        background: `radial-gradient(120% 100% at 50% 0%, ${accent}1F 0%, transparent 70%)`,
+                      }}
+                      aria-hidden="true"
+                    />
+                  )}
 
                   <div className="relative flex flex-col gap-1.5">
                     <span

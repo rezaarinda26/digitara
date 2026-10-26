@@ -3,9 +3,11 @@ import { useCMS } from '../context/CMSContext';
 import { ArrowUpRight, Sparkle } from 'lucide-react';
 import { EditableText, EditableImage, DraggableBox } from './editorial/Editable';
 import { Reveal } from './common/Reveal';
+import { SWISS } from '../theme/swiss';
 
 export const MidBanner: React.FC = () => {
-  const { data, updateMidBanner, editorialMode, isSectionLight, darkBg, accentText } = useCMS();
+  const { data, updateMidBanner, editorialMode, isSectionLight, darkBg, accentText, isSwiss } =
+    useCMS();
   const { midBanner, theme } = data;
   const isLight = isSectionLight('midBanner');
 
@@ -31,23 +33,32 @@ export const MidBanner: React.FC = () => {
             onChange={(v) => updateMidBanner({ bgImageUrl: v })}
             label="Background Mid-Banner"
             alt="Digital experience visual art"
-            className={`w-full h-full object-cover object-center scale-100 ${
-              isLight ? 'opacity-10' : 'opacity-40 filter brightness-90'
+            className={`w-full h-full object-cover object-center scale-100 mid-banner-photo ${
+              // Swiss: a single flat ink wash instead of a lit photo — the
+              // picture becomes a faint duotone texture on the cobalt block.
+              // (The final opacity is enforced in index.css: EditableImage
+              // appends opacity-100 when the file finishes loading.)
+              isSwiss
+                ? 'opacity-25 grayscale'
+                : isLight
+                  ? 'opacity-10'
+                  : 'opacity-40 filter brightness-90'
             }`}
           />
-          {/* Subtle gradient scrim */}
-          {isLight ? (
-            <>
-              <div className="absolute inset-0 bg-gradient-to-t from-white via-white/60 to-white/30 pointer-events-none" />
-              <div className="absolute inset-0 bg-grain opacity-10 pointer-events-none" />
-            </>
-          ) : (
-            <>
-              <div className="absolute inset-0 bg-gradient-to-t from-[#0A0A0A] via-transparent to-[#0A0A0A]/90 pointer-events-none" />
-              <div className="absolute inset-0 bg-black/40 pointer-events-none" />
-              <div className="absolute inset-0 bg-grain opacity-30 pointer-events-none" />
-            </>
-          )}
+          {/* Subtle gradient scrim (classic only: Swiss keeps the block flat) */}
+          {!isSwiss &&
+            (isLight ? (
+              <>
+                <div className="absolute inset-0 bg-gradient-to-t from-white via-white/60 to-white/30 pointer-events-none" />
+                <div className="absolute inset-0 bg-grain opacity-10 pointer-events-none" />
+              </>
+            ) : (
+              <>
+                <div className="absolute inset-0 bg-gradient-to-t from-[#0A0A0A] via-transparent to-[#0A0A0A]/90 pointer-events-none" />
+                <div className="absolute inset-0 bg-black/40 pointer-events-none" />
+                <div className="absolute inset-0 bg-grain opacity-30 pointer-events-none" />
+              </>
+            ))}
         </Reveal>
 
         {/* Top Floating Editorial Labels */}
@@ -82,7 +93,7 @@ export const MidBanner: React.FC = () => {
             onChange={(v) => updateMidBanner({ headline: v })}
             label="Headline Mid-Banner"
             className={`text-4xl sm:text-6xl md:text-7xl lg:text-8xl font-bold tracking-tight leading-[1.05] ${
-              isLight ? 'text-neutral-950' : 'text-white drop-shadow-2xl'
+              isLight ? 'text-neutral-950' : isSwiss ? 'text-[#F1F0EA]' : 'text-white drop-shadow-2xl'
             }`}
           />
         </Reveal>
@@ -95,7 +106,11 @@ export const MidBanner: React.FC = () => {
             onChange={(v) => updateMidBanner({ bottomLabel: v })}
             label="Label bawah"
             className="text-xs font-mono uppercase tracking-widest font-semibold"
-            style={{ color: isLight ? theme.accentColor : accentText }}
+            style={{
+              // accentText on cobalt dips below AA contrast; Swiss keeps the
+              // label in paper ink instead.
+              color: isSwiss ? (isLight ? SWISS.blue : SWISS.paper) : isLight ? theme.accentColor : accentText,
+            }}
           />
 
           <DraggableBox
@@ -104,11 +119,17 @@ export const MidBanner: React.FC = () => {
             label="Tombol CTA Mid-Banner"
             href="#portfolio"
             className="group flex items-center gap-3 px-7 py-3.5 rounded-full text-xs font-semibold transition-all active:scale-95 shadow-2xl hover:brightness-110"
-            style={{
-              backgroundColor: theme.accentColor || '#FFFFFF',
-              color: theme.accentColor === '#FFFFFF' ? '#000000' : '#FFFFFF',
-              boxShadow: `0 10px 30px ${theme.accentColor || '#6B5CE7'}45`,
-            }}
+            style={
+              isSwiss
+                ? isLight
+                  ? { backgroundColor: SWISS.blue, color: SWISS.paper }
+                  : { backgroundColor: SWISS.paper, color: SWISS.blue }
+                : {
+                    backgroundColor: theme.accentColor || '#FFFFFF',
+                    color: theme.accentColor === '#FFFFFF' ? '#000000' : '#FFFFFF',
+                    boxShadow: `0 10px 30px ${theme.accentColor || '#6B5CE7'}45`,
+                  }
+            }
           >
             <EditableText
               as="span"

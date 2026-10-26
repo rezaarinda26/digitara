@@ -16,12 +16,24 @@ import {
   ClientsData,
   ContactInquiry,
   ProjectItem,
+  UiStyle,
 } from '../types/cms';
 import { DEFAULT_CMS_DATA, APPLIED_CMS_VERSION } from '../data/defaultCMS';
+import { SWISS } from '../theme/swiss';
 
 const STORAGE_KEY = 'digitara_headless_cms_v1';
 const PUBLISHED_KEY = 'digitara_cms_published_v1';
 const DRAFT_VERSION_KEY = 'digitara_cms_applied_version_v1';
+
+/**
+ * `?style=swiss` / `?style=classic` forces a style for this visit only. Handy
+ * for previewing and QA without touching the value every visitor sees.
+ */
+const UI_STYLE_OVERRIDE: UiStyle | null = (() => {
+  if (typeof window === 'undefined') return null;
+  const value = new URLSearchParams(window.location.search).get('style');
+  return value === 'swiss' || value === 'classic' ? value : null;
+})();
 
 /** Mixes a hex colour towards white. `amount` 0 = unchanged, 1 = white. */
 const lightenHex = (hex: string, amount: number): string => {
@@ -56,6 +68,12 @@ interface CMSContextType {
   showToast: (msg: string) => void;
   isSectionLight: (sectionKey: SectionKey) => boolean;
   darkBg: string;
+  /** Active visual style system (classic or swiss), honouring ?style= override. */
+  uiStyle: UiStyle;
+  /** Shorthand for `uiStyle === 'swiss'`. */
+  isSwiss: boolean;
+  /** Non-null while a ?style= preview link is masking the CMS value. */
+  uiStyleOverride: UiStyle | null;
   accentContrast: string;
   /** Lighter accent variant for text placed on dark surfaces. */
   accentText: string;
@@ -186,6 +204,9 @@ export const CMSProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   });
 
   const [isAdminOpen, setIsAdminOpen] = useState(false);
+  // The ?style= preview link only wins until the user makes an explicit choice
+  // in the CMS — see updateTheme().
+  const [styleOverride, setStyleOverride] = useState<UiStyle | null>(UI_STYLE_OVERRIDE);
   const [activeAdminTab, setActiveAdminTab] = useState('theme');
   const [editorialMode, setEditorialMode] = useState(false);
   const [editorialUIHidden, setEditorialUIHidden] = useState(false);
@@ -389,8 +410,12 @@ export const CMSProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   };
 
   // Shared dark background token so every dark surface reacts to the mode.
-  const darkBg =
-    data.theme.bgMode === 'midnight'
+  // The Swiss style system is two-tone, so it overrides the dark surface.
+  const uiStyle: UiStyle = styleOverride ?? data.theme.uiStyle ?? 'classic';
+  const isSwiss = uiStyle === 'swiss';
+  const darkBg = isSwiss
+    ? SWISS.blue
+    : data.theme.bgMode === 'midnight'
       ? '#060814'
       : data.theme.bgMode === 'custom' && data.theme.customColors
       ? data.theme.customColors.primary
@@ -444,7 +469,8 @@ export const CMSProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     } else {
       root.style.setProperty('--brand-accent', data.theme.accentColor);
       let bg = '#0A0A0A';
-      if (data.theme.bgMode === 'light-minimal') bg = '#FFFFFF';
+      if (isSwiss) bg = SWISS.blue;
+      else if (data.theme.bgMode === 'light-minimal') bg = '#FFFFFF';
       else if (data.theme.bgMode === 'midnight') bg = '#060814';
       else if (data.theme.bgMode === 'reference-hybrid') bg = '#0A0A0A';
       else if (data.theme.bgMode === 'dark-obsidian') bg = '#0A0A0A';
@@ -455,9 +481,17 @@ export const CMSProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       document.body.classList.remove('custom-theme');
     }
     document.body.classList.toggle('light-mode', data.theme.bgMode === 'light-minimal');
-    root.style.setProperty('--font-heading', `'${data.theme.headingFont}', sans-serif`);
-    root.style.setProperty('--font-body', `'${data.theme.bodyFont}', sans-serif`);
-  }, [data.theme]);
+    document.body.classList.toggle('style-swiss', isSwiss);
+    root.style.setProperty(
+      '--font-heading',
+      isSwiss ? `'Archivo', sans-serif` : `'${data.theme.headingFont}', sans-serif`
+    );
+    root.style.setProperty(
+      '--font-body',
+      isSwiss ? `'Archivo', sans-serif` : `'${data.theme.bodyFont}', sans-serif`
+    );
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [data.theme, isSwiss]);
 
   // Keyboard shortcut: Alt + A or Cmd/Ctrl + Shift + A
   // - When editorial mode is OFF: toggle CMS Studio
@@ -506,6 +540,21 @@ export const CMSProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   };
 
   const updateTheme = (thm: Partial<ThemeConfig>) => {
+    // Picking a style in the CMS must beat a ?style= preview link: drop the
+    // override (and the parameter itself) so what was just chosen is what
+    // renders — otherwise the preview flag would silently mask it.
+    if (thm.uiStyle !== undefined) {
+      setStyleOverride(null);
+      try {
+        const url = new URL(window.location.href);
+        if (url.searchParams.has('style')) {
+          url.searchParams.delete('style');
+          window.history.replaceState({}, '', url);
+        }
+      } catch {
+        // Non-browser environment — the override state already covers it.
+      }
+    }
     commit((prev) => ({ ...prev, theme: { ...prev.theme, ...thm } }), 'Theme system updated');
   };
 
@@ -697,6 +746,9 @@ export const CMSProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         showToast,
         isSectionLight,
         darkBg,
+        uiStyle,
+        isSwiss,
+        uiStyleOverride: styleOverride,
         accentContrast,
         accentText,
         updateConfig,

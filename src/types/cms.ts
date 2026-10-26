@@ -17,6 +17,14 @@ export interface AgencyConfig {
 
 export type ThemeMode = 'reference-hybrid' | 'dark-obsidian' | 'light-minimal' | 'midnight' | 'custom';
 
+/**
+ * Visual style system layered on top of the colour mode.
+ * - `classic`: the current look (gradients, rounded corners, soft shadows).
+ * - `swiss`: International Typographic Style — two-tone, flat, square,
+ *   diagonal bar compositions and lowercase grotesk headings.
+ */
+export type UiStyle = 'classic' | 'swiss';
+
 export interface CustomThemeColors {
   primary: string;   // Main background
   secondary: string; // Section / panel background
@@ -26,6 +34,8 @@ export interface CustomThemeColors {
 
 export interface ThemeConfig {
   bgMode: ThemeMode;
+  /** Optional so snapshots written before this field existed still load. */
+  uiStyle?: UiStyle;
   accentColor: string;
   headingFont: 'Plus Jakarta Sans' | 'Syne' | 'Outfit' | 'Space Grotesk';
   bodyFont: 'Plus Jakarta Sans' | 'Manrope' | 'JetBrains Mono';

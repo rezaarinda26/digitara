@@ -72,6 +72,8 @@ export const AdminCMSModal: React.FC = () => {
     hasUnpublishedChanges,
     resetToDefault,
     showToast,
+    uiStyle,
+    uiStyleOverride,
   } = useCMS();
 
   const [importJsonText, setImportJsonText] = useState('');
@@ -560,6 +562,84 @@ export const AdminCMSModal: React.FC = () => {
                       );
                     })}
                   </div>
+                </div>
+
+                {/* Visual Style System */}
+                <div className="space-y-3">
+                  <label className="text-xs font-mono uppercase text-neutral-400 tracking-wider">
+                    Gaya Tampilan (Visual Style)
+                  </label>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    {[
+                      {
+                        id: 'classic',
+                        badge: 'CLASSIC',
+                        label: 'Classic (Sekarang)',
+                        desc: 'Gradien lembut, sudut membulat, bayangan tipis, dan warna aksen terang.',
+                        bgPreview: 'from-[#0A0A0A] via-[#151517] to-[#6B5CE7]',
+                      },
+                      {
+                        id: 'swiss',
+                        badge: 'SWISS STYLE',
+                        label: 'Swiss / Typographic',
+                        desc: 'Dua warna datar (biru pekat & kertas hangat), sudut tajam, garis rambut, komposisi batang diagonal, judul huruf kecil.',
+                        bgPreview: 'from-[#0B2B6B] via-[#0B2B6B] to-[#F1F0EA]',
+                      },
+                    ].map((style) => {
+                      // Highlight what is actually rendering; while a ?style=
+                      // preview link is active it differs from the stored value.
+                      const isSelected = uiStyle === style.id;
+                      return (
+                        <button
+                          key={style.id}
+                          type="button"
+                          onClick={() => {
+                            updateTheme({ uiStyle: style.id as any });
+                          }}
+                          className={`p-4 rounded-xl border text-left transition-all relative overflow-hidden group cursor-pointer ${
+                            isSelected
+                              ? 'border-white bg-white/10 ring-2 ring-white/60 shadow-xl'
+                              : 'border-white/10 bg-white/[0.02] hover:bg-white/[0.06]'
+                          }`}
+                        >
+                          <div className="flex items-center justify-between mb-2">
+                            <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-white/10 text-neutral-300 font-semibold border border-white/10">
+                              {style.badge}
+                            </span>
+                            {isSelected && <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-ping" />}
+                          </div>
+
+                          <div
+                            className={`cms-swatch w-full h-10 rounded-lg mb-3 border border-white/20 bg-gradient-to-r ${style.bgPreview} flex items-center justify-center text-[11px] font-bold text-white`}
+                          >
+                            {style.label}
+                          </div>
+
+                          <span className="text-sm font-semibold text-white block">{style.label}</span>
+                          <span className="text-xs text-neutral-400 font-light mt-1 block leading-relaxed">
+                            {style.desc}
+                          </span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                  {uiStyleOverride && (
+                    <div className="flex items-start gap-2 p-3 border border-amber-400/40 bg-amber-400/10 text-[11px] text-amber-200 leading-relaxed">
+                      <span className="font-mono font-semibold shrink-0">PREVIEW AKTIF:</span>
+                      <span>
+                        Halaman ini dibuka dengan parameter{' '}
+                        <code className="text-amber-100">?style={uiStyleOverride}</code>, jadi tampilan
+                        dipaksa <b>{uiStyleOverride}</b> dan menutupi nilai CMS. Klik salah satu gaya di
+                        atas untuk kembali memakai pilihan CMS.
+                      </span>
+                    </div>
+                  )}
+                  <p className="text-[11px] text-neutral-500 leading-relaxed">
+                    Preview cepat tanpa menyimpan: buka halaman dengan parameter{' '}
+                    <code className="text-[#A79CFF]">?style=swiss</code> atau{' '}
+                    <code className="text-[#A79CFF]">?style=classic</code>. Klik kartu gaya untuk
+                    menyimpan pilihan ke CMS (parameter preview otomatis dihapus).
+                  </p>
                 </div>
 
                 {/* Custom Colors */}
