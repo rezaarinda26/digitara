@@ -5,10 +5,25 @@ import { useReducedMotion } from '../../hooks/useReducedMotion';
 const INTERACTIVE =
   'a, button, [role="button"], input, select, textarea, label[for], [contenteditable="true"], .cursor-magnetic';
 
+// Pointer position captured at module scope, i.e. before React has mounted.
+// Without it the cursor stays invisible until the user moves the pointer,
+// which is noticeable right after a page load.
+let lastPointer: { x: number; y: number } | null = null;
+if (typeof window !== 'undefined') {
+  window.addEventListener(
+    'mousemove',
+    (e) => {
+      lastPointer = { x: e.clientX, y: e.clientY };
+    },
+    { passive: true }
+  );
+}
+
 /**
  * Accent cursor ring that trails the pointer and swells over interactive
  * elements. Disabled on touch devices and when the user prefers reduced
- * motion. The native cursor is left untouched so usability is unaffected.
+ * motion. The native cursor stays visible until the custom one is painted, so
+ * the pointer is never lost during load.
  */
 export const CustomCursor: React.FC = () => {
   const { data } = useCMS();
@@ -22,19 +37,58 @@ export const CustomCursor: React.FC = () => {
   useEffect(() => {
     if (typeof window === 'undefined') return;
     const fine = window.matchMedia('(pointer: fine)').matches;
-    setEnabled(fine && !reduced);
-    document.body.classList.toggle('cursor-custom', fine && !reduced);
+    const active = fine && !reduced;
+    setEnabled(active);
+    // Do not hide the native cursor yet: applyVisibility() only swaps it out
+    // once the custom cursor is actually painted. This keeps the pointer
+    // visible during load, before the first mousemove.
+    document.body.classList.remove('cursor-custom');
+    if (!active) return;
 
     let raf = 0;
     const target = { x: window.innerWidth / 2, y: window.innerHeight / 2 };
     const ring = { x: target.x, y: target.y };
     const dot = { x: target.x, y: target.y };
-    let visible = false;
+
+    // Show the cursor straight away if the pointer is already over the page,
+    // using the last position recorded before mount. Edge positions are
+    // ignored for the same reason as in onMove.
+    const startVisible =
+      !!lastPointer &&
+      lastPointer.x > 0 &&
+      lastPointer.y > 0 &&
+      lastPointer.x < window.innerWidth - 1 &&
+      lastPointer.y < window.innerHeight - 1;
+    if (startVisible && lastPointer) {
+      target.x = ring.x = dot.x = lastPointer.x;
+      target.y = ring.y = dot.y = lastPointer.y;
+    }
+    let visible = startVisible;
+
+    // Keep the rendered opacity in sync with the logical `visible` flag. This
+    // is also called from the rAF loop so a pointer event that lands before
+    // the refs are mounted cannot leave the cursor stuck invisible: on the
+    // next frame the styles are applied instead of waiting for the pointer to
+    // leave and re-enter the window.
+    const applyVisibility = () => {
+      const opacity = visible ? '1' : '0';
+      if (ringRef.current && ringRef.current.style.opacity !== opacity) {
+        ringRef.current.style.opacity = opacity;
+      }
+      if (dotRef.current && dotRef.current.style.opacity !== opacity) {
+        dotRef.current.style.opacity = opacity;
+      }
+      // Hide the native pointer only while the custom cursor is on screen, so
+      // there is never a moment with no visible cursor at all.
+      const hideNative = visible && !!ringRef.current;
+      if (document.body.classList.contains('cursor-custom') !== hideNative) {
+        document.body.classList.toggle('cursor-custom', hideNative);
+      }
+    };
 
     const hide = () => {
       visible = false;
-      if (ringRef.current) ringRef.current.style.opacity = '0';
-      if (dotRef.current) dotRef.current.style.opacity = '0';
+      applyVisibility();
     };
 
     const onMove = (e: MouseEvent) => {
@@ -57,8 +111,7 @@ export const CustomCursor: React.FC = () => {
         visible = true;
         ring.x = dot.x = target.x;
         ring.y = dot.y = target.y;
-        if (ringRef.current) ringRef.current.style.opacity = '1';
-        if (dotRef.current) dotRef.current.style.opacity = '1';
+        applyVisibility();
       }
 
       const el = e.target as HTMLElement | null;
@@ -89,6 +142,7 @@ export const CustomCursor: React.FC = () => {
       if (dotRef.current) {
         dotRef.current.style.transform = `translate3d(${dot.x}px, ${dot.y}px, 0) translate(-50%, -50%)`;
       }
+      applyVisibility();
       raf = requestAnimationFrame(tick);
     };
 
@@ -124,6 +178,12 @@ export const CustomCursor: React.FC = () => {
           height: active ? 46 : 30,
           border: `1.5px solid ${accent}`,
           backgroundColor: active ? `${accent}1F` : 'transparent',
+          // Contrast sandwich: white halo + dark hairline keeps the accent
+          // ring readable on the accent-coloured portfolio stage as well as
+          // on white cards and dark sections.
+          boxShadow: `0 0 0 1.5px rgba(255,255,255,0.9), 0 0 0 2.5px rgba(0,0,0,0.28), 0 10px 24px -6px rgba(0,0,0,0.45)${
+            isLight ? '' : `, 0 0 24px ${accent}55`
+          }`,
           opacity: 0,
           willChange: 'transform',
         }}
@@ -144,10 +204,12 @@ export const CustomCursor: React.FC = () => {
         style={{
           width: active ? 5 : 6,
           height: active ? 5 : 6,
-          backgroundColor: accent,
+          backgroundColor: '#ffffff',
           opacity: 0,
           willChange: 'transform',
-          boxShadow: isLight ? `0 0 0 1px ${accent}30` : `0 0 10px ${accent}90`,
+          boxShadow: `0 0 0 1.5px ${accent}, 0 0 0 2.5px rgba(0,0,0,0.28), 0 2px 8px rgba(0,0,0,0.35)${
+            isLight ? '' : `, 0 0 14px ${accent}70`
+          }`,
         }}
       />
     </div>
