@@ -23,6 +23,7 @@ import { BackToTop } from './components/common/BackToTop';
 import { MobileCtaBar } from './components/common/MobileCtaBar';
 import { CommandPalette } from './components/common/CommandPalette';
 import { useSeo } from './hooks/useSeo';
+import { CMS_ENABLED } from './config/appMode';
 import { Settings2, Sparkles, CheckCircle2 } from 'lucide-react';
 import { SectionKey } from './types/cms';
 
@@ -120,7 +121,7 @@ const MainContent: React.FC = () => {
       <MobileCtaBar />
 
       {/* Command palette (Ctrl / Cmd + K) */}
-      <CommandPalette />
+      {CMS_ENABLED && <CommandPalette />}
 
       {/* Skip to content for keyboard & screen-reader users */}
       <a
@@ -155,7 +156,7 @@ const MainContent: React.FC = () => {
       </ErrorBoundary>
 
       {/* Headless CMS Studio Drawer / Modal */}
-      {cmsRequested && (
+      {CMS_ENABLED && cmsRequested && (
         <ErrorBoundary label="CMS Studio" compact>
           <Suspense fallback={null}>
             <AdminCMSModal />
@@ -164,7 +165,7 @@ const MainContent: React.FC = () => {
       )}
 
       {/* Editorial mode overlay toolbar */}
-      {editorialRequested && (
+      {CMS_ENABLED && editorialRequested && (
         <ErrorBoundary label="Editorial toolbar" compact>
           <Suspense fallback={null}>
             <EditorialToolbar />
@@ -175,7 +176,7 @@ const MainContent: React.FC = () => {
       {/* Floating CMS Studio Launcher at Bottom-Right.
           On small screens it sits above the sticky mobile CTA bar so the two
           never overlap. */}
-      <div className="fixed bottom-24 right-4 z-40 sm:bottom-6 sm:right-6">
+      {CMS_ENABLED && <div className="fixed bottom-24 right-4 z-40 sm:bottom-6 sm:right-6">
         <button
           onClick={() => setIsAdminOpen(true)}
           className="group flex items-center gap-2.5 px-4 py-2.5 rounded-full bg-[#141419]/90 hover:bg-[#1E1E24] text-white border border-white/15 hover:border-white/30 shadow-2xl backdrop-blur-md transition-all duration-300 hover:scale-105 active:scale-95"
@@ -192,7 +193,7 @@ const MainContent: React.FC = () => {
             <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
           )}
         </button>
-      </div>
+      </div>}
 
       {/* Live System Toast Notification */}
       {toastMessage && (
@@ -205,7 +206,7 @@ const MainContent: React.FC = () => {
       )}
 
       {/* Unpublished changes indicator */}
-      {hasUnpublishedChanges && !isAdminOpen && (
+      {CMS_ENABLED && hasUnpublishedChanges && !isAdminOpen && (
         <div className="fixed top-14 left-1/2 -translate-x-1/2 z-40 animate-slide-in-top">
           <div className="flex items-center gap-2 px-3.5 py-2 rounded-full bg-amber-500/15 border border-amber-500/30 text-amber-200 text-[11px] font-medium backdrop-blur-md shadow-lg">
             <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse" />

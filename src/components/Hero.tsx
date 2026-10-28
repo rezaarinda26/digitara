@@ -4,7 +4,7 @@ import { ArrowUpRight } from 'lucide-react';
 import { HeroTextSize, HeroEditorialSize } from '../types/cms';
 import { EditableText, EditableImage, DraggableBox } from './editorial/Editable';
 import { SwissBars } from './common/SwissBars';
-import { SWISS } from '../theme/swiss';
+import { withAlpha } from '../theme/swiss';
 import { useReducedMotion } from '../hooks/useReducedMotion';
 import { useAnimatedScroll } from '../hooks/useAnimatedScroll';
 
@@ -22,7 +22,7 @@ const editorialSizeClasses: Record<HeroEditorialSize, string> = {
 };
 
 export const Hero: React.FC = () => {
-  const { data, editorialMode, updateHero, isSectionLight, darkBg, accentText, isSwiss } = useCMS();
+  const { data, editorialMode, updateHero, isSectionLight, darkBg, accentText, isSwiss, swissInk, swissPaper } = useCMS();
   const { hero, theme } = data;
   const isLight = isSectionLight('hero');
   const [imageError, setImageError] = useState(false);
@@ -160,20 +160,20 @@ export const Hero: React.FC = () => {
             href={hero.floatingCard.linkUrl || '#portfolio'}
             className={`group flex items-center gap-3.5 p-2 pr-4 border transition-all duration-300 max-w-xs active:scale-98 ${
               isSwiss
-                ? ''
+                ? 'swiss-tint-paper'
                 : 'backdrop-blur-xl rounded-xl shadow-2xl'
             } ${
               isSwiss
-                ? 'bg-white/[0.06] hover:bg-white/[0.1]'
+                ? ''
                 : isLight
                 ? 'bg-neutral-50 hover:bg-neutral-100 border-neutral-200'
                 : 'bg-white/[0.05] hover:bg-white/[0.09] border-white/10 hover:border-white/30'
             }`}
             style={{
-              borderColor: isSwiss ? SWISS.ruleOnBlue : `${theme.accentColor}30`,
+              borderColor: isSwiss ? withAlpha(swissPaper, 0.35) : `${theme.accentColor}30`,
             }}
           >
-            <div className={`relative w-14 h-14 rounded-lg overflow-hidden shrink-0 bg-neutral-900 border ${isLight ? 'border-neutral-200' : 'border-white/10'}`}>
+            <div className={`relative w-20 h-[45px] rounded-lg overflow-hidden shrink-0 bg-neutral-900 border ${isLight ? 'border-neutral-200' : 'border-white/10'}`}>
               <EditableImage
                 value={hero.floatingCard.imageUrl}
                 onChange={(v) =>
@@ -277,7 +277,7 @@ export const Hero: React.FC = () => {
             label="Headline utama"
             className={`${headlineSize} min-w-0 font-extrabold tracking-tighter uppercase select-none leading-[0.9] break-words ${introClass(
               2
-            )} ${isSwiss ? 'text-[#F1F0EA]' : isLight ? 'text-neutral-950' : 'text-white'}`}
+            )} ${isSwiss ? 'swiss-on-ink drop-shadow-[0_4px_16px_rgba(11,43,107,0.9)]' : isLight ? 'text-neutral-950' : 'text-white'}`}
           />
 
           {/* Bottom Line "DIGITAL" with vibrant luminous accent gradient */}
@@ -291,21 +291,21 @@ export const Hero: React.FC = () => {
                 3
               )} ${
                 isSwiss
-                  ? 'text-[#F1F0EA]'
+                  ? 'swiss-on-ink drop-shadow-[0_4px_16px_rgba(11,43,107,0.9)]'
                   : isLight
                   ? 'text-neutral-950'
                   : 'text-transparent bg-clip-text dg-shimmer'
               }`}
               editStyle={
                 isSwiss
-                  ? { color: SWISS.paper, backgroundImage: 'none' }
+                  ? { color: swissPaper, backgroundImage: 'none' }
                   : isLight
                   ? { color: '#0A0A0A', backgroundImage: 'none' }
                   : { WebkitTextFillColor: '#FFFFFF', color: '#FFFFFF', backgroundImage: 'none' }
               }
               style={
                 isSwiss
-                  ? { color: SWISS.paper }
+                  ? { color: swissPaper }
                   : isLight
                   ? { color: '#0A0A0A' }
                   : {
@@ -324,7 +324,7 @@ export const Hero: React.FC = () => {
         className={`relative z-10 max-w-7xl mx-auto w-full border-t pt-6 flex flex-col md:flex-row md:items-end justify-between gap-6 ${introClass(4)} ${
           isSwiss ? '' : isLight ? 'border-neutral-200' : 'border-white/10'
         }`}
-        style={isSwiss ? { borderColor: SWISS.ruleOnBlue } : undefined}
+        style={isSwiss ? { borderColor: withAlpha(swissPaper, 0.35) } : undefined}
       >
         <EditableText
           as="p"
@@ -348,7 +348,7 @@ export const Hero: React.FC = () => {
             }`}
             style={
               isSwiss
-                ? { backgroundColor: SWISS.paper, color: SWISS.blue }
+                ? { backgroundColor: swissPaper, color: swissInk }
                 : {
                     backgroundColor: theme.accentColor || '#FFFFFF',
                     color: theme.accentColor === '#FFFFFF' ? '#000000' : '#FFFFFF',
@@ -366,7 +366,7 @@ export const Hero: React.FC = () => {
               className="w-7 h-7 rounded-full flex items-center justify-center transition-transform duration-300 group-hover:rotate-45"
               style={
                 isSwiss
-                  ? { backgroundColor: SWISS.blue, color: SWISS.paper }
+                  ? { backgroundColor: swissInk, color: swissPaper }
                   : {
                       backgroundColor: theme.accentColor === '#FFFFFF' ? '#000000' : 'rgba(0,0,0,0.3)',
                       color: '#FFFFFF',

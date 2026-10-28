@@ -9,33 +9,36 @@ export const Contact: React.FC = () => {
   const { contact, config, theme } = data;
   const isLight = isSectionLight('contact');
 
-  const [formData, setFormData] = useState({
-    firstName: '',
-    lastName: '',
-    email: '',
-    services: [] as string[],
-    budget: '$5,000 - $10,000',
-    message: '',
-    agreed: true,
-  });
-
-  const [errors, setErrors] = useState<{ [key: string]: string }>({});
-  const [submitted, setSubmitted] = useState(false);
-
+  // The form's option labels are editable in CMS editorial mode. Use those
+  // edited labels as the submitted values too, rather than the old defaults.
+  const editorialText = (key: string, fallback: string) => data.editorial?.texts?.[key] ?? fallback;
   const availableServices = [
     'Logo & Visual Identity',
     'Web Design & Engineering',
     'UI/UX Product Design',
     'Motion & 3D Interactive',
     'Full-Stack Architecture',
-  ];
-
+  ].map((service, index) => editorialText(`contact.srvOpt.${index}`, service));
   const budgetOptions = [
     '< $5,000',
     '$5,000 - $10,000',
     '$10,000 - $25,000',
     '$25,000+',
-  ];
+  ].map((budget, index) => editorialText(`contact.budgetOpt.${index}`, budget));
+  const defaultBudget = budgetOptions[1] ?? budgetOptions[0] ?? '';
+
+  const [formData, setFormData] = useState({
+    firstName: '',
+    lastName: '',
+    email: '',
+    services: [] as string[],
+    budget: defaultBudget,
+    message: '',
+    agreed: true,
+  });
+
+  const [errors, setErrors] = useState<{ [key: string]: string }>({});
+  const [submitted, setSubmitted] = useState(false);
 
   // Listen to custom event from services section
   useEffect(() => {
@@ -94,6 +97,25 @@ export const Contact: React.FC = () => {
       budget: formData.budget,
       message: formData.message,
     });
+
+    const services = formData.services.length > 0 ? formData.services.join(', ') : 'General Inquiry';
+    const whatsappMessage = [
+      'Halo DIGITARA, saya ingin mengonsultasikan proyek.',
+      '',
+      `Nama: ${`${formData.firstName} ${formData.lastName}`.trim()}`,
+      `Email: ${formData.email}`,
+      `Layanan yang diminati: ${services}`,
+      `Estimasi anggaran: ${formData.budget}`,
+      '',
+      'Deskripsi proyek:',
+      formData.message,
+    ].join('\n');
+
+    window.open(
+      `https://wa.me/6285156675543?text=${encodeURIComponent(whatsappMessage)}`,
+      '_blank',
+      'noopener,noreferrer'
+    );
 
     setSubmitted(true);
   };
@@ -289,7 +311,7 @@ export const Contact: React.FC = () => {
                         lastName: '',
                         email: '',
                         services: [],
-                        budget: '$5,000 - $10,000',
+                        budget: defaultBudget,
                         message: '',
                         agreed: true,
                       });
@@ -315,7 +337,7 @@ export const Contact: React.FC = () => {
                         type="text"
                         value={formData.firstName}
                         onChange={(e) => setFormData({ ...formData, firstName: e.target.value })}
-                        placeholder="e.g. Alex"
+                        placeholder="Contoh: Kevin"
                         className={`w-full px-4 py-3 rounded-xl border text-sm placeholder-neutral-400 focus:outline-none transition-all ${
                           isLight
                             ? 'bg-white border-neutral-300 text-neutral-900 focus:border-black'
@@ -335,7 +357,7 @@ export const Contact: React.FC = () => {
                         type="text"
                         value={formData.lastName}
                         onChange={(e) => setFormData({ ...formData, lastName: e.target.value })}
-                        placeholder="e.g. Morgan"
+                        placeholder="Contoh: Sanjaya"
                         className={`w-full px-4 py-3 rounded-xl border text-sm placeholder-neutral-400 focus:outline-none transition-all ${
                           isLight
                             ? 'bg-white border-neutral-300 text-neutral-900 focus:border-black'
@@ -354,7 +376,7 @@ export const Contact: React.FC = () => {
                       type="email"
                       value={formData.email}
                       onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                      placeholder="alex@company.com"
+                      placeholder="kevin@perusahaan.com"
                       className={`w-full px-4 py-3 rounded-xl border text-sm placeholder-neutral-400 focus:outline-none transition-all ${
                         isLight
                           ? 'bg-white border-neutral-300 text-neutral-900 focus:border-black'
@@ -443,7 +465,7 @@ export const Contact: React.FC = () => {
                       rows={4}
                       value={formData.message}
                       onChange={(e) => setFormData({ ...formData, message: e.target.value })}
-                      placeholder="Tell us about your brand goals, target timeline, or challenges..."
+                      placeholder="Ceritakan kebutuhan proyek, target waktu, atau kendala yang sedang Anda hadapi..."
                       className={`w-full px-4 py-3 rounded-xl border text-sm placeholder-neutral-400 focus:outline-none transition-all resize-none ${
                         isLight
                           ? 'bg-white border-neutral-300 text-neutral-900 focus:border-black'

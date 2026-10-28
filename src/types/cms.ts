@@ -15,7 +15,7 @@ export interface AgencyConfig {
   };
 }
 
-export type ThemeMode = 'reference-hybrid' | 'dark-obsidian' | 'light-minimal' | 'midnight' | 'custom';
+export type ThemeMode = 'reference-hybrid' | 'dark-obsidian' | 'light-minimal' | 'midnight';
 
 /**
  * Visual style system layered on top of the colour mode.
@@ -25,22 +25,14 @@ export type ThemeMode = 'reference-hybrid' | 'dark-obsidian' | 'light-minimal' |
  */
 export type UiStyle = 'classic' | 'swiss';
 
-export interface CustomThemeColors {
-  primary: string;   // Main background
-  secondary: string; // Section / panel background
-  tertiary: string;  // Card / surface background
-  accent: string;    // Accent / CTA color
-}
-
 export interface ThemeConfig {
   bgMode: ThemeMode;
   /** Optional so snapshots written before this field existed still load. */
   uiStyle?: UiStyle;
   accentColor: string;
-  headingFont: 'Plus Jakarta Sans' | 'Syne' | 'Outfit' | 'Space Grotesk';
-  bodyFont: 'Plus Jakarta Sans' | 'Manrope' | 'JetBrains Mono';
+  headingFont: 'Plus Jakarta Sans' | 'Archivo' | 'Syne' | 'Outfit' | 'Space Grotesk';
+  bodyFont: 'Plus Jakarta Sans' | 'Archivo' | 'Manrope' | 'JetBrains Mono';
   surfaceOpacity: number;
-  customColors?: CustomThemeColors;
 }
 
 export type SectionKey =

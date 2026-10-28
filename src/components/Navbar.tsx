@@ -3,11 +3,12 @@ import { useCMS } from '../context/CMSContext';
 import { Logo } from './Logo';
 import { ArrowUpRight, Menu, X, Settings2 } from 'lucide-react';
 import { EditableText } from './editorial/Editable';
-import { SWISS } from '../theme/swiss';
+import { withAlpha } from '../theme/swiss';
 import { useScrollSpy } from '../hooks/useScrollSpy';
+import { CMS_ENABLED } from '../config/appMode';
 
 export const Navbar: React.FC = () => {
-  const { data, setIsAdminOpen, darkBg, isSectionLight, isSwiss } = useCMS();
+  const { data, setIsAdminOpen, darkBg, isSectionLight, isSwiss, swissInk, swissPaper } = useCMS();
   const [scrolled, setScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
@@ -20,7 +21,7 @@ export const Navbar: React.FC = () => {
   const navLinkUnderline = useDarkText
     ? 'bg-black'
     : isSwiss
-    ? 'bg-[#F1F0EA]'
+    ? 'swiss-fill-paper'
     : 'bg-white';
 
   // Shared glass treatment for the desktop bar and the mobile drawer so both
@@ -28,13 +29,13 @@ export const Navbar: React.FC = () => {
   // The Swiss style system is flat: a solid ink block with a hairline rule
   // instead of a translucent gradient.
   const glassStyle: React.CSSProperties = isSwiss
-    ? { backgroundColor: SWISS.blue, backgroundImage: 'none' }
+    ? { backgroundColor: swissInk, backgroundImage: 'none' }
     : {
         backgroundColor: `${darkBg}E6`,
         backgroundImage:
           'linear-gradient(to bottom, rgba(255,255,255,0.06) 0%, rgba(255,255,255,0.02) 45%, rgba(0,0,0,0.10) 100%)',
       };
-  const hairline = isSwiss ? SWISS.ruleOnBlue : 'rgba(255,255,255,0.08)';
+  const hairline = isSwiss ? withAlpha(swissPaper, 0.35) : 'rgba(255,255,255,0.08)';
 
   useEffect(() => {
     const onScroll = () => {
@@ -141,13 +142,13 @@ export const Navbar: React.FC = () => {
           {/* Zone 3: Actions (CTA button + CMS Admin Studio launcher) */}
           <div className="flex items-center gap-3 shrink-0">
             {/* Quick CMS Admin Trigger */}
-            <button
+            {CMS_ENABLED && <button
               onClick={() => setIsAdminOpen(true)}
               className={`flex items-center gap-1.5 px-3 py-2 text-xs font-medium border transition-all duration-200 focus-visible:ring-2 focus-visible:ring-white/30 ${
                 isSwiss
                   ? useDarkText
-                    ? 'text-[#0B2B6B] hover:bg-[#0B2B6B]/10 border-[#0B2B6B]/15'
-                    : 'text-[#F1F0EA] hover:bg-[#F1F0EA]/10 border-[#F1F0EA]/20'
+                    ? 'swiss-on-paper swiss-on-paper-soft swiss-rule-paper'
+                    : 'swiss-on-ink swiss-on-ink-soft swiss-rule-ink'
                   : `rounded-lg ${
                       useDarkText
                         ? 'text-neutral-600 hover:text-black bg-black/[0.04] hover:bg-black/[0.08] border-black/[0.08]'
@@ -161,7 +162,7 @@ export const Navbar: React.FC = () => {
               <span className="hidden lg:inline text-[11px] tracking-wide">
                 <EditableText as="span" value="CMS Studio" overrideKey="nav.cmsStudio" label="Teks CMS Studio" />
               </span>
-            </button>
+            </button>}
 
             {/* Primary Action CTA */}
             <a
@@ -175,7 +176,7 @@ export const Navbar: React.FC = () => {
               }`}
               style={
                 isSwiss
-                  ? { backgroundColor: SWISS.paper, color: SWISS.blue }
+                  ? { backgroundColor: swissPaper, color: swissInk }
                   : {
                       backgroundColor: data.theme.accentColor || '#FFFFFF',
                       color: data.theme.accentColor === '#FFFFFF' ? '#000000' : '#FFFFFF',
@@ -223,18 +224,20 @@ export const Navbar: React.FC = () => {
           </nav>
 
           <div className="pt-2 flex flex-col gap-3">
-            <button
+            {CMS_ENABLED && <button
               onClick={() => {
                 setMobileMenuOpen(false);
                 setIsAdminOpen(true);
               }}
               className={`w-full flex items-center justify-center gap-2 py-3 text-sm font-medium border ${
-                isSwiss ? '' : 'rounded-lg'
-              } ${isSwiss ? 'text-[#F1F0EA] bg-transparent border-[#F1F0EA]/20' : 'text-neutral-300 bg-white/5 hover:bg-white/10 border-white/10'}`}
+                isSwiss
+                  ? 'swiss-on-ink swiss-on-ink-soft swiss-rule-ink'
+                  : 'rounded-lg text-neutral-300 bg-white/5 hover:bg-white/10 border-white/10'
+              }`}
             >
               <Settings2 className="w-4 h-4" />
               <EditableText as="span" value="Headless CMS Admin Panel" overrideKey="nav.cmsPanelMobile" label="Teks panel CMS" />
-            </button>
+            </button>}
 
             <a
               href="#contact"
@@ -242,8 +245,10 @@ export const Navbar: React.FC = () => {
                 e.preventDefault();
                 handleNavClick('#contact');
               }}
-              className={`w-full flex items-center justify-center gap-2 py-3 text-sm font-semibold hover:bg-neutral-200 ${
-                isSwiss ? 'text-[#0B2B6B] bg-[#F1F0EA]' : 'text-black bg-white rounded-lg'
+              className={`w-full flex items-center justify-center gap-2 py-3 text-sm font-semibold ${
+                isSwiss
+                  ? 'swiss-on-paper swiss-fill-paper hover:opacity-90'
+                  : 'text-black bg-white rounded-lg hover:bg-neutral-200'
               }`}
             >
               <EditableText as="span" value="Start A Project" overrideKey="nav.startProject" label="Teks Start A Project" />

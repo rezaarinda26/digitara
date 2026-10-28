@@ -35,6 +35,7 @@ import { SectionKey, ProjectItem, ServiceItem } from '../../types/cms';
 import { usePresence } from '../../hooks/usePresence';
 import { useFocusTrap } from '../../hooks/useFocusTrap';
 import { SmartImage } from '../common/SmartImage';
+import { ImageUploadTrigger } from '../editorial/Editable';
 
 export const AdminCMSModal: React.FC = () => {
   const {
@@ -73,6 +74,9 @@ export const AdminCMSModal: React.FC = () => {
     resetToDefault,
     showToast,
     uiStyle,
+    isSwiss,
+    swissInk,
+    swissPaper,
     uiStyleOverride,
   } = useCMS();
 
@@ -425,19 +429,19 @@ export const AdminCMSModal: React.FC = () => {
                 <div
                   className="p-6 rounded-2xl border transition-all duration-300 flex flex-col sm:flex-row items-center justify-between gap-4 shadow-lg"
                   style={{
-                    backgroundColor:
-                      data.theme.bgMode === 'light-minimal'
+                    backgroundColor: isSwiss
+                      ? swissInk
+                      : data.theme.bgMode === 'light-minimal'
                         ? '#FFFFFF'
                         : data.theme.bgMode === 'reference-hybrid'
                         ? '#F9FAFB'
                         : data.theme.bgMode === 'midnight'
                         ? '#060814'
-                        : data.theme.bgMode === 'custom' && data.theme.customColors
-                        ? data.theme.customColors.primary
                         : '#0A0A0A',
                     borderColor: 'rgba(255,255,255,0.15)',
-                    color:
-                      data.theme.bgMode === 'light-minimal' || data.theme.bgMode === 'reference-hybrid'
+                    color: isSwiss
+                      ? swissPaper
+                      : data.theme.bgMode === 'light-minimal' || data.theme.bgMode === 'reference-hybrid'
                         ? '#0A0A0A'
                         : '#FFFFFF',
                   }}
@@ -450,12 +454,12 @@ export const AdminCMSModal: React.FC = () => {
                       DIGITARA Nuansa Teknologi
                     </h4>
                     <p className="text-xs opacity-75 font-light max-w-md">
-                    {data.theme.bgMode === 'reference-hybrid'
+                    {isSwiss
+                      ? 'Mode Swiss: biru pekat & kertas hangat, dua tinta datar tanpa gradien.'
+                      : data.theme.bgMode === 'reference-hybrid'
                       ? 'Mode Referensi Gambar Aktif: Seksi Konten (About, Services, Works, Form) Putih Bersih + Hero/Footer Gelap Sinematik.'
                       : data.theme.bgMode === 'light-minimal'
                       ? 'Mode Light Minimalist: Tampilan Putih Bersih di seluruh landing page.'
-                      : data.theme.bgMode === 'custom'
-                      ? 'Mode Custom Aktif: Seluruh warna mengikuti Primary/Secondary/Tertiary & Accent yang kamu atur.'
                       : 'Mode Gelap Aktif: Tampilan gelap pekat kontras tinggi.'}
                     </p>
                   </div>
@@ -558,49 +562,55 @@ export const AdminCMSModal: React.FC = () => {
                     Pilihan Mode Tema (Theme Mode)
                   </label>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    {[
-                      {
-                        id: 'reference-hybrid',
-                        badge: 'REKOMENDASI (SESUAI GAMBAR)',
-                        label: 'Reference Hybrid (Dual Contrast)',
-                        desc: 'Seksi Konten Putih Bersih (#FFFFFF) + Hero & Footer Gelap Sinematik persis referensi gambar.',
-                        bgPreview: 'from-[#0A0A0A] to-[#FFFFFF]',
-                        textColor: 'text-white',
-                      },
-                      {
-                        id: 'light-minimal',
-                        badge: 'PUTIH BERSIH',
-                        label: 'Clean Light Minimalist',
-                        desc: 'Tampilan serba putih bersih (#FFFFFF) untuk seluruh seksi konten.',
-                        bgPreview: 'from-[#FFFFFF] to-[#F3F4F6]',
-                        textColor: 'text-white',
-                      },
-                      {
-                        id: 'dark-obsidian',
-                        badge: 'DARK TOTAL',
-                        label: 'Dark Mode Obsidian',
-                        desc: 'Tampilan serba hitam pekat (#0A0A0A) dengan teks putih kontras tinggi.',
-                        bgPreview: 'from-[#0A0A0A] to-[#171717]',
-                        textColor: 'text-white',
-                      },
-                      {
-                        id: 'midnight',
-                        badge: 'COSMIC NAVY',
-                        label: 'Midnight Blue & Slate',
-                        desc: 'Palet biru dongker sinematik pekat bernuansa tech studio masa depan.',
-                        bgPreview: 'from-[#060814] to-[#0F172A]',
-                        textColor: 'text-white',
-                      },
-                      {
-                        id: 'custom',
-                        badge: 'CUSTOM',
-                        label: 'Tema Kustom (Bebas)',
-                        desc: 'Atur warna Primary, Secondary, Tertiary, dan Accent sesuai keinginan kamu.',
-                        bgPreview: 'from-[#0A0A0A] via-[#151517] to-[#6B5CE7]',
-                        textColor: 'text-white',
-                      },
-                    ].map((mode) => {
-                      const isSelected = data.theme.bgMode === mode.id;
+                    {(isSwiss
+                      ? [
+                          {
+                            id: 'reference-hybrid',
+                            badge: 'DEFAULT',
+                            label: 'Default Swiss',
+                            desc: 'Duo poster asli: kobalt pekat (#0B2B6B) + kertas hangat (#F1F0EA), tanpa gradien atau bayangan.',
+                            bgPreview: 'from-[#0B2B6B] via-[#0B2B6B] to-[#F1F0EA]',
+                            textColor: 'text-white',
+                          },
+                        ]
+                      : [
+                          {
+                            id: 'reference-hybrid',
+                            badge: 'REKOMENDASI (SESUAI GAMBAR)',
+                            label: 'Reference Hybrid (Dual Contrast)',
+                            desc: 'Seksi Konten Putih Bersih (#FFFFFF) + Hero & Footer Gelap Sinematik persis referensi gambar.',
+                            bgPreview: 'from-[#0A0A0A] to-[#FFFFFF]',
+                            textColor: 'text-white',
+                          },
+                          {
+                            id: 'light-minimal',
+                            badge: 'PUTIH BERSIH',
+                            label: 'Clean Light Minimalist',
+                            desc: 'Tampilan serba putih bersih (#FFFFFF) untuk seluruh seksi konten.',
+                            bgPreview: 'from-[#FFFFFF] to-[#F3F4F6]',
+                            textColor: 'text-white',
+                          },
+                          {
+                            id: 'dark-obsidian',
+                            badge: 'DARK TOTAL',
+                            label: 'Dark Mode Obsidian',
+                            desc: 'Tampilan serba hitam pekat (#0A0A0A) dengan teks putih kontras tinggi.',
+                            bgPreview: 'from-[#0A0A0A] to-[#171717]',
+                            textColor: 'text-white',
+                          },
+                          {
+                            id: 'midnight',
+                            badge: 'COSMIC NAVY',
+                            label: 'Midnight Blue & Slate',
+                            desc: 'Palet biru dongker sinematik pekat bernuansa tech studio masa depan.',
+                            bgPreview: 'from-[#060814] to-[#0F172A]',
+                            textColor: 'text-white',
+                          },
+                        ]
+                    ).map((mode) => {
+                      const isSelected = isSwiss
+                        ? data.theme.bgMode === 'reference-hybrid'
+                        : data.theme.bgMode === mode.id;
                       return (
                         <button
                           key={mode.id}
@@ -642,55 +652,6 @@ export const AdminCMSModal: React.FC = () => {
                     })}
                   </div>
                 </div>
-
-                {/* Custom Colors */}
-                {data.theme.bgMode === 'custom' && (
-                  <div className="space-y-3">
-                    <label className="text-xs font-mono uppercase text-neutral-400 tracking-wider">
-                      Warna Kustom (Custom Theme)
-                    </label>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-                      {[
-                        { key: 'primary', label: 'Primary', desc: 'Latar Utama' },
-                        { key: 'secondary', label: 'Secondary', desc: 'Panel/Seksi' },
-                        { key: 'tertiary', label: 'Tertiary', desc: 'Card/Surface' },
-                        { key: 'accent', label: 'Accent', desc: 'Tombol & Highlight' },
-                      ].map((item) => (
-                        <div
-                          key={item.key}
-                          className="p-3 rounded-xl border border-white/10 bg-white/[0.02] flex items-center justify-between gap-3"
-                        >
-                          <div>
-                            <div className="text-xs font-semibold text-white">{item.label}</div>
-                            <div className="text-[10px] text-neutral-500">{item.desc}</div>
-                            <div className="text-[10px] font-mono text-neutral-400 mt-1">
-                              {(data.theme.customColors as any)?.[item.key] || '#000000'}
-                            </div>
-                          </div>
-                          <input
-                            type="color"
-                            value={(data.theme.customColors as any)?.[item.key] || '#000000'}
-                            onChange={(e) => {
-                              updateTheme({
-                                customColors: {
-                                  ...(data.theme.customColors || {
-                                    primary: '#0A0A0A',
-                                    secondary: '#0E0E10',
-                                    tertiary: '#151517',
-                                    accent: '#6B5CE7',
-                                  }),
-                                  [item.key]: e.target.value,
-                                },
-                                accentColor: item.key === 'accent' ? e.target.value : data.theme.accentColor,
-                              });
-                            }}
-                            className="w-10 h-10 rounded-lg cursor-pointer border border-white/20 bg-transparent"
-                          />
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
 
                 {/* Accent Color */}
                 <div className="space-y-3">
@@ -751,7 +712,17 @@ export const AdminCMSModal: React.FC = () => {
                   <div className="p-3.5 rounded-xl bg-white/[0.03] border border-white/10 text-xs text-neutral-300 flex items-start gap-2.5">
                     <span className="w-2 h-2 rounded-full mt-1.5 shrink-0" style={{ backgroundColor: data.theme.accentColor }} />
                     <span className="leading-relaxed">
-                      <strong>Cakupan Dampak Aksen Tinggi:</strong> Warna ini otomatis diaplikasikan secara kuat pada Tombol Utama (CTA Hero & Navbar), Angka Statistik (15+, 75+, 200+), Nomor & Harga Layanan (01, 02...), Tag Filter Portfolio, Kotak Matriks Logo, Efek Hover Kartu, Cahaya Latar (Ambient Glow), dan Formulir Brief Proyek.
+                      {isSwiss ? (
+                        <>
+                          <strong>Peran Aksen di Swiss:</strong> warna ini dipakai untuk detail
+                          kecil seperti ikon kartu, tag, penanda aktif, dan elemen aksen — bukan
+                          untuk tombol utama, yang tetap memakai tinta &amp; kertas.
+                        </>
+                      ) : (
+                        <>
+                          <strong>Cakupan Dampak Aksen Tinggi:</strong> Warna ini otomatis diaplikasikan secara kuat pada Tombol Utama (CTA Hero & Navbar), Angka Statistik (15+, 75+, 200+), Nomor & Harga Layanan (01, 02...), Tag Filter Portfolio, Kotak Matriks Logo, Efek Hover Kartu, Cahaya Latar (Ambient Glow), dan Formulir Brief Proyek.
+                        </>
+                      )}
                     </span>
                   </div>
                 </div>
@@ -768,6 +739,7 @@ export const AdminCMSModal: React.FC = () => {
                       className="w-full px-4 py-2.5 rounded-xl bg-black/60 border border-white/15 text-sm text-white focus:outline-none"
                     >
                       <option value="Plus Jakarta Sans">Plus Jakarta Sans (Modern Clean)</option>
+                      <option value="Archivo">Archivo (Swiss Grotesk)</option>
                       <option value="Syne">Syne (High-Fashion Geometric)</option>
                       <option value="Outfit">Outfit (Crisp Tech Aesthetic)</option>
                       <option value="Space Grotesk">Space Grotesk (Neo-Brutalist)</option>
@@ -784,6 +756,7 @@ export const AdminCMSModal: React.FC = () => {
                       className="w-full px-4 py-2.5 rounded-xl bg-black/60 border border-white/15 text-sm text-white focus:outline-none"
                     >
                       <option value="Plus Jakarta Sans">Plus Jakarta Sans</option>
+                      <option value="Archivo">Archivo (Swiss Grotesk)</option>
                       <option value="Manrope">Manrope</option>
                       <option value="JetBrains Mono">JetBrains Mono (Editorial Data)</option>
                     </select>
@@ -1068,6 +1041,43 @@ export const AdminCMSModal: React.FC = () => {
                         }
                         className="w-full px-4 py-2 rounded-xl bg-black/60 border border-white/15 text-xs text-white"
                       />
+                    </div>
+                    <div className="sm:col-span-2">
+                      <label className="block text-xs font-mono text-neutral-400 mb-1">
+                        Card Image URL / Asset Path
+                      </label>
+                      <input
+                        type="text"
+                        value={data.hero.floatingCard.imageUrl}
+                        onChange={(e) =>
+                          updateHero({
+                            floatingCard: { ...data.hero.floatingCard, imageUrl: e.target.value },
+                          })
+                        }
+                        className="w-full px-4 py-2 rounded-xl bg-black/60 border border-white/15 text-xs text-white font-mono"
+                      />
+                      <div className="mt-3 flex items-start gap-3">
+                        {data.hero.floatingCard.imageUrl && (
+                          <SmartImage
+                            src={data.hero.floatingCard.imageUrl}
+                            alt="Floating card preview"
+                            aspectRatio="16 / 9"
+                            placeholderClassName="bg-neutral-900"
+                            frameClassName="w-28 rounded-lg overflow-hidden border border-white/10 shrink-0"
+                          />
+                        )}
+                        <ImageUploadTrigger
+                          onChange={(imageUrl) =>
+                            updateHero({
+                              floatingCard: { ...data.hero.floatingCard, imageUrl },
+                            })
+                          }
+                          className="px-3 py-2 rounded-lg bg-white/10 hover:bg-white/15 border border-white/10 text-xs font-medium text-white transition-colors"
+                          title="Unggah foto kartu showcase"
+                        >
+                          Unggah Foto
+                        </ImageUploadTrigger>
+                      </div>
                     </div>
                   </div>
                 </div>

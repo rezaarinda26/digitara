@@ -23,6 +23,27 @@ const setLink = (rel: string, href: string) => {
   el.setAttribute('href', href);
 };
 
+const safeHex = (color: string, fallback: string) => (/^#[0-9a-f]{6}$/i.test(color) ? color : fallback);
+
+const createFavicon = (accentColor: string, backgroundColor: string) => {
+  const accent = safeHex(accentColor, '#6B5CE7');
+  const background = safeHex(backgroundColor, '#0A0A0A');
+  const squares = [
+    ['14', '14', '0.8'],
+    ['27', '14', '0.55'],
+    ['14', '27', '0.55'],
+    ['27', '27', '1'],
+    ['40', '27', '0.8'],
+    ['14', '40', '0.8'],
+    ['27', '40', '0.55'],
+    ['40', '40', '1'],
+  ]
+    .map(([x, y, opacity]) => `<rect x="${x}" y="${y}" width="10" height="10" rx="1.5" fill="${accent}" opacity="${opacity}"/>`)
+    .join('');
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" rx="14" fill="${background}"/>${squares}</svg>`;
+  return `data:image/svg+xml,${encodeURIComponent(svg)}`;
+};
+
 /**
  * Keeps the document head in sync with the live CMS content so crawlers,
  * social previews and the browser tab always reflect what is published.
@@ -58,10 +79,14 @@ export const useSeo = () => {
         ? '#FFFFFF'
         : theme.bgMode === 'midnight'
         ? '#060814'
-        : theme.bgMode === 'custom' && theme.customColors
-        ? theme.customColors.primary
         : '#0A0A0A';
     setMeta('meta[name="theme-color"]', 'name', 'theme-color', themeColor);
+
+    // Keep the browser-tab icon aligned with the accent colour selected in CMS.
+    const favicon = createFavicon(theme.accentColor || '#6B5CE7', themeColor);
+    setLink('icon', favicon);
+    setLink('apple-touch-icon', favicon);
+    document.head.querySelector<HTMLLinkElement>('link[rel="mask-icon"]')?.setAttribute('color', theme.accentColor || '#6B5CE7');
 
     // --- Structured data ---
     const socials = Object.values(config.socials || {}).filter(Boolean);

@@ -11,11 +11,11 @@ const BASE_CMS_DATA: CMSData = {
     location: 'Jakarta, Indonesia · Remote Worldwide',
     workingHours: 'Monday - Friday / 09:00 AM - 06:00 PM WIB',
     socials: {
-      instagram: 'https://instagram.com/digitara.tech',
-      twitter: 'https://x.com/digitara',
-      linkedin: 'https://linkedin.com/company/digitara',
-      facebook: 'https://facebook.com/digitara',
-      github: 'https://github.com/digitara',
+      instagram: '',
+      twitter: '',
+      linkedin: '',
+      facebook: '',
+      github: '',
     },
   },
   theme: {
@@ -25,12 +25,6 @@ const BASE_CMS_DATA: CMSData = {
     headingFont: 'Plus Jakarta Sans',
     bodyFont: 'Plus Jakarta Sans',
     surfaceOpacity: 0.9,
-    customColors: {
-      primary: '#0A0A0A',
-      secondary: '#0E0E10',
-      tertiary: '#151517',
-      accent: '#6B5CE7',
-    },
   },
   sections: [
     { id: 'hero', name: 'Hero Showcase', enabled: true, order: 1 },

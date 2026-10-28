@@ -446,28 +446,6 @@
 .light-section .dark-surface .text-neutral-500 { color: #a3a3a3; }
 .light-section .dark-surface .text-neutral-600 { color: #d4d4d8; }
 
-/* ------------------------------------------------------------------ */
-/* Custom theme: remap hardcoded dark surfaces to user-defined colors */
-.custom-theme {
-  background-color: var(--brand-bg);
-}
-.custom-theme .bg-\[\#0E0E10\] { background-color: var(--brand-secondary); }
-.custom-theme .bg-\[\#0D0D11\] { background-color: var(--brand-secondary); }
-.custom-theme .bg-\[\#151517\] { background-color: var(--brand-tertiary); }
-.custom-theme .bg-\[\#0A0A0B\] { background-color: var(--brand-secondary); }
-.custom-theme .bg-black { background-color: var(--brand-bg); }
-.custom-theme .bg-black\/30 { background-color: color-mix(in srgb, var(--brand-secondary) 85%, transparent); }
-.custom-theme .bg-black\/40 { background-color: color-mix(in srgb, var(--brand-secondary) 90%, transparent); }
-.custom-theme .bg-black\/60 { background-color: color-mix(in srgb, var(--brand-bg) 70%, transparent); }
-.custom-theme .bg-black\/80 { background-color: color-mix(in srgb, var(--brand-bg) 85%, transparent); }
-.custom-theme .bg-black\/90 { background-color: color-mix(in srgb, var(--brand-bg) 95%, transparent); }
-.custom-theme .bg-white\/\[0\.02\] { background-color: color-mix(in srgb, var(--brand-tertiary) 90%, transparent); }
-.custom-theme .bg-white\/\[0\.03\] { background-color: color-mix(in srgb, var(--brand-tertiary) 95%, transparent); }
-.custom-theme .bg-white\/\[0\.04\] { background-color: color-mix(in srgb, var(--brand-tertiary) 100%, transparent); }
-.custom-theme .bg-white\/\[0\.06\] { background-color: color-mix(in srgb, var(--brand-tertiary) 100%, transparent); }
-.custom-theme .bg-\[\#6B5CE7\] { background-color: var(--brand-accent); }
-.custom-theme .hover\:bg-\[\#5A4CC7\]:hover { background-color: color-mix(in srgb, var(--brand-accent) 85%, black); }
-
 /* Custom accent cursor replaces the native one only on fine pointers
    and when motion is allowed. */
 @media (pointer: fine) and (prefers-reduced-motion: no-preference) {
@@ -545,6 +523,38 @@
 body.style-swiss {
   --swiss-blue: #0B2B6B;
   --swiss-paper: #F1F0EA;
+  --swiss-panel: #0A2459;
+}
+
+body.style-swiss .swiss-fill-ink {
+  background-color: var(--swiss-blue);
+}
+body.style-swiss .swiss-fill-paper {
+  background-color: var(--swiss-paper);
+}
+body.style-swiss .swiss-tint-paper {
+  background-color: color-mix(in srgb, var(--swiss-paper) 6%, transparent);
+}
+body.style-swiss .swiss-tint-paper:hover {
+  background-color: color-mix(in srgb, var(--swiss-paper) 10%, transparent);
+}
+body.style-swiss .swiss-on-ink {
+  color: var(--swiss-paper);
+}
+body.style-swiss .swiss-on-ink-soft:hover {
+  background-color: color-mix(in srgb, var(--swiss-paper) 10%, transparent);
+}
+body.style-swiss .swiss-on-paper {
+  color: var(--swiss-blue);
+}
+body.style-swiss .swiss-on-paper-soft:hover {
+  background-color: color-mix(in srgb, var(--swiss-blue) 10%, transparent);
+}
+body.style-swiss .swiss-rule-ink {
+  border-color: color-mix(in srgb, var(--swiss-paper) 20%, transparent);
+}
+body.style-swiss .swiss-rule-paper {
+  border-color: color-mix(in srgb, var(--swiss-blue) 15%, transparent);
 }
 
 /* Content sections become warm paper instead of pure white. */
@@ -593,15 +603,20 @@ body.style-swiss :is(main, footer)
   border-radius: 0 !important;
 }
 
-/* Diagonal bar composition entrance: bars slide in along the composition. */
+/* Diagonal bar composition entrance: refined smooth glide with subtle scale */
 .swiss-bar {
-  animation: swiss-bar-in 760ms cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation: swiss-bar-in 840ms cubic-bezier(0.16, 1, 0.3, 1) both;
+  will-change: transform, opacity;
 }
 
 @keyframes swiss-bar-in {
   from {
     opacity: 0;
-    transform: translateY(26px);
+    transform: translateY(32px) scaleY(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scaleY(1);
   }
 }
 
@@ -643,6 +658,7 @@ body.style-swiss :is(main, footer)
     .bg-neutral-50,
     .bg-neutral-50\/90,
     .bg-neutral-100,
+    .bg-neutral-100\/60,
     .bg-\[\#FAFAFA\],
     .bg-\[\#F7F7F8\]
   ) {
@@ -650,16 +666,20 @@ body.style-swiss :is(main, footer)
 }
 
 /* Near-black fills become the cobalt ink (marquee ribbons, selected pills,
-   modal chrome, image placeholders). */
+   modal chrome, image placeholders). Semi-transparent black overlays become
+   the panel ink, which is what Custom mode's Secondary colour drives. */
 body.style-swiss :is(main, footer)
-  :is(.bg-neutral-900, .bg-neutral-950, .bg-black\/60, .bg-black\/40) {
+  :is(.bg-neutral-900, .bg-neutral-950) {
   background-color: var(--swiss-blue) !important;
+}
+body.style-swiss :is(main, footer) :is(.bg-black\/60, .bg-black\/40) {
+  background-color: var(--swiss-panel) !important;
 }
 
 /* Hover feedback without gradients: the ink tints the paper a little. */
 body.style-swiss :is(main, footer)
   :is(.hover\:bg-white, .hover\:bg-neutral-50, .hover\:bg-neutral-100):hover {
-  background-color: rgba(11, 43, 107, 0.07) !important;
+  background-color: color-mix(in srgb, var(--swiss-blue) 7%, transparent) !important;
 }
 
 /* The amber review stars are the last off-palette colour on the page: in
@@ -674,7 +694,7 @@ body.style-swiss main .fill-amber-400.text-amber-400 {
 /* Hairlines: cobalt rules on paper… */
 body.style-swiss :is(main, footer)
   :is(.border-neutral-200, .border-neutral-200\/90, .border-neutral-300, .border-neutral-300\/80) {
-  border-color: rgba(11, 43, 107, 0.28) !important;
+  border-color: color-mix(in srgb, var(--swiss-blue) 28%, transparent) !important;
 }
 
 /* …paper rules on cobalt. */
@@ -688,7 +708,7 @@ body.style-swiss :is(main, footer)
     .border-white\/25,
     .border-white\/30
   ) {
-  border-color: rgba(241, 240, 234, 0.35) !important;
+  border-color: color-mix(in srgb, var(--swiss-paper) 35%, transparent) !important;
 }
 
 /* ---------------------------------------------------------------------------

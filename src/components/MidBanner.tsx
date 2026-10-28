@@ -3,11 +3,19 @@ import { useCMS } from '../context/CMSContext';
 import { ArrowUpRight, Sparkle } from 'lucide-react';
 import { EditableText, EditableImage, DraggableBox } from './editorial/Editable';
 import { Reveal } from './common/Reveal';
-import { SWISS } from '../theme/swiss';
 
 export const MidBanner: React.FC = () => {
-  const { data, updateMidBanner, editorialMode, isSectionLight, darkBg, accentText, isSwiss } =
-    useCMS();
+  const {
+    data,
+    updateMidBanner,
+    editorialMode,
+    isSectionLight,
+    darkBg,
+    accentText,
+    isSwiss,
+    swissInk,
+    swissPaper,
+  } = useCMS();
   const { midBanner, theme } = data;
   const isLight = isSectionLight('midBanner');
 
@@ -93,7 +101,7 @@ export const MidBanner: React.FC = () => {
             onChange={(v) => updateMidBanner({ headline: v })}
             label="Headline Mid-Banner"
             className={`text-4xl sm:text-6xl md:text-7xl lg:text-8xl font-bold tracking-tight leading-[1.05] ${
-              isLight ? 'text-neutral-950' : isSwiss ? 'text-[#F1F0EA]' : 'text-white drop-shadow-2xl'
+              isLight ? 'text-neutral-950' : isSwiss ? 'swiss-on-ink' : 'text-white drop-shadow-2xl'
             }`}
           />
         </Reveal>
@@ -109,7 +117,7 @@ export const MidBanner: React.FC = () => {
             style={{
               // accentText on cobalt dips below AA contrast; Swiss keeps the
               // label in paper ink instead.
-              color: isSwiss ? (isLight ? SWISS.blue : SWISS.paper) : isLight ? theme.accentColor : accentText,
+              color: isSwiss ? (isLight ? swissInk : swissPaper) : isLight ? theme.accentColor : accentText,
             }}
           />
 
@@ -122,8 +130,8 @@ export const MidBanner: React.FC = () => {
             style={
               isSwiss
                 ? isLight
-                  ? { backgroundColor: SWISS.blue, color: SWISS.paper }
-                  : { backgroundColor: SWISS.paper, color: SWISS.blue }
+                  ? { backgroundColor: swissInk, color: swissPaper }
+                  : { backgroundColor: swissPaper, color: swissInk }
                 : {
                     backgroundColor: theme.accentColor || '#FFFFFF',
                     color: theme.accentColor === '#FFFFFF' ? '#000000' : '#FFFFFF',

@@ -3,10 +3,9 @@ import { useCMS } from '../context/CMSContext';
 import { Logo } from './Logo';
 import { ArrowUpRight, ArrowUp } from 'lucide-react';
 import { EditableText } from './editorial/Editable';
-import { SWISS } from '../theme/swiss';
 
 export const Footer: React.FC = () => {
-  const { data, isSectionLight, darkBg, isSwiss } = useCMS();
+  const { data, isSectionLight, darkBg, isSwiss, swissInk, swissPaper } = useCMS();
   const { config } = data;
   const isLight = isSectionLight('footer');
 
@@ -24,7 +23,7 @@ export const Footer: React.FC = () => {
 
   return (
     <footer
-      className={`relative border-t pt-20 pb-12 px-4 sm:px-6 lg:px-8 overflow-hidden transition-colors duration-500 ${
+      className={`relative border-t pt-20 pb-12 px-4 sm:px-6 lg:px-8 overflow-x-hidden overflow-y-visible transition-colors duration-500 ${
         isLight ? 'bg-white text-black border-neutral-200' : 'text-white border-white/[0.08]'
       }`}
       style={isLight ? undefined : { backgroundColor: darkBg }}
@@ -60,8 +59,8 @@ export const Footer: React.FC = () => {
                 isSwiss
                   ? // Paper on cobalt, cobalt on paper: two inks, no glow.
                     isLight
-                      ? { backgroundColor: SWISS.blue, color: SWISS.paper }
-                      : { backgroundColor: SWISS.paper, color: SWISS.blue }
+                      ? { backgroundColor: swissInk, color: swissPaper }
+                      : { backgroundColor: swissPaper, color: swissInk }
                   : {
                       backgroundColor: data.theme.accentColor || '#FFFFFF',
                       color: data.theme.accentColor === '#FFFFFF' ? '#000000' : '#FFFFFF',
@@ -90,20 +89,29 @@ export const Footer: React.FC = () => {
         {/* Social Links Row */}
         <div className={`py-10 border-b flex flex-wrap items-center justify-between gap-4 ${isLight ? 'border-neutral-200' : 'border-white/[0.08]'}`}>
           <div className="flex flex-wrap items-center gap-6 sm:gap-10 text-sm font-medium">
-            {socialLinks.map((s) => (
-              <a
-                key={s.label}
-                href={s.href}
-                target="_blank"
-                rel="noopener noreferrer"
-                className={`group flex items-center gap-1.5 transition-colors ${
-                  isLight ? 'text-neutral-500 hover:text-black' : 'text-neutral-400 hover:text-white'
-                }`}
-              >
-                <EditableText as="span" value={s.label} overrideKey={`footer.social.${s.id}`} label="Label sosial" />
-                <ArrowUpRight className="w-3.5 h-3.5 opacity-50 group-hover:opacity-100 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-all" />
-              </a>
-            ))}
+            {socialLinks.map((s) =>
+              s.href ? (
+                <a
+                  key={s.label}
+                  href={s.href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className={`group flex items-center gap-1.5 transition-colors ${
+                    isLight ? 'text-neutral-500 hover:text-black' : 'text-neutral-400 hover:text-white'
+                  }`}
+                >
+                  <EditableText as="span" value={s.label} overrideKey={`footer.social.${s.id}`} label="Label sosial" />
+                  <ArrowUpRight className="w-3.5 h-3.5 opacity-50 group-hover:opacity-100 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-all" />
+                </a>
+              ) : (
+                <span
+                  key={s.label}
+                  className={isLight ? 'text-neutral-500' : 'text-neutral-400'}
+                >
+                  <EditableText as="span" value={s.label} overrideKey={`footer.social.${s.id}`} label="Label sosial" />
+                </span>
+              ),
+            )}
           </div>
 
           <div className={`text-xs font-mono ${isLight ? 'text-neutral-500' : 'text-neutral-400'}`}>
@@ -111,13 +119,19 @@ export const Footer: React.FC = () => {
           </div>
         </div>
 
-        {/* Massive Aesthetic Graphic Typography */}
-        <div className="py-12 sm:py-16 select-none overflow-hidden text-center">
-          <span className={`block text-5xl sm:text-7xl md:text-9xl font-extrabold tracking-tighter transition-colors duration-500 uppercase whitespace-nowrap ${
-            isLight ? 'text-black/[0.06] hover:text-black/[0.10]' : 'text-white/[0.07] hover:text-white/[0.12]'
-          }`}>
-            {config.name}
-          </span>
+        {/* Logo Display */}
+        <div className="pt-24 pb-32 sm:pt-28 sm:pb-36 md:pt-32 md:pb-40 flex justify-center items-center select-none overflow-visible">
+          <div
+            className={`scale-[3] sm:scale-[4] md:scale-[5] lg:scale-[6.5] transition-opacity duration-500 ${
+              isLight ? 'opacity-[0.08] hover:opacity-[0.12]' : 'opacity-[0.08] hover:opacity-[0.14]'
+            }`}
+          >
+            {isLight ? (
+              <Logo size="md" showSubtext={false} textColor="#000000" />
+            ) : (
+              <Logo size="md" showSubtext={false} variant="white" />
+            )}
+          </div>
         </div>
 
         {/* Bottom Legal Row */}

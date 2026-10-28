@@ -34,7 +34,6 @@ const THEME_LABELS: Record<ThemeMode, string> = {
   'light-minimal': 'Clean Light Minimalist',
   'dark-obsidian': 'Dark Mode Obsidian',
   midnight: 'Midnight Blue & Slate',
-  custom: 'Tema Kustom (Bebas)',
 };
 
 const SECTION_COMMANDS: { id: string; label: string }[] = [

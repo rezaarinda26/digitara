@@ -25,8 +25,6 @@ export const ScrollProgress: React.FC = () => {
   const track =
     data.theme.bgMode === 'light-minimal'
       ? 'rgba(0,0,0,0.06)'
-      : data.theme.bgMode === 'custom' && data.theme.customColors
-      ? `${data.theme.customColors.primary}66`
       : 'rgba(255,255,255,0.08)';
 
   return (

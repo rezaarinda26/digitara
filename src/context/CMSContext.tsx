@@ -20,6 +20,7 @@ import {
 } from '../types/cms';
 import { DEFAULT_CMS_DATA, APPLIED_CMS_VERSION } from '../data/defaultCMS';
 import { SWISS } from '../theme/swiss';
+import { CMS_ENABLED } from '../config/appMode';
 
 const STORAGE_KEY = 'digitara_headless_cms_v1';
 const PUBLISHED_KEY = 'digitara_cms_published_v1';
@@ -72,6 +73,12 @@ interface CMSContextType {
   uiStyle: UiStyle;
   /** Shorthand for `uiStyle === 'swiss'`. */
   isSwiss: boolean;
+  /** Swiss ink (dark surfaces), honouring Swiss Custom colours. */
+  swissInk: string;
+  /** Swiss paper (content sections), honouring Swiss Custom colours. */
+  swissPaper: string;
+  /** Swiss panel ink (strips / cards on ink), honouring Swiss Custom colours. */
+  swissPanel: string;
   /** Non-null while a ?style= preview link is masking the CMS value. */
   uiStyleOverride: UiStyle | null;
   accentContrast: string;
@@ -140,11 +147,8 @@ export const CMSProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       const saved = stale ? null : localStorage.getItem(STORAGE_KEY);
       if (saved) {
         const parsed = JSON.parse(saved);
-        if (parsed.theme && (!parsed.theme.bgMode || parsed.theme.bgMode === 'obsidian' || parsed.theme.bgMode === 'carbon')) {
+        if (parsed.theme && (!parsed.theme.bgMode || parsed.theme.bgMode === 'obsidian' || parsed.theme.bgMode === 'carbon' || parsed.theme.bgMode === 'custom')) {
           parsed.theme.bgMode = 'reference-hybrid';
-        }
-        if (parsed.theme && !parsed.theme.customColors) {
-          parsed.theme.customColors = { ...DEFAULT_CMS_DATA.theme.customColors };
         }
         // Backfill sections that were introduced after this payload was saved.
         if (Array.isArray(parsed.sections)) {
@@ -399,10 +403,22 @@ export const CMSProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  const uiStyle: UiStyle = styleOverride ?? data.theme.uiStyle ?? 'classic';
+  const isSwiss = uiStyle === 'swiss';
+
+  const swissInk = SWISS.blue;
+  const swissPaper = SWISS.paper;
+  const swissPanel = SWISS.panel;
+
   // Helper to determine if a section should be rendered with Light or Dark theme
   const isSectionLight = (sectionKey: SectionKey): boolean => {
+    // Swiss is always a duotone: hero / mid-banner / footer sit on ink, every
+    // content section sits on paper — regardless of a stale Modern bgMode.
+    if (isSwiss) {
+      return ['about', 'services', 'portfolio', 'workflow', 'testimonials', 'contact', 'clients'].includes(sectionKey);
+    }
     if (data.theme.bgMode === 'light-minimal') return true;
-    if (data.theme.bgMode === 'dark-obsidian' || data.theme.bgMode === 'midnight' || data.theme.bgMode === 'custom') return false;
+    if (data.theme.bgMode === 'dark-obsidian' || data.theme.bgMode === 'midnight') return false;
     // 'reference-hybrid' matches the uploaded reference image:
     // About, Services, Portfolio, Workflow, Testimonials, Contact are clean, crisp WHITE!
     // Hero, MidBanner, and Footer are Dark cinematic!
@@ -411,14 +427,10 @@ export const CMSProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   // Shared dark background token so every dark surface reacts to the mode.
   // The Swiss style system is two-tone, so it overrides the dark surface.
-  const uiStyle: UiStyle = styleOverride ?? data.theme.uiStyle ?? 'classic';
-  const isSwiss = uiStyle === 'swiss';
   const darkBg = isSwiss
-    ? SWISS.blue
+    ? swissInk
     : data.theme.bgMode === 'midnight'
       ? '#060814'
-      : data.theme.bgMode === 'custom' && data.theme.customColors
-      ? data.theme.customColors.primary
       : '#0A0A0A';
 
   // Text/icon color that reads well on top of the accent color.
@@ -459,39 +471,37 @@ export const CMSProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   // Apply theme variables dynamically to the document root
   useEffect(() => {
     const root = document.documentElement;
-    if (data.theme.bgMode === 'custom' && data.theme.customColors) {
-      root.style.setProperty('--brand-accent', data.theme.customColors.accent);
-      root.style.setProperty('--brand-bg', data.theme.customColors.primary);
-      root.style.setProperty('--brand-secondary', data.theme.customColors.secondary);
-      root.style.setProperty('--brand-tertiary', data.theme.customColors.tertiary);
-      document.body.style.backgroundColor = data.theme.customColors.primary;
-      document.body.classList.add('custom-theme');
+    const body = document.body;
+    root.style.setProperty('--brand-accent', data.theme.accentColor);
+    let bg = '#0A0A0A';
+    if (isSwiss) bg = swissInk;
+    else if (data.theme.bgMode === 'light-minimal') bg = '#FFFFFF';
+    else if (data.theme.bgMode === 'midnight') bg = '#060814';
+    root.style.setProperty('--brand-bg', bg);
+    root.style.setProperty('--brand-secondary', bg);
+    root.style.setProperty('--brand-tertiary', bg);
+    root.style.setProperty('--brand-text', data.theme.bgMode === 'light-minimal' ? '#0A0A0A' : '#FFFFFF');
+    body.style.backgroundColor = bg;
+    body.classList.remove('custom-theme');
+
+    if (isSwiss) {
+      body.style.setProperty('--swiss-blue', swissInk);
+      body.style.setProperty('--swiss-paper', swissPaper);
+      body.style.setProperty('--swiss-panel', swissPanel);
     } else {
-      root.style.setProperty('--brand-accent', data.theme.accentColor);
-      let bg = '#0A0A0A';
-      if (isSwiss) bg = SWISS.blue;
-      else if (data.theme.bgMode === 'light-minimal') bg = '#FFFFFF';
-      else if (data.theme.bgMode === 'midnight') bg = '#060814';
-      else if (data.theme.bgMode === 'reference-hybrid') bg = '#0A0A0A';
-      else if (data.theme.bgMode === 'dark-obsidian') bg = '#0A0A0A';
-      root.style.setProperty('--brand-bg', bg);
-      root.style.setProperty('--brand-secondary', bg);
-      root.style.setProperty('--brand-tertiary', bg);
-      document.body.style.backgroundColor = bg;
-      document.body.classList.remove('custom-theme');
+      body.style.removeProperty('--swiss-blue');
+      body.style.removeProperty('--swiss-paper');
+      body.style.removeProperty('--swiss-panel');
     }
-    document.body.classList.toggle('light-mode', data.theme.bgMode === 'light-minimal');
-    document.body.classList.toggle('style-swiss', isSwiss);
-    root.style.setProperty(
-      '--font-heading',
-      isSwiss ? `'Archivo', sans-serif` : `'${data.theme.headingFont}', sans-serif`
-    );
-    root.style.setProperty(
-      '--font-body',
-      isSwiss ? `'Archivo', sans-serif` : `'${data.theme.bodyFont}', sans-serif`
-    );
+
+    body.classList.toggle('light-mode', data.theme.bgMode === 'light-minimal');
+    body.classList.toggle('style-swiss', isSwiss);
+    // Typography is a first-class control in both styles: Swiss no longer
+    // forces Archivo, it only seeds it when the style is first selected.
+    root.style.setProperty('--font-heading', `'${data.theme.headingFont}', sans-serif`);
+    root.style.setProperty('--font-body', `'${data.theme.bodyFont}', sans-serif`);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [data.theme, isSwiss]);
+  }, [data.theme, isSwiss, swissInk, swissPaper, swissPanel]);
 
   // Keyboard shortcut: Alt + A or Cmd/Ctrl + Shift + A
   // - When editorial mode is OFF: toggle CMS Studio
@@ -500,6 +510,7 @@ export const CMSProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if ((e.altKey && e.key.toLowerCase() === 'a') || (e.ctrlKey && e.shiftKey && e.key.toLowerCase() === 'a')) {
+        if (!CMS_ENABLED) return;
         e.preventDefault();
         if (editorialMode) {
           setEditorialUIHidden((prev) => !prev);
@@ -555,7 +566,21 @@ export const CMSProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         // Non-browser environment — the override state already covers it.
       }
     }
-    commit((prev) => ({ ...prev, theme: { ...prev.theme, ...thm } }), 'Theme system updated');
+
+    const next: Partial<ThemeConfig> = { ...thm };
+    const targetStyle = thm.uiStyle ?? uiStyle;
+    const enteringSwiss = thm.uiStyle === 'swiss' && data.theme.uiStyle !== 'swiss';
+
+    if (targetStyle === 'swiss') {
+      // Seed the poster grotesk once, on the actual style change; afterwards
+      // the user is free to pick any font for Swiss too.
+      if (enteringSwiss) {
+        next.headingFont = 'Archivo';
+        next.bodyFont = 'Archivo';
+      }
+    }
+
+    commit((prev) => ({ ...prev, theme: { ...prev.theme, ...next } }), 'Theme system updated');
   };
 
   const updateSections = (sections: SectionMeta[]) => {
@@ -748,6 +773,9 @@ export const CMSProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         darkBg,
         uiStyle,
         isSwiss,
+        swissInk,
+        swissPaper,
+        swissPanel,
         uiStyleOverride: styleOverride,
         accentContrast,
         accentText,
