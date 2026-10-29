@@ -187,12 +187,6 @@ export const Workflow: React.FC = () => {
                 <span>
                   <EditableText as="span" value="Phase" overrideKey={`workflow.phaseLabel.${step.id}`} label="Label fase" /> 0{idx + 1}
                 </span>
-                <span
-                  className="font-bold tracking-wide"
-                  style={{ color: isLight ? theme.accentColor : accentText }}
-                >
-                  <EditableText as="span" value="Execution →" overrideKey={`workflow.execution.${step.id}`} label="Teks execution" />
-                </span>
               </div>
             </div>
             </Reveal>
