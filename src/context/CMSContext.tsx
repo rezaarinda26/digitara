@@ -405,6 +405,9 @@ export const CMSProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   const uiStyle: UiStyle = styleOverride ?? data.theme.uiStyle ?? 'classic';
   const isSwiss = uiStyle === 'swiss';
+  // Modern style (uiStyle 'classic') wearing the Swiss duo palette: same two
+  // inks as Swiss, but the classic radii / gradients / shadows stay in place.
+  const isSwissDuo = !isSwiss && data.theme.bgMode === 'swiss-duo';
 
   const swissInk = SWISS.blue;
   const swissPaper = SWISS.paper;
@@ -427,7 +430,7 @@ export const CMSProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   // Shared dark background token so every dark surface reacts to the mode.
   // The Swiss style system is two-tone, so it overrides the dark surface.
-  const darkBg = isSwiss
+  const darkBg = isSwiss || isSwissDuo
     ? swissInk
     : data.theme.bgMode === 'midnight'
       ? '#060814'
@@ -474,7 +477,7 @@ export const CMSProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     const body = document.body;
     root.style.setProperty('--brand-accent', data.theme.accentColor);
     let bg = '#0A0A0A';
-    if (isSwiss) bg = swissInk;
+    if (isSwiss || isSwissDuo) bg = swissInk;
     else if (data.theme.bgMode === 'light-minimal') bg = '#FFFFFF';
     else if (data.theme.bgMode === 'midnight') bg = '#060814';
     root.style.setProperty('--brand-bg', bg);
@@ -484,7 +487,7 @@ export const CMSProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     body.style.backgroundColor = bg;
     body.classList.remove('custom-theme');
 
-    if (isSwiss) {
+    if (isSwiss || isSwissDuo) {
       body.style.setProperty('--swiss-blue', swissInk);
       body.style.setProperty('--swiss-paper', swissPaper);
       body.style.setProperty('--swiss-panel', swissPanel);
@@ -496,6 +499,7 @@ export const CMSProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
     body.classList.toggle('light-mode', data.theme.bgMode === 'light-minimal');
     body.classList.toggle('style-swiss', isSwiss);
+    body.classList.toggle('palette-swiss', isSwissDuo);
     // Typography is a first-class control in both styles: Swiss no longer
     // forces Archivo, it only seeds it when the style is first selected.
     root.style.setProperty('--font-heading', `'${data.theme.headingFont}', sans-serif`);

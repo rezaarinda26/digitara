@@ -431,6 +431,8 @@ export const AdminCMSModal: React.FC = () => {
                   style={{
                     backgroundColor: isSwiss
                       ? swissInk
+                      : data.theme.bgMode === 'swiss-duo'
+                        ? swissInk
                       : data.theme.bgMode === 'light-minimal'
                         ? '#FFFFFF'
                         : data.theme.bgMode === 'reference-hybrid'
@@ -441,6 +443,8 @@ export const AdminCMSModal: React.FC = () => {
                     borderColor: 'rgba(255,255,255,0.15)',
                     color: isSwiss
                       ? swissPaper
+                      : data.theme.bgMode === 'swiss-duo'
+                        ? swissPaper
                       : data.theme.bgMode === 'light-minimal' || data.theme.bgMode === 'reference-hybrid'
                         ? '#0A0A0A'
                         : '#FFFFFF',
@@ -456,6 +460,8 @@ export const AdminCMSModal: React.FC = () => {
                     <p className="text-xs opacity-75 font-light max-w-md">
                     {isSwiss
                       ? 'Mode Swiss: biru pekat & kertas hangat, dua tinta datar tanpa gradien.'
+                      : data.theme.bgMode === 'swiss-duo'
+                      ? 'Mode Swiss Palette: duo warna Swiss (kobalt & kertas hangat) dipakai di gaya Modern — gradien lembut, sudut membulat, dan bayangan tetap ada.'
                       : data.theme.bgMode === 'reference-hybrid'
                       ? 'Mode Referensi Gambar Aktif: Seksi Konten (About, Services, Works, Form) Putih Bersih + Hero/Footer Gelap Sinematik.'
                       : data.theme.bgMode === 'light-minimal'
@@ -604,6 +610,14 @@ export const AdminCMSModal: React.FC = () => {
                             label: 'Midnight Blue & Slate',
                             desc: 'Palet biru dongker sinematik pekat bernuansa tech studio masa depan.',
                             bgPreview: 'from-[#060814] to-[#0F172A]',
+                            textColor: 'text-white',
+                          },
+                          {
+                            id: 'swiss-duo',
+                            badge: 'PALET SWISS',
+                            label: 'Swiss Palette (Modern)',
+                            desc: 'Dua warna Swiss — kobalt pekat (#0B2B6B) untuk seksi gelap, kertas hangat (#F1F0EA) untuk seksi konten — dipakai gaya Modern: gradien lembut, sudut membulat, bayangan tipis.',
+                            bgPreview: 'from-[#0B2B6B] via-[#0A2459] to-[#F1F0EA]',
                             textColor: 'text-white',
                           },
                         ]

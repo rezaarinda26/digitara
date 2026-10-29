@@ -15,7 +15,14 @@ export interface AgencyConfig {
   };
 }
 
-export type ThemeMode = 'reference-hybrid' | 'dark-obsidian' | 'light-minimal' | 'midnight';
+export type ThemeMode =
+  | 'reference-hybrid'
+  | 'dark-obsidian'
+  | 'light-minimal'
+  | 'midnight'
+  /** Modern style wearing the Swiss duo: cobalt dark surfaces, warm paper
+   *  content sections. Style stays `classic`, only the two inks change. */
+  | 'swiss-duo';
 
 /**
  * Visual style system layered on top of the colour mode.

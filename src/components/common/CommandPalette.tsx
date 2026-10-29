@@ -31,6 +31,7 @@ interface Command {
 
 const THEME_LABELS: Record<ThemeMode, string> = {
   'reference-hybrid': 'Reference Hybrid',
+  'swiss-duo': 'Swiss Palette (Modern)',
   'light-minimal': 'Clean Light Minimalist',
   'dark-obsidian': 'Dark Mode Obsidian',
   midnight: 'Midnight Blue & Slate',

@@ -520,7 +520,8 @@
    completely untouched while this mode is off.
    ------------------------------------------------------------------------- */
 
-body.style-swiss {
+body.style-swiss,
+body.palette-swiss {
   --swiss-blue: #0B2B6B;
   --swiss-paper: #F1F0EA;
   --swiss-panel: #0A2459;
@@ -562,6 +563,25 @@ body.style-swiss .light-section,
 body.style-swiss .light-section > section,
 body.style-swiss .light-section > div {
   background-color: var(--swiss-paper) !important;
+}
+
+/* -------------------------------------------------------------------------
+   Modern style wearing the Swiss palette (theme.bgMode = 'swiss-duo').
+   Only the two inks change — cobalt for dark surfaces, warm paper for the
+   content sections. The classic radii, gradients, glass and shadows are
+   deliberately left alone, so this reads as Modern in Swiss colours.
+   ------------------------------------------------------------------------- */
+body.palette-swiss .light-section,
+body.palette-swiss .light-section > section,
+body.palette-swiss .light-section > div {
+  background-color: var(--swiss-paper) !important;
+}
+
+/* Near-black fills become the cobalt ink, so no third colour sits on the
+   cobalt surfaces (marquee ribbons, dark cards, image placeholders). */
+body.palette-swiss :is(main, footer)
+  :is(.bg-neutral-900, .bg-neutral-950, .bg-black) {
+  background-color: var(--swiss-blue) !important;
 }
 
 /* Headlines are set in lowercase grotesk, the style's strongest tell. */
