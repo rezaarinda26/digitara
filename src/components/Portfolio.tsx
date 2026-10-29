@@ -439,12 +439,12 @@ export const Portfolio: React.FC = () => {
                             </span>
                           ) : (
                             <span
-                              className={`grid h-10 w-10 shrink-0 place-items-center rounded-full transition-all duration-300 group-hover:rotate-90 group-hover:scale-105 ${
+                              className={`grid h-10 w-10 shrink-0 place-items-center rounded-full transition-all duration-300 group-hover:-translate-y-0.5 group-hover:scale-105 ${
                                 isLight ? 'bg-neutral-950 text-white' : 'bg-white text-neutral-950'
                               }`}
                               aria-hidden="true"
                             >
-                              <Plus className="h-4 w-4" />
+                              <ArrowUpRight className="h-4 w-4" />
                             </span>
                           )}
                         </div>
