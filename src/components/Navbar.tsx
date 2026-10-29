@@ -46,8 +46,8 @@ export const Navbar: React.FC = () => {
   }, []);
 
   const navLinks = [
-    { id: 'services', section: 'services', label: 'Services', href: '#services' },
     { id: 'about', section: 'about', label: 'About', href: '#about' },
+    { id: 'services', section: 'services', label: 'Services', href: '#services' },
     { id: 'works', section: 'portfolio', label: 'Works', href: '#portfolio' },
     { id: 'process', section: 'workflow', label: 'Process', href: '#workflow' },
     { id: 'contact', section: 'contact', label: 'Contact', href: '#contact' },
