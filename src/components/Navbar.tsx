@@ -53,8 +53,10 @@ export const Navbar: React.FC = () => {
     { id: 'contact', section: 'contact', label: 'Contact', href: '#contact' },
   ];
 
-  // Highlight the nav entry for the section currently in view.
-  const spyIds = useMemo(() => navLinks.map((l) => l.section), []);
+  // The menu order is intentionally Services → About, but scroll-spy must
+  // inspect sections in their actual document order. Otherwise About (which
+  // appears above Services) overwrites Services after it has been detected.
+  const spyIds = useMemo(() => ['about', 'services', 'portfolio', 'workflow', 'contact'], []);
   const { activeId: activeSection, progress: sectionProgress } = useScrollSpy(spyIds);
 
   const handleNavClick = (href: string) => {
