@@ -16,9 +16,9 @@
     }
   },
   "theme": {
-    "bgMode": "reference-hybrid",
+    "bgMode": "swiss-duo",
     "uiStyle": "classic",
-    "accentColor": "#6B5CE7",
+    "accentColor": "#2563EB",
     "headingFont": "Plus Jakarta Sans",
     "bodyFont": "Plus Jakarta Sans",
     "surfaceOpacity": 0.9
@@ -678,5 +678,5 @@
       "footer.madeWith": "Reza Arinda Pratama"
     }
   },
-  "__appliedAt": "2026-10-29T01:21:59.189Z"
+  "__appliedAt": "2026-10-29T07:50:19.379Z"
 }
