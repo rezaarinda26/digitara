@@ -16,7 +16,13 @@
     color: #FFFFFF;
   }
 
-  h1, h2, h3, h4, h5, h6, .font-heading {
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6,
+  .font-heading {
     font-family: var(--font-heading);
   }
 
@@ -71,8 +77,13 @@
 
 /* Infinite marquee keyframe */
 @keyframes marquee {
-  0% { transform: translateX(0%); }
-  100% { transform: translateX(-50%); }
+  0% {
+    transform: translateX(0%);
+  }
+
+  100% {
+    transform: translateX(-50%);
+  }
 }
 
 .animate-marquee {
@@ -97,23 +108,49 @@
 /* ------------------------------------------------------------------ */
 
 @keyframes dg-fade-in {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
 }
 
 @keyframes dg-slide-from-top {
-  from { opacity: 0; transform: translateY(-1rem); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(-1rem);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 @keyframes dg-slide-from-bottom {
-  from { opacity: 0; transform: translateY(1.25rem); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(1.25rem);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 @keyframes dg-zoom-in {
-  from { opacity: 0; transform: scale(0.95); }
-  to { opacity: 1; transform: scale(1); }
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
 }
 
 /* Accordion smooth height: animates between 0fr and 1fr grid rows so the
@@ -123,10 +160,12 @@
   grid-template-rows: 0fr;
   transition: grid-template-rows 320ms cubic-bezier(0.22, 1, 0.36, 1);
 }
+
 .dg-collapsible.is-open {
   grid-template-rows: 1fr;
 }
-.dg-collapsible > * {
+
+.dg-collapsible>* {
   overflow: hidden;
   min-height: 0;
 }
@@ -137,6 +176,7 @@
   transform: translateY(8px);
   transition: opacity 300ms ease, transform 320ms cubic-bezier(0.22, 1, 0.36, 1);
 }
+
 .dg-collapsible.is-open .dg-accordion-content {
   opacity: 1;
   transform: translateY(0);
@@ -147,6 +187,7 @@
 .dg-icon-toggle {
   transition: transform 300ms cubic-bezier(0.22, 1, 0.36, 1);
 }
+
 .dg-icon-toggle.is-open {
   transform: rotate(180deg);
 }
@@ -155,61 +196,106 @@
 .animate-fade-in {
   animation: dg-fade-in 300ms ease-out both;
 }
+
 .animate-slide-in-top {
   animation: dg-slide-from-top 250ms cubic-bezier(0.22, 1, 0.36, 1) both;
 }
+
 .animate-slide-in-bottom {
   animation: dg-slide-from-bottom 300ms cubic-bezier(0.22, 1, 0.36, 1) both;
 }
+
 .animate-zoom-in {
   animation: dg-zoom-in 250ms cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
 /* Exit animations (reverse of the entrance ones). */
 @keyframes dg-fade-out {
-  from { opacity: 1; }
-  to { opacity: 0; }
+  from {
+    opacity: 1;
+  }
+
+  to {
+    opacity: 0;
+  }
 }
 
 @keyframes dg-zoom-out {
-  from { opacity: 1; transform: scale(1); }
-  to { opacity: 0; transform: scale(0.95); }
+  from {
+    opacity: 1;
+    transform: scale(1);
+  }
+
+  to {
+    opacity: 0;
+    transform: scale(0.95);
+  }
 }
 
 .animate-fade-out {
   animation: dg-fade-out 220ms ease-in both;
 }
+
 .animate-zoom-out {
   animation: dg-zoom-out 220ms ease-in both;
 }
 
 /* Gallery slide transitions for the project modal. */
 @keyframes dg-slide-in-right {
-  from { opacity: 0; transform: translateX(6%); }
-  to { opacity: 1; transform: translateX(0); }
+  from {
+    opacity: 0;
+    transform: translateX(6%);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
 }
 
 @keyframes dg-slide-in-left {
-  from { opacity: 0; transform: translateX(-6%); }
-  to { opacity: 1; transform: translateX(0); }
+  from {
+    opacity: 0;
+    transform: translateX(-6%);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
 }
 
 .animate-slide-in-right {
   animation: dg-slide-in-right 350ms cubic-bezier(0.22, 1, 0.36, 1) both;
 }
+
 .animate-slide-in-left {
   animation: dg-slide-in-left 350ms cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
 /* Portfolio filter interactions. */
 @keyframes dg-filter-pop {
-  from { transform: scale(0.6); opacity: 0.5; }
-  to { transform: scale(1); opacity: 1; }
+  from {
+    transform: scale(0.6);
+    opacity: 0.5;
+  }
+
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
 }
 
 @keyframes dg-filter-grid {
-  from { opacity: 0; transform: translateY(12px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .animate-filter-pop {
@@ -244,6 +330,7 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
+
   .portfolio-card,
   .portfolio-card:hover {
     transform: none;
@@ -260,12 +347,30 @@
   transition-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
   will-change: opacity, transform;
 }
-.reveal-up { transform: translateY(32px); }
-.reveal-down { transform: translateY(-32px); }
-.reveal-left { transform: translateX(-40px); }
-.reveal-right { transform: translateX(40px); }
-.reveal-fade { transform: none; }
-.reveal-zoom { transform: scale(0.92); }
+
+.reveal-up {
+  transform: translateY(32px);
+}
+
+.reveal-down {
+  transform: translateY(-32px);
+}
+
+.reveal-left {
+  transform: translateX(-40px);
+}
+
+.reveal-right {
+  transform: translateX(40px);
+}
+
+.reveal-fade {
+  transform: none;
+}
+
+.reveal-zoom {
+  transform: scale(0.92);
+}
 
 /* Mask reveal: a curtain overlay collapses away to uncover the content.
    NOTE 1: the target element itself must never be clipped, because Chrome
@@ -281,6 +386,7 @@
   transition-duration: 700ms;
   will-change: opacity;
 }
+
 .reveal-mask::after {
   content: '';
   position: absolute;
@@ -293,6 +399,7 @@
   transition: transform 900ms cubic-bezier(0.16, 1, 0.3, 1);
   transition-delay: var(--reveal-delay, 0ms);
 }
+
 .reveal-mask.is-visible::after {
   transform: scaleY(0);
 }
@@ -303,12 +410,19 @@
   background-position: 0% 50%;
   animation: dg-shimmer 6s linear infinite;
 }
+
 @keyframes dg-shimmer {
-  0% { background-position: 120% 50%; }
-  100% { background-position: -20% 50%; }
+  0% {
+    background-position: 120% 50%;
+  }
+
+  100% {
+    background-position: -20% 50%;
+  }
 }
 
-/* Hero entrance: staggered fade-up that plays once on first paint. */.dg-hero-in {
+/* Hero entrance: staggered fade-up that plays once on first paint. */
+.dg-hero-in {
   opacity: 0;
   transform: translate3d(0, 28px, 0);
   transition:
@@ -317,19 +431,33 @@
   will-change: opacity, transform;
   transition-delay: var(--hero-delay, 0ms);
 }
+
 .dg-hero-in.is-in {
   opacity: 1;
   transform: translate3d(0, 0, 0);
 }
-.dg-hero-in-1 { --hero-delay: 60ms; }
-.dg-hero-in-2 { --hero-delay: 160ms; }
-.dg-hero-in-3 { --hero-delay: 280ms; }
-.dg-hero-in-4 { --hero-delay: 420ms; }
+
+.dg-hero-in-1 {
+  --hero-delay: 60ms;
+}
+
+.dg-hero-in-2 {
+  --hero-delay: 160ms;
+}
+
+.dg-hero-in-3 {
+  --hero-delay: 280ms;
+}
+
+.dg-hero-in-4 {
+  --hero-delay: 420ms;
+}
 
 /* Accent underline that grows from the left on hover. */
 .dg-underline {
   position: relative;
 }
+
 .dg-underline::after {
   content: '';
   position: absolute;
@@ -342,6 +470,7 @@
   transition: transform 420ms cubic-bezier(0.22, 1, 0.36, 1);
   background: currentColor;
 }
+
 .dg-underline:hover::after {
   transform: scaleX(1);
 }
@@ -360,51 +489,147 @@
 .cms-light .bg-\[\#0D0D11\] {
   background-color: #FFFFFF;
 }
-.cms-light .bg-black\/30 { background-color: rgba(0, 0, 0, 0.03); }
-.cms-light .bg-black\/40 { background-color: rgba(0, 0, 0, 0.04); }
-.cms-light .bg-black\/60 { background-color: rgba(0, 0, 0, 0.06); }
-.cms-light .bg-black\/80 { background-color: rgba(0, 0, 0, 0.08); }
-.cms-light .bg-black\/90 { background-color: rgba(255, 255, 255, 0.7); }
 
-.cms-light .bg-white\/5 { background-color: rgba(0, 0, 0, 0.04); }
-.cms-light .bg-white\/10 { background-color: rgba(0, 0, 0, 0.07); }
-.cms-light .bg-white\/20 { background-color: rgba(0, 0, 0, 0.12); }
+.cms-light .bg-black\/30 {
+  background-color: rgba(0, 0, 0, 0.03);
+}
 
-.cms-light .bg-white\/\[0\.01\] { background-color: rgba(0, 0, 0, 0.015); }
-.cms-light .bg-white\/\[0\.02\] { background-color: rgba(0, 0, 0, 0.025); }
-.cms-light .bg-white\/\[0\.03\] { background-color: rgba(0, 0, 0, 0.035); }
-.cms-light .bg-white\/\[0\.04\] { background-color: rgba(0, 0, 0, 0.045); }
-.cms-light .bg-white\/\[0\.06\] { background-color: rgba(0, 0, 0, 0.06); }
-.cms-light .bg-white\/\[0\.08\] { background-color: rgba(0, 0, 0, 0.08); }
+.cms-light .bg-black\/40 {
+  background-color: rgba(0, 0, 0, 0.04);
+}
+
+.cms-light .bg-black\/60 {
+  background-color: rgba(0, 0, 0, 0.06);
+}
+
+.cms-light .bg-black\/80 {
+  background-color: rgba(0, 0, 0, 0.08);
+}
+
+.cms-light .bg-black\/90 {
+  background-color: rgba(255, 255, 255, 0.7);
+}
+
+.cms-light .bg-white\/5 {
+  background-color: rgba(0, 0, 0, 0.04);
+}
+
+.cms-light .bg-white\/10 {
+  background-color: rgba(0, 0, 0, 0.07);
+}
+
+.cms-light .bg-white\/20 {
+  background-color: rgba(0, 0, 0, 0.12);
+}
+
+.cms-light .bg-white\/\[0\.01\] {
+  background-color: rgba(0, 0, 0, 0.015);
+}
+
+.cms-light .bg-white\/\[0\.02\] {
+  background-color: rgba(0, 0, 0, 0.025);
+}
+
+.cms-light .bg-white\/\[0\.03\] {
+  background-color: rgba(0, 0, 0, 0.035);
+}
+
+.cms-light .bg-white\/\[0\.04\] {
+  background-color: rgba(0, 0, 0, 0.045);
+}
+
+.cms-light .bg-white\/\[0\.06\] {
+  background-color: rgba(0, 0, 0, 0.06);
+}
+
+.cms-light .bg-white\/\[0\.08\] {
+  background-color: rgba(0, 0, 0, 0.08);
+}
 
 /* Hover states: keep a clear, visible contrast in light mode. */
-.cms-light .hover\:bg-white\/5:hover { background-color: rgba(0, 0, 0, 0.05); }
-.cms-light .hover\:bg-white\/10:hover { background-color: rgba(0, 0, 0, 0.09); }
-.cms-light .hover\:bg-white\/20:hover { background-color: rgba(0, 0, 0, 0.15); }
-.cms-light .hover\:bg-white\/\[0\.04\]:hover { background-color: rgba(0, 0, 0, 0.05); }
-.cms-light .hover\:bg-white\/\[0\.06\]:hover { background-color: rgba(0, 0, 0, 0.07); }
-.cms-light .hover\:bg-white\/\[0\.08\]:hover { background-color: rgba(0, 0, 0, 0.09); }
-.cms-light .hover\:bg-black\/30:hover { background-color: rgba(0, 0, 0, 0.05); }
-.cms-light .hover\:text-white:hover { color: #111113; }
+.cms-light .hover\:bg-white\/5:hover {
+  background-color: rgba(0, 0, 0, 0.05);
+}
+
+.cms-light .hover\:bg-white\/10:hover {
+  background-color: rgba(0, 0, 0, 0.09);
+}
+
+.cms-light .hover\:bg-white\/20:hover {
+  background-color: rgba(0, 0, 0, 0.15);
+}
+
+.cms-light .hover\:bg-white\/\[0\.04\]:hover {
+  background-color: rgba(0, 0, 0, 0.05);
+}
+
+.cms-light .hover\:bg-white\/\[0\.06\]:hover {
+  background-color: rgba(0, 0, 0, 0.07);
+}
+
+.cms-light .hover\:bg-white\/\[0\.08\]:hover {
+  background-color: rgba(0, 0, 0, 0.09);
+}
+
+.cms-light .hover\:bg-black\/30:hover {
+  background-color: rgba(0, 0, 0, 0.05);
+}
+
+.cms-light .hover\:text-white:hover {
+  color: #111113;
+}
+
 .cms-light .hover\:border-white\/40:hover,
-.cms-light .hover\:border-white\/50:hover { border-color: rgba(0, 0, 0, 0.35); }
+.cms-light .hover\:border-white\/50:hover {
+  border-color: rgba(0, 0, 0, 0.35);
+}
 
 /* Reset Defaults hover - keep red accent in light mode like dark mode */
-.cms-light .hover\:bg-rose-500\/20:hover { background-color: rgba(244, 63, 94, 0.16); }
-.cms-light .hover\:text-rose-300:hover { color: rgb(225, 29, 72); }
+.cms-light .hover\:bg-rose-500\/20:hover {
+  background-color: rgba(244, 63, 94, 0.16);
+}
 
-.cms-light .text-white { color: #111113; }
-.cms-light .text-neutral-200 { color: #333338; }
-.cms-light .text-neutral-300 { color: #4b4b52; }
-.cms-light .text-neutral-400 { color: #6b6b73; }
+.cms-light .hover\:text-rose-300:hover {
+  color: rgb(225, 29, 72);
+}
 
-.cms-light .border-white { border-color: rgba(0, 0, 0, 0.2); }
-.cms-light .border-white\/5 { border-color: rgba(0, 0, 0, 0.06); }
-.cms-light .border-white\/10 { border-color: rgba(0, 0, 0, 0.1); }
-.cms-light .border-white\/15 { border-color: rgba(0, 0, 0, 0.12); }
-.cms-light .border-white\/20 { border-color: rgba(0, 0, 0, 0.16); }
+.cms-light .text-white {
+  color: #111113;
+}
 
-.cms-light .divide-white\/\[0\.06\] > :not([hidden]) ~ :not([hidden]) {
+.cms-light .text-neutral-200 {
+  color: #333338;
+}
+
+.cms-light .text-neutral-300 {
+  color: #4b4b52;
+}
+
+.cms-light .text-neutral-400 {
+  color: #6b6b73;
+}
+
+.cms-light .border-white {
+  border-color: rgba(0, 0, 0, 0.2);
+}
+
+.cms-light .border-white\/5 {
+  border-color: rgba(0, 0, 0, 0.06);
+}
+
+.cms-light .border-white\/10 {
+  border-color: rgba(0, 0, 0, 0.1);
+}
+
+.cms-light .border-white\/15 {
+  border-color: rgba(0, 0, 0, 0.12);
+}
+
+.cms-light .border-white\/20 {
+  border-color: rgba(0, 0, 0, 0.16);
+}
+
+.cms-light .divide-white\/\[0\.06\]> :not([hidden])~ :not([hidden]) {
   border-color: rgba(0, 0, 0, 0.06);
 }
 
@@ -432,30 +657,63 @@
 /* Light sections: raise the contrast of muted neutral text so it     */
 /* clears WCAG AA (4.5:1) on white and near-white surfaces.          */
 /* ------------------------------------------------------------------ */
-.light-section .text-neutral-300 { color: #3f3f46; }
-.light-section .text-neutral-400 { color: #525252; }
-.light-section .text-neutral-500 { color: #525252; }
-.light-section .text-neutral-600 { color: #3f3f46; }
-.light-section .text-white\/60 { color: rgba(0, 0, 0, 0.6); }
-.light-section .placeholder\:text-neutral-500::placeholder { color: #6b6b73; }
+.light-section .text-neutral-300 {
+  color: #3f3f46;
+}
+
+.light-section .text-neutral-400 {
+  color: #525252;
+}
+
+.light-section .text-neutral-500 {
+  color: #525252;
+}
+
+.light-section .text-neutral-600 {
+  color: #3f3f46;
+}
+
+.light-section .text-white\/60 {
+  color: rgba(0, 0, 0, 0.6);
+}
+
+.light-section .placeholder\:text-neutral-500::placeholder {
+  color: #6b6b73;
+}
 
 /* Dark surfaces nested inside a light section keep their own muted colours
    (e.g. the portfolio marquee ribbon is near-black even in light mode). */
-.light-section .dark-surface .text-neutral-300 { color: #d4d4d8; }
-.light-section .dark-surface .text-neutral-400 { color: #a3a3a3; }
-.light-section .dark-surface .text-neutral-500 { color: #a3a3a3; }
-.light-section .dark-surface .text-neutral-600 { color: #d4d4d8; }
+.light-section .dark-surface .text-neutral-300 {
+  color: #d4d4d8;
+}
+
+.light-section .dark-surface .text-neutral-400 {
+  color: #a3a3a3;
+}
+
+.light-section .dark-surface .text-neutral-500 {
+  color: #a3a3a3;
+}
+
+.light-section .dark-surface .text-neutral-600 {
+  color: #d4d4d8;
+}
 
 /* Custom accent cursor replaces the native one only on fine pointers
    and when motion is allowed. */
 @media (pointer: fine) and (prefers-reduced-motion: no-preference) {
+
+  /* Hide the native pointer everywhere, including elements that set their own
+     cursor utility (e.g. About badges use `cursor-default`), otherwise both
+     the native arrow and the accent ring show at once. */
   body.cursor-custom,
-  body.cursor-custom a,
-  body.cursor-custom button,
-  body.cursor-custom [role="button"],
-  body.cursor-custom label[for],
-  body.cursor-custom select {
+  body.cursor-custom * {
     cursor: none;
+  }
+
+  /* Entry fields keep a caret so typing still has a native cue. */
+  body.cursor-custom :is(input, textarea, [contenteditable="true"]) {
+    cursor: text;
   }
 }
 
@@ -467,11 +725,13 @@
   clip-path: none !important;
   transition: none !important;
 }
+
 .no-reveal .reveal-mask::after {
   display: none !important;
 }
 
 @media (prefers-reduced-motion: reduce) {
+
   .dg-collapsible,
   .dg-accordion-content,
   .dg-icon-toggle,
@@ -494,6 +754,7 @@
   .reveal-mask {
     clip-path: none !important;
   }
+
   .reveal-mask::after {
     display: none !important;
   }
@@ -530,39 +791,72 @@ body.palette-swiss {
 body.style-swiss .swiss-fill-ink {
   background-color: var(--swiss-blue);
 }
+
 body.style-swiss .swiss-fill-paper {
   background-color: var(--swiss-paper);
 }
+
 body.style-swiss .swiss-tint-paper {
   background-color: color-mix(in srgb, var(--swiss-paper) 6%, transparent);
 }
+
 body.style-swiss .swiss-tint-paper:hover {
   background-color: color-mix(in srgb, var(--swiss-paper) 10%, transparent);
 }
+
 body.style-swiss .swiss-on-ink {
   color: var(--swiss-paper);
 }
+
 body.style-swiss .swiss-on-ink-soft:hover {
   background-color: color-mix(in srgb, var(--swiss-paper) 10%, transparent);
 }
+
 body.style-swiss .swiss-on-paper {
   color: var(--swiss-blue);
 }
+
 body.style-swiss .swiss-on-paper-soft:hover {
   background-color: color-mix(in srgb, var(--swiss-blue) 10%, transparent);
 }
+
 body.style-swiss .swiss-rule-ink {
   border-color: color-mix(in srgb, var(--swiss-paper) 20%, transparent);
 }
+
 body.style-swiss .swiss-rule-paper {
   border-color: color-mix(in srgb, var(--swiss-blue) 15%, transparent);
 }
 
+/* Back-to-top: a square paper chip with an ink arrow and a linear progress
+   rule. Hovering inverts the two inks instead of lifting a shadow. */
+body.style-swiss .back-to-top {
+  background-color: var(--swiss-paper) !important;
+  color: var(--swiss-blue) !important;
+  border-color: var(--swiss-blue) !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+body.style-swiss .back-to-top:hover {
+  background-color: var(--swiss-blue) !important;
+  color: var(--swiss-paper) !important;
+}
+
 /* Content sections become warm paper instead of pure white. */
 body.style-swiss .light-section,
-body.style-swiss .light-section > section,
-body.style-swiss .light-section > div {
+body.style-swiss .light-section>section,
+body.style-swiss .light-section>div {
   background-color: var(--swiss-paper) !important;
+}
+
+/* The mask-reveal curtain on those sections must match the paper fill too:
+   the inline pure-white curtain otherwise flashes a lighter rectangle while
+   the section titles wipe in. */
+body.style-swiss .light-section .reveal-mask {
+  --reveal-curtain: var(--swiss-paper) !important;
 }
 
 /* -------------------------------------------------------------------------
@@ -572,15 +866,14 @@ body.style-swiss .light-section > div {
    deliberately left alone, so this reads as Modern in Swiss colours.
    ------------------------------------------------------------------------- */
 body.palette-swiss .light-section,
-body.palette-swiss .light-section > section,
-body.palette-swiss .light-section > div {
+body.palette-swiss .light-section>section,
+body.palette-swiss .light-section>div {
   background-color: var(--swiss-paper) !important;
 }
 
 /* Near-black fills become the cobalt ink, so no third colour sits on the
    cobalt surfaces (marquee ribbons, dark cards, image placeholders). */
-body.palette-swiss :is(main, footer)
-  :is(.bg-neutral-900, .bg-neutral-950, .bg-black) {
+body.palette-swiss :is(main, footer) :is(.bg-neutral-900, .bg-neutral-950, .bg-black) {
   background-color: var(--swiss-blue) !important;
 }
 
@@ -605,12 +898,6 @@ body.style-swiss :is(main, footer) *:not(:focus-visible) {
   box-shadow: none !important;
 }
 
-/* The collage tilt belongs to the classic look; Swiss grids stay orthogonal. */
-body.style-swiss .portfolio-card,
-body.style-swiss .portfolio-card:hover {
-  transform: none;
-}
-
 /* The portfolio stage becomes a flat cobalt block (its inline accent
    gradient and glow belong to the classic look). */
 body.style-swiss .portfolio-stage {
@@ -618,8 +905,129 @@ body.style-swiss .portfolio-stage {
   box-shadow: none !important;
 }
 
-body.style-swiss :is(main, footer)
-  *:not(input):not(textarea):not(select):not(img):not(video):not(canvas) {
+/* ---------------------------------------------------------------------------
+   Swiss portfolio case-study modal
+   The modal portals into <body>, outside the main/footer scope used by the
+   section overrides above, so its shell is dressed here: paper panel, cobalt
+   ink, hairline rules, square corners, no glass and no shadows.
+   ------------------------------------------------------------------------- */
+body.style-swiss .portfolio-modal-overlay {
+  background-color: color-mix(in srgb, var(--swiss-blue) 94%, transparent) !important;
+  backdrop-filter: none !important;
+}
+
+body.style-swiss .portfolio-modal {
+  background-color: var(--swiss-paper) !important;
+  color: var(--swiss-blue) !important;
+  border-color: var(--swiss-blue) !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+}
+
+body.style-swiss .portfolio-modal-gallery {
+  background-color: var(--swiss-blue) !important;
+}
+
+body.style-swiss .portfolio-modal-stage {
+  background-color: var(--swiss-panel) !important;
+}
+
+body.style-swiss .portfolio-modal-info {
+  background-color: var(--swiss-paper) !important;
+  border-color: color-mix(in srgb, var(--swiss-blue) 28%, transparent) !important;
+}
+
+/* All modal copy is set in the two inks. */
+body.style-swiss .portfolio-modal-info :is(.text-white, .text-neutral-900, .text-neutral-950),
+body.style-swiss .portfolio-modal-info h2 {
+  color: var(--swiss-blue) !important;
+}
+
+body.style-swiss .portfolio-modal-info h2 {
+  text-transform: lowercase;
+  letter-spacing: -0.015em;
+}
+
+body.style-swiss .portfolio-modal-info :is(.text-neutral-300,
+  .text-neutral-400,
+  .text-neutral-500,
+  .text-neutral-600,
+  .text-neutral-700) {
+  color: color-mix(in srgb, var(--swiss-blue) 68%, transparent) !important;
+}
+
+/* Accent details (category, key metric) join the single ink. */
+body.style-swiss .portfolio-modal-info .portfolio-modal-accent {
+  color: var(--swiss-blue) !important;
+}
+
+body.style-swiss .portfolio-modal-panel {
+  background-color: transparent !important;
+  border-color: color-mix(in srgb, var(--swiss-blue) 24%, transparent) !important;
+  border-radius: 0 !important;
+}
+
+body.style-swiss .portfolio-modal-footer {
+  border-color: color-mix(in srgb, var(--swiss-blue) 28%, transparent) !important;
+}
+
+/* Controls are square paper chips with an ink hairline. */
+body.style-swiss .portfolio-modal-control {
+  background-color: var(--swiss-paper) !important;
+  color: var(--swiss-blue) !important;
+  border-color: var(--swiss-blue) !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+}
+
+body.style-swiss .portfolio-modal-control:hover {
+  background-color: color-mix(in srgb, var(--swiss-blue) 8%, var(--swiss-paper)) !important;
+  box-shadow: none !important;
+  transform: none !important;
+}
+
+body.style-swiss .portfolio-modal-counter {
+  background-color: var(--swiss-paper) !important;
+  color: var(--swiss-blue) !important;
+  border-color: var(--swiss-blue) !important;
+  border-radius: 0 !important;
+  backdrop-filter: none !important;
+}
+
+body.style-swiss .portfolio-modal-thumbs {
+  background-color: var(--swiss-paper) !important;
+  border-top-color: color-mix(in srgb, var(--swiss-blue) 28%, transparent) !important;
+}
+
+body.style-swiss .portfolio-modal-thumb {
+  border-radius: 0 !important;
+  border-color: color-mix(in srgb, var(--swiss-blue) 22%, transparent) !important;
+  box-shadow: none !important;
+}
+
+body.style-swiss .portfolio-modal-thumb-active {
+  border-color: var(--swiss-blue) !important;
+}
+
+body.style-swiss .portfolio-modal-thumb:hover {
+  transform: none !important;
+  box-shadow: none !important;
+}
+
+body.style-swiss .portfolio-modal-info .portfolio-modal-cta {
+  background-color: var(--swiss-blue) !important;
+  color: var(--swiss-paper) !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+}
+
+body.style-swiss .portfolio-modal-info .portfolio-modal-cta:hover {
+  background-color: var(--swiss-panel) !important;
+  filter: none !important;
+  transform: none !important;
+}
+
+body.style-swiss :is(main, footer) *:not(input):not(textarea):not(select):not(img):not(video):not(canvas) {
   border-radius: 0 !important;
 }
 
@@ -634,6 +1042,7 @@ body.style-swiss :is(main, footer)
     opacity: 0;
     transform: translateY(32px) scaleY(0.96);
   }
+
   to {
     opacity: 1;
     transform: translateY(0) scaleY(1);
@@ -646,8 +1055,7 @@ body.style-swiss :is(main, footer)
 
 /* Ambient accent glow orbs are a classic effect; Swiss surfaces stay flat.
    (The five blur-* sizes below are used exclusively by those orbs.) */
-body.style-swiss
-  :is(.blur-\[130px\], .blur-\[140px\], .blur-\[150px\], .blur-\[160px\], .blur-\[170px\]) {
+body.style-swiss :is(.blur-\[130px\], .blur-\[140px\], .blur-\[150px\], .blur-\[160px\], .blur-\[170px\]) {
   display: none !important;
 }
 
@@ -672,33 +1080,29 @@ body.style-swiss .mid-banner-photo {
 
 /* Two inks only. Classic white/grey card fills become paper — a Swiss card is
    defined by its hairline rule, never by a lighter fill. */
-body.style-swiss :is(main, footer)
-  :is(
-    .bg-white,
-    .bg-neutral-50,
-    .bg-neutral-50\/90,
-    .bg-neutral-100,
-    .bg-neutral-100\/60,
-    .bg-\[\#FAFAFA\],
-    .bg-\[\#F7F7F8\]
-  ) {
+body.style-swiss :is(main, footer) :is(.bg-white,
+  .bg-neutral-50,
+  .bg-neutral-50\/90,
+  .bg-neutral-100,
+  .bg-neutral-100\/60,
+  .bg-\[\#FAFAFA\],
+  .bg-\[\#F7F7F8\]):not(.dg-accordion-content) {
   background-color: var(--swiss-paper) !important;
 }
 
 /* Near-black fills become the cobalt ink (marquee ribbons, selected pills,
    modal chrome, image placeholders). Semi-transparent black overlays become
    the panel ink, which is what Custom mode's Secondary colour drives. */
-body.style-swiss :is(main, footer)
-  :is(.bg-neutral-900, .bg-neutral-950) {
+body.style-swiss :is(main, footer) :is(.bg-neutral-900, .bg-neutral-950) {
   background-color: var(--swiss-blue) !important;
 }
+
 body.style-swiss :is(main, footer) :is(.bg-black\/60, .bg-black\/40) {
   background-color: var(--swiss-panel) !important;
 }
 
 /* Hover feedback without gradients: the ink tints the paper a little. */
-body.style-swiss :is(main, footer)
-  :is(.hover\:bg-white, .hover\:bg-neutral-50, .hover\:bg-neutral-100):hover {
+body.style-swiss :is(main, footer) :is(.hover\:bg-white, .hover\:bg-neutral-50, .hover\:bg-neutral-100):hover {
   background-color: color-mix(in srgb, var(--swiss-blue) 7%, transparent) !important;
 }
 
@@ -707,27 +1111,24 @@ body.style-swiss :is(main, footer)
 body.style-swiss main .fill-amber-400 {
   fill: var(--swiss-blue) !important;
 }
+
 body.style-swiss main .fill-amber-400.text-amber-400 {
   color: var(--swiss-blue) !important;
 }
 
 /* Hairlines: cobalt rules on paper… */
-body.style-swiss :is(main, footer)
-  :is(.border-neutral-200, .border-neutral-200\/90, .border-neutral-300, .border-neutral-300\/80) {
+body.style-swiss :is(main, footer) :is(.border-neutral-200, .border-neutral-200\/90, .border-neutral-300, .border-neutral-300\/80) {
   border-color: color-mix(in srgb, var(--swiss-blue) 28%, transparent) !important;
 }
 
 /* …paper rules on cobalt. */
-body.style-swiss :is(main, footer)
-  :is(
-    .border-white\/5,
-    .border-white\/10,
-    .border-white\/\[0.05\],
-    .border-white\/\[0.06\],
-    .border-white\/\[0.08\],
-    .border-white\/25,
-    .border-white\/30
-  ) {
+body.style-swiss :is(main, footer) :is(.border-white\/5,
+  .border-white\/10,
+  .border-white\/\[0.05\],
+  .border-white\/\[0.06\],
+  .border-white\/\[0.08\],
+  .border-white\/25,
+  .border-white\/30) {
   border-color: color-mix(in srgb, var(--swiss-paper) 35%, transparent) !important;
 }
 
@@ -741,13 +1142,32 @@ body.style-swiss .reveal {
   transition-duration: 520ms;
   transition-timing-function: cubic-bezier(0.2, 0.8, 0.2, 1);
 }
-body.style-swiss .reveal-up { transform: translateY(18px); }
-body.style-swiss .reveal-down { transform: translateY(-14px); }
-body.style-swiss .reveal-left { transform: translateX(24px); }
-body.style-swiss .reveal-right { transform: translateX(24px); }
+
+body.style-swiss .reveal-up {
+  transform: translateY(18px);
+}
+
+body.style-swiss .reveal-down {
+  transform: translateY(-14px);
+}
+
+body.style-swiss .reveal-left {
+  transform: translateX(24px);
+}
+
+body.style-swiss .reveal-right {
+  transform: translateX(24px);
+}
+
 /* No zoom-pop in Swiss: the zoom variant degrades to a plain fade. */
-body.style-swiss .reveal-zoom { transform: none; }
-body.style-swiss .reveal-mask { transition-duration: 520ms; }
+body.style-swiss .reveal-zoom {
+  transform: none;
+}
+
+body.style-swiss .reveal-mask {
+  transition-duration: 520ms;
+}
+
 body.style-swiss .reveal-mask::after {
   transition-duration: 620ms;
   transition-timing-function: cubic-bezier(0.2, 0.8, 0.2, 1);

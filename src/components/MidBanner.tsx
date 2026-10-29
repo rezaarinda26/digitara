@@ -1,6 +1,6 @@
 import React from 'react';
 import { useCMS } from '../context/CMSContext';
-import { ArrowUpRight, Sparkle } from 'lucide-react';
+import { ArrowUpRight } from 'lucide-react';
 import { EditableText, EditableImage, DraggableBox } from './editorial/Editable';
 import { Reveal } from './common/Reveal';
 
@@ -148,37 +148,6 @@ export const MidBanner: React.FC = () => {
             <ArrowUpRight className="w-3.5 h-3.5 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
           </DraggableBox>
         </Reveal>
-      </div>
-
-      {/* Infinite Partners Marquee */}
-      <div className={`py-6 border-b overflow-hidden flex items-center ${
-        isLight ? 'border-neutral-200 bg-neutral-50' : 'border-white/[0.08] bg-black/60'
-      }`}>
-        <div className="animate-marquee flex items-center gap-12 whitespace-nowrap">
-          {[...midBanner.partners, ...midBanner.partners, ...midBanner.partners].map((partner, idx) => (
-            <div key={idx} className={`flex items-center gap-10 transition-colors cursor-default ${
-              isLight ? 'text-neutral-700 hover:text-black' : 'text-neutral-400 hover:text-white'
-            }`}>
-              <span className={`text-sm font-semibold tracking-wide font-heading uppercase ${
-                isLight ? 'text-neutral-700' : 'text-neutral-200'
-              }`}>
-                <EditableText
-                  as="span"
-                  value={partner}
-                  onChange={(v) => {
-                    const len = midBanner.partners.length || 1;
-                    const realIdx = idx % len;
-                    const next = [...midBanner.partners];
-                    next[realIdx] = v;
-                    updateMidBanner({ partners: next });
-                  }}
-                  label="Partner"
-                />
-              </span>
-              <Sparkle className="w-3.5 h-3.5 fill-current" style={{ color: theme.accentColor }} />
-            </div>
-          ))}
-        </div>
       </div>
     </section>
   );

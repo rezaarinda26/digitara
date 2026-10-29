@@ -26,7 +26,7 @@ if (typeof window !== 'undefined') {
  * the pointer is never lost during load.
  */
 export const CustomCursor: React.FC = () => {
-  const { data } = useCMS();
+  const { data, isSwiss, swissInk, swissPaper } = useCMS();
   const reduced = useReducedMotion();
   const ringRef = useRef<HTMLDivElement>(null);
   const dotRef = useRef<HTMLDivElement>(null);
@@ -167,6 +167,26 @@ export const CustomCursor: React.FC = () => {
   const accent = data.theme.accentColor || '#6B5CE7';
   const isLight = data.theme.bgMode === 'light-minimal';
 
+  // Swiss swaps the glowing accent ring for a square two-ink reticle: an ink
+  // outline with a paper outer edge (and an ink dot with the same paper edge),
+  // so it stays legible on both the cobalt and paper fields without adding a
+  // third colour, a glow, or a shadow.
+  const ringSize = isSwiss ? (active ? 40 : 24) : active ? 46 : 30;
+  const dotSize = isSwiss ? (active ? 4 : 5) : active ? 5 : 6;
+  const ringBorder = isSwiss
+    ? `${active ? 2 : 1.5}px solid ${swissInk}`
+    : `1.5px solid ${accent}`;
+  const ringShadow = isSwiss
+    ? `0 0 0 1px ${swissPaper}`
+    : `0 0 0 1.5px rgba(255,255,255,0.9), 0 0 0 2.5px rgba(0,0,0,0.28), 0 10px 24px -6px rgba(0,0,0,0.45)${
+        isLight ? '' : `, 0 0 24px ${accent}55`
+      }`;
+  const dotShadow = isSwiss
+    ? `0 0 0 1px ${swissPaper}`
+    : `0 0 0 1.5px ${accent}, 0 0 0 2.5px rgba(0,0,0,0.28), 0 2px 8px rgba(0,0,0,0.35)${
+        isLight ? '' : `, 0 0 14px ${accent}70`
+      }`;
+
   return (
     <div className="pointer-events-none fixed inset-0 z-[9999] hidden md:block" aria-hidden="true">
       {/* Trailing ring */}
@@ -174,24 +194,32 @@ export const CustomCursor: React.FC = () => {
         ref={ringRef}
         className="absolute left-0 top-0 rounded-full transition-[width,height,background-color,border-color] duration-200 ease-out"
         style={{
-          width: active ? 46 : 30,
-          height: active ? 46 : 30,
-          border: `1.5px solid ${accent}`,
-          backgroundColor: active ? `${accent}1F` : 'transparent',
+          width: ringSize,
+          height: ringSize,
+          border: ringBorder,
+          borderRadius: isSwiss ? 0 : '9999px',
+          backgroundColor: isSwiss ? 'transparent' : active ? `${accent}1F` : 'transparent',
           // Contrast sandwich: white halo + dark hairline keeps the accent
           // ring readable on the accent-coloured portfolio stage as well as
-          // on white cards and dark sections.
-          boxShadow: `0 0 0 1.5px rgba(255,255,255,0.9), 0 0 0 2.5px rgba(0,0,0,0.28), 0 10px 24px -6px rgba(0,0,0,0.45)${
-            isLight ? '' : `, 0 0 24px ${accent}55`
-          }`,
+          // on white cards and dark sections. Swiss replaces it with the flat
+          // paper edge of the two-ink reticle.
+          boxShadow: ringShadow,
           opacity: 0,
           willChange: 'transform',
         }}
       >
         {label && (
           <div
-            className="absolute bottom-full left-1/2 mb-2 -translate-x-1/2 whitespace-nowrap rounded-full px-2.5 py-1 text-[10px] font-mono font-semibold text-white"
-            style={{ backgroundColor: accent }}
+            className={`absolute bottom-full left-1/2 mb-2 -translate-x-1/2 whitespace-nowrap font-semibold ${
+              isSwiss
+                ? 'rounded-none px-2 py-1 text-[9px] uppercase tracking-[0.16em]'
+                : 'rounded-full px-2.5 py-1 text-[10px] font-mono'
+            }`}
+            style={{
+              backgroundColor: isSwiss ? swissInk : accent,
+              color: isSwiss ? swissPaper : '#FFFFFF',
+              boxShadow: isSwiss ? 'none' : undefined,
+            }}
           >
             {label}
           </div>
@@ -202,14 +230,13 @@ export const CustomCursor: React.FC = () => {
         ref={dotRef}
         className="absolute left-0 top-0 rounded-full transition-[width,height] duration-200 ease-out"
         style={{
-          width: active ? 5 : 6,
-          height: active ? 5 : 6,
-          backgroundColor: '#ffffff',
+          width: dotSize,
+          height: dotSize,
+          borderRadius: isSwiss ? 0 : '9999px',
+          backgroundColor: isSwiss ? swissInk : '#ffffff',
           opacity: 0,
           willChange: 'transform',
-          boxShadow: `0 0 0 1.5px ${accent}, 0 0 0 2.5px rgba(0,0,0,0.28), 0 2px 8px rgba(0,0,0,0.35)${
-            isLight ? '' : `, 0 0 14px ${accent}70`
-          }`,
+          boxShadow: dotShadow,
         }}
       />
     </div>

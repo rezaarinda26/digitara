@@ -6,12 +6,14 @@ import { useAnimatedScroll } from '../../hooks/useAnimatedScroll';
 
 /**
  * Floating back-to-top button that appears once the user has scrolled past
- * the hero. The ring around the icon doubles as a scroll progress indicator.
+ * the hero. Classic uses a circular progress ring; Swiss turns it into a
+ * square paper chip whose bottom rule doubles as the progress indicator.
  */
 export const BackToTop: React.FC = () => {
-  const { data } = useCMS();
+  const { data, isSwiss } = useCMS();
   const reduced = useReducedMotion();
   const ringRef = useRef<SVGCircleElement>(null);
+  const barRef = useRef<HTMLSpanElement>(null);
   const [visible, setVisible] = useState(false);
 
   useEffect(() => {
@@ -29,6 +31,9 @@ export const BackToTop: React.FC = () => {
       if (ringRef.current) {
         ringRef.current.style.strokeDashoffset = String(circumference * (1 - p));
       }
+      if (barRef.current) {
+        barRef.current.style.transform = `scaleX(${p})`;
+      }
     },
     { smoothing: reduced ? 1 : 0.22 }
   );
@@ -41,43 +46,63 @@ export const BackToTop: React.FC = () => {
       type="button"
       onClick={() => window.scrollTo({ top: 0, behavior: reduced ? 'auto' : 'smooth' })}
       aria-label="Kembali ke atas"
-      className={`fixed bottom-24 left-4 z-40 w-12 h-12 rounded-full flex items-center justify-center transition-all duration-300 ease-out group sm:bottom-6 sm:left-6 ${
+      className={`back-to-top fixed bottom-24 left-4 z-40 w-12 h-12 flex items-center justify-center transition-all duration-300 ease-out group sm:bottom-6 sm:left-6 ${
         visible ? 'opacity-100 translate-y-0 pointer-events-auto' : 'opacity-0 translate-y-4 pointer-events-none'
       } ${
-        isLight
-          ? 'bg-white text-neutral-800 border border-neutral-200 shadow-xl hover:shadow-2xl'
-          : 'bg-[#141419]/90 text-white border border-white/15 shadow-2xl backdrop-blur-md hover:border-white/35'
+        isSwiss
+          ? 'border'
+          : `rounded-full ${
+              isLight
+                ? 'bg-white text-neutral-800 border border-neutral-200 shadow-xl hover:shadow-2xl'
+                : 'bg-[#141419]/90 text-white border border-white/15 shadow-2xl backdrop-blur-md hover:border-white/35'
+            }`
       }`}
-      style={{ transitionProperty: 'opacity, transform, box-shadow' }}
+      style={{ transitionProperty: 'opacity, transform, box-shadow, background-color, color, border-color' }}
     >
-      {/* Progress ring */}
-      <svg
-        className="absolute inset-0 w-full h-full -rotate-90 pointer-events-none"
-        viewBox="0 0 48 48"
-        aria-hidden="true"
-      >
-        <circle
-          cx="24"
-          cy="24"
-          r={radius}
-          fill="none"
-          stroke={isLight ? 'rgba(0,0,0,0.06)' : 'rgba(255,255,255,0.08)'}
-          strokeWidth="2"
-        />
-        <circle
-          ref={ringRef}
-          cx="24"
-          cy="24"
-          r={radius}
-          fill="none"
-          stroke={accent}
-          strokeWidth="2"
-          strokeLinecap="round"
-          strokeDasharray={circumference}
-          strokeDashoffset={circumference}
-          style={{ transition: 'stroke-dashoffset 80ms linear' }}
-        />
-      </svg>
+      {isSwiss ? (
+        <>
+          {/* Linear progress rule: the Swiss counterpart of the classic ring. */}
+          <span
+            aria-hidden="true"
+            className="pointer-events-none absolute bottom-2 left-2 right-2 h-[2px] bg-current opacity-20"
+          />
+          <span
+            ref={barRef}
+            aria-hidden="true"
+            className="pointer-events-none absolute bottom-2 left-2 right-2 h-[2px] origin-left bg-current"
+            style={{ transform: 'scaleX(0)', transition: 'transform 80ms linear' }}
+          />
+        </>
+      ) : (
+        /* Progress ring */
+        <svg
+          className="absolute inset-0 w-full h-full -rotate-90 pointer-events-none"
+          viewBox="0 0 48 48"
+          aria-hidden="true"
+        >
+          <circle
+            cx="24"
+            cy="24"
+            r={radius}
+            fill="none"
+            stroke={isLight ? 'rgba(0,0,0,0.06)' : 'rgba(255,255,255,0.08)'}
+            strokeWidth="2"
+          />
+          <circle
+            ref={ringRef}
+            cx="24"
+            cy="24"
+            r={radius}
+            fill="none"
+            stroke={accent}
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeDasharray={circumference}
+            strokeDashoffset={circumference}
+            style={{ transition: 'stroke-dashoffset 80ms linear' }}
+          />
+        </svg>
+      )}
       <ArrowUp className="w-4 h-4 transition-transform duration-300 group-hover:-translate-y-0.5" />
     </button>
   );

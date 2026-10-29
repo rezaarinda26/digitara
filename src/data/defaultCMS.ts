@@ -161,16 +161,6 @@ const BASE_CMS_DATA: CMSData = {
     bottomLabel: 'Inspiring Digital Brand Experiences',
     ctaText: 'Explore Projects',
     bgImageUrl: '/src/assets/images/mid_banner_digital_art_1792030861650.jpg',
-    partners: [
-      'Aura',
-      'Modern Health',
-      'Orbital AI',
-      'Northstar',
-      'Acme Labs',
-      'Velvet Capital',
-      'Nuansa Tech',
-      'Digitara Labs',
-    ],
   },
   portfolio: {
     badge: 'Selected Work',

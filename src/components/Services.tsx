@@ -4,9 +4,10 @@ import { ArrowUpRight, Plus, Minus, Check, Sparkle } from 'lucide-react';
 import { ServiceItem } from '../types/cms';
 import { EditableText, DraggableBox } from './editorial/Editable';
 import { Reveal } from './common/Reveal';
+import { MARQUEE_ITEMS, marqueeKey } from '../data/marqueeItems';
 
 export const Services: React.FC = () => {
-  const { data, isSectionLight, updateServices, editorialMode, darkBg, accentText } = useCMS();
+  const { data, isSectionLight, updateServices, editorialMode, darkBg, accentText, isSwiss } = useCMS();
   const { services, theme } = data;
   const isLight = isSectionLight('services');
 
@@ -29,16 +30,6 @@ export const Services: React.FC = () => {
       window.dispatchEvent(new CustomEvent('select-service', { detail: serviceName }));
     }
   };
-
-  const marqueeItems = [
-    'Development',
-    'Branding',
-    'Motion',
-    'Digital Products',
-    'UI/UX Design',
-    'Creative Development',
-    'Design Systems',
-  ];
 
   return (
     <section
@@ -147,8 +138,15 @@ export const Services: React.FC = () => {
               <div
                 onMouseEnter={() => setHoveredService(item)}
                 onMouseLeave={() => setHoveredService(null)}
-                className={`group relative transition-all duration-300 ${isLight ? 'hover:bg-neutral-50/80' : 'hover:bg-white/[0.02]'
-                  }`}
+                className={`group relative transition-all duration-300 ${
+                  isExpanded
+                    ? isLight
+                      ? 'bg-neutral-50/80'
+                      : 'bg-white/[0.03]'
+                    : isLight
+                    ? 'hover:bg-neutral-50/80'
+                    : 'hover:bg-white/[0.02]'
+                }`}
               >
                 <div
                   onClick={() => setExpandedId(isExpanded ? null : item.id)}
@@ -248,9 +246,12 @@ export const Services: React.FC = () => {
                 <div className={`dg-collapsible ${isExpanded ? 'is-open' : ''}`}>
                   <div>
                     <div
-                      className={`dg-accordion-content pb-8 pt-4 px-6 rounded-xl border mb-6 flex flex-col md:flex-row gap-6 justify-between items-start ${isLight
-                        ? 'bg-neutral-50 border-neutral-200 text-neutral-900 shadow-sm'
-                        : 'bg-white/[0.02] border-white/[0.05] text-white'
+                      className={`dg-accordion-content pb-8 pt-4 px-6 rounded-xl border mb-6 flex flex-col md:flex-row gap-6 justify-between items-start ${
+                        isSwiss
+                          ? 'bg-neutral-50/80 border-neutral-200 text-neutral-900 shadow-sm'
+                          : isLight
+                          ? 'bg-neutral-50 border-neutral-200 text-neutral-900 shadow-sm'
+                          : 'bg-white/[0.02] border-white/[0.05] text-white'
                         }`}
                       style={{
                         borderLeftWidth: '3px',
@@ -374,7 +375,7 @@ export const Services: React.FC = () => {
       <div className={`mt-20 -mx-8 py-5 border-y overflow-hidden flex items-center ${isLight ? 'bg-neutral-100/60 border-neutral-200' : 'bg-black/60 border-white/[0.08]'
         }`}>
         <div className="animate-marquee flex items-center gap-12 whitespace-nowrap">
-          {[...marqueeItems, ...marqueeItems, ...marqueeItems].map((item, idx) => (
+          {[...MARQUEE_ITEMS, ...MARQUEE_ITEMS, ...MARQUEE_ITEMS].map((item, idx) => (
             <div
               key={idx}
               className={`flex items-center gap-10 text-xs font-semibold tracking-wider uppercase font-heading ${isLight ? 'text-neutral-600 hover:text-black' : 'text-neutral-400 hover:text-white'
@@ -383,7 +384,7 @@ export const Services: React.FC = () => {
               <EditableText
                 as="span"
                 value={item}
-                overrideKey={`services.marquee.${idx % marqueeItems.length}`}
+                overrideKey={marqueeKey(idx)}
                 label="Item marquee"
               />
               <Sparkle className="w-3.5 h-3.5 fill-current" style={{ color: theme.accentColor }} />

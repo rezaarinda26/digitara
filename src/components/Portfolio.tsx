@@ -7,6 +7,7 @@ import { EditableText, EditableImage, ImageUploadTrigger } from './editorial/Edi
 import { usePresence } from '../hooks/usePresence';
 import { useFocusTrap } from '../hooks/useFocusTrap';
 import { Reveal } from './common/Reveal';
+import { MARQUEE_ITEMS, marqueeKey } from '../data/marqueeItems';
 
 type CardLayout = { span: string; size: 'lg' | 'md' | 'sm' };
 
@@ -64,7 +65,7 @@ const buildCardLayouts = (count: number): CardLayout[] => {
 };
 
 export const Portfolio: React.FC = () => {
-  const { data, activeProjectModal, setActiveProjectModal, isSectionLight, updatePortfolio, editorialMode, darkBg, accentText } = useCMS();
+  const { data, activeProjectModal, setActiveProjectModal, isSectionLight, updatePortfolio, editorialMode, darkBg, accentText, isSwiss } = useCMS();
   const { portfolio, theme } = data;
   const isLight = isSectionLight('portfolio');
   const isModalLight = data.theme.bgMode === 'light-minimal';
@@ -157,16 +158,6 @@ export const Portfolio: React.FC = () => {
   useEffect(() => {
     if (activeProjectModal?.id) setActiveImage(0);
   }, [activeProjectModal?.id]);
-
-  const clientMarquee = [
-    'Aura',
-    'Modern Health',
-    'Orbital',
-    'Northstar',
-    'Acme Labs',
-    'Velvet Geneva',
-    'Digitara',
-  ];
 
   return (
     <section
@@ -467,7 +458,7 @@ export const Portfolio: React.FC = () => {
         }`}
       >
         <div className="animate-marquee flex items-center gap-12 whitespace-nowrap">
-          {[...clientMarquee, ...clientMarquee, ...clientMarquee].map((partner, idx) => (
+          {[...MARQUEE_ITEMS, ...MARQUEE_ITEMS, ...MARQUEE_ITEMS].map((item, idx) => (
             <div
               key={idx}
               className={`flex items-center gap-10 transition-colors cursor-default ${
@@ -475,7 +466,12 @@ export const Portfolio: React.FC = () => {
               }`}
             >
               <span className="text-xs font-semibold tracking-wide font-heading uppercase">
-                <EditableText as="span" value={partner} overrideKey={`portfolio.client.${idx % clientMarquee.length}`} label="Nama klien marquee" />
+                <EditableText
+                  as="span"
+                  value={item}
+                  overrideKey={marqueeKey(idx)}
+                  label="Item marquee"
+                />
               </span>
               <Sparkle className="w-3.5 h-3.5 fill-current" style={{ color: theme.accentColor }} />
             </div>
@@ -488,7 +484,9 @@ export const Portfolio: React.FC = () => {
         modalProject &&
         createPortal(
           <div
-            className={`fixed inset-0 z-50 flex items-center justify-center p-0 sm:p-4 lg:p-6 backdrop-blur-xl ${isModalLight ? 'bg-neutral-900/60' : 'bg-black/90'} ${modalClosing ? 'animate-fade-out' : 'animate-fade-in'}`}
+            className={`portfolio-modal-overlay fixed inset-0 z-50 flex items-center justify-center p-0 sm:p-4 lg:p-6 ${
+              isSwiss ? '' : 'backdrop-blur-xl'
+            } ${isModalLight ? 'bg-neutral-900/60' : 'bg-black/90'} ${modalClosing ? 'animate-fade-out' : 'animate-fade-in'}`}
             onClick={() => setActiveProjectModal(null)}
           >
           <div
@@ -496,16 +494,16 @@ export const Portfolio: React.FC = () => {
             role="dialog"
             aria-modal="true"
             aria-label={modalProject.title}
-            className={`relative w-full h-full sm:h-[94vh] sm:w-[96vw] max-w-[1600px] border sm:rounded-2xl overflow-hidden flex flex-col lg:flex-row shadow-2xl ${
+            className={`portfolio-modal relative w-full h-full sm:h-[94vh] sm:w-[96vw] max-w-[1600px] border sm:rounded-2xl overflow-hidden flex flex-col lg:flex-row shadow-2xl ${
               isModalLight ? 'modal-light bg-white text-neutral-900 border-neutral-200' : 'bg-[#0E0E10] text-white border-white/15'
-            } ${modalClosing ? 'animate-zoom-out' : 'animate-zoom-in'}`}
+            } ${isSwiss ? 'modal-light' : ''} ${modalClosing ? 'animate-zoom-out' : 'animate-zoom-in'}`}
             onClick={(e) => e.stopPropagation()}
-            style={{ borderColor: isModalLight ? undefined : `${theme.accentColor}40` }}
+            style={isSwiss ? undefined : { borderColor: isModalLight ? undefined : `${theme.accentColor}40` }}
           >
             {/* Close Button */}
             <button
               onClick={() => setActiveProjectModal(null)}
-              className={`absolute top-4 right-4 z-20 p-2 rounded-full cursor-pointer border transition-all duration-200 hover:scale-110 active:scale-95 hover:shadow-lg focus-visible:outline-none focus-visible:ring-2 ${
+              className={`portfolio-modal-control absolute top-4 right-4 z-20 p-2 rounded-full cursor-pointer border transition-all duration-200 hover:scale-110 active:scale-95 hover:shadow-lg focus-visible:outline-none focus-visible:ring-2 ${
                 isModalLight
                   ? 'bg-white/80 hover:bg-white text-neutral-800 border-neutral-300 hover:border-neutral-500 focus-visible:ring-neutral-500'
                   : 'bg-black/60 hover:bg-black/90 text-white border-white/10 hover:border-white/40 focus-visible:ring-white/60'
@@ -516,9 +514,9 @@ export const Portfolio: React.FC = () => {
             </button>
 
             {/* LEFT: Project Gallery */}
-            <div className={`flex-1 flex flex-col min-h-0 lg:h-full ${isModalLight ? 'bg-neutral-100' : 'bg-black'}`}>
+            <div className={`portfolio-modal-gallery flex-1 flex flex-col min-h-0 lg:h-full ${isModalLight ? 'bg-neutral-100' : 'bg-black'}`}>
               {/* Main large screenshot */}
-              <div className={`relative flex-1 min-h-[220px] overflow-hidden ${isModalLight ? 'bg-neutral-200' : 'bg-neutral-950'}`}>
+              <div className={`portfolio-modal-stage relative flex-1 min-h-[220px] overflow-hidden ${isModalLight ? 'bg-neutral-200' : 'bg-neutral-950'}`}>
                 <div
                   key={`main-${safeActiveImage}`}
                   className={`w-full h-full ${slideDir === 'right' ? 'animate-slide-in-right' : 'animate-slide-in-left'}`}
@@ -541,7 +539,7 @@ export const Portfolio: React.FC = () => {
                         e.stopPropagation();
                         goToImage((safeActiveImage - 1 + gallery.length) % gallery.length, 'left');
                       }}
-                      className={`absolute left-4 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full border flex items-center justify-center cursor-pointer transition-all duration-200 hover:scale-110 active:scale-95 hover:shadow-xl focus-visible:outline-none focus-visible:ring-2 ${
+                      className={`portfolio-modal-control absolute left-4 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full border flex items-center justify-center cursor-pointer transition-all duration-200 hover:scale-110 active:scale-95 hover:shadow-xl focus-visible:outline-none focus-visible:ring-2 ${
                         isModalLight
                           ? 'bg-white/85 hover:bg-white text-neutral-800 border-neutral-300 hover:border-neutral-500 focus-visible:ring-neutral-500'
                           : 'bg-black/60 hover:bg-black/90 text-white border-white/15 hover:border-white/50 focus-visible:ring-white/60'
@@ -556,7 +554,7 @@ export const Portfolio: React.FC = () => {
                         e.stopPropagation();
                         goToImage((safeActiveImage + 1) % gallery.length, 'right');
                       }}
-                      className={`absolute right-4 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full border flex items-center justify-center cursor-pointer transition-all duration-200 hover:scale-110 active:scale-95 hover:shadow-xl focus-visible:outline-none focus-visible:ring-2 ${
+                      className={`portfolio-modal-control absolute right-4 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full border flex items-center justify-center cursor-pointer transition-all duration-200 hover:scale-110 active:scale-95 hover:shadow-xl focus-visible:outline-none focus-visible:ring-2 ${
                         isModalLight
                           ? 'bg-white/85 hover:bg-white text-neutral-800 border-neutral-300 hover:border-neutral-500 focus-visible:ring-neutral-500'
                           : 'bg-black/60 hover:bg-black/90 text-white border-white/15 hover:border-white/50 focus-visible:ring-white/60'
@@ -565,7 +563,7 @@ export const Portfolio: React.FC = () => {
                     >
                       <ChevronRight className="w-5 h-5" />
                     </button>
-                    <div className={`absolute bottom-4 right-4 px-2.5 py-1 rounded-md backdrop-blur-md text-[11px] font-mono border ${
+                    <div className={`portfolio-modal-counter absolute bottom-4 right-4 px-2.5 py-1 rounded-md backdrop-blur-md text-[11px] font-mono border ${
                       isModalLight ? 'bg-white/80 text-neutral-700 border-neutral-300' : 'bg-black/60 text-white border-white/10'
                     }`}>
                       {safeActiveImage + 1} / {gallery.length}
@@ -583,7 +581,7 @@ export const Portfolio: React.FC = () => {
               </div>
 
               {/* Thumbnail strip (project gallery) */}
-              <div className={`shrink-0 flex items-center gap-2 sm:gap-3 p-3 sm:p-4 overflow-x-auto border-t ${
+              <div className={`portfolio-modal-thumbs shrink-0 flex items-center gap-2 sm:gap-3 p-3 sm:p-4 overflow-x-auto border-t ${
                 isModalLight ? 'border-neutral-200 bg-neutral-50' : 'border-white/10 bg-[#0A0A0B]'
               }`}>
                 {gallery.map((img, i) => (
@@ -594,9 +592,9 @@ export const Portfolio: React.FC = () => {
                         e.stopPropagation();
                         goToImage(i, i > safeActiveImage ? 'right' : 'left');
                       }}
-                      className={`block w-20 h-14 sm:w-28 sm:h-20 rounded-lg overflow-hidden border-2 cursor-pointer transition-all duration-200 hover:scale-105 hover:shadow-lg focus-visible:outline-none focus-visible:ring-2 ${
+                      className={`portfolio-modal-thumb block w-20 h-14 sm:w-28 sm:h-20 rounded-lg overflow-hidden border-2 cursor-pointer transition-all duration-200 hover:scale-105 hover:shadow-lg focus-visible:outline-none focus-visible:ring-2 ${
                         i === safeActiveImage
-                          ? 'border-[#6B5CE7] opacity-100'
+                          ? 'portfolio-modal-thumb-active border-[#6B5CE7] opacity-100'
                           : isModalLight
                           ? 'border-neutral-200 opacity-60 hover:opacity-100 hover:border-neutral-400 focus-visible:ring-neutral-500'
                           : 'border-white/10 opacity-60 hover:opacity-100 hover:border-white/40 focus-visible:ring-white/60'
@@ -646,7 +644,7 @@ export const Portfolio: React.FC = () => {
             </div>
 
             {/* RIGHT: Project Information */}
-            <div className={`w-full lg:w-[440px] xl:w-[500px] shrink-0 overflow-y-auto lg:h-full p-6 sm:p-8 border-t lg:border-t-0 lg:border-l ${
+            <div className={`portfolio-modal-info w-full lg:w-[440px] xl:w-[500px] shrink-0 overflow-y-auto lg:h-full p-6 sm:p-8 border-t lg:border-t-0 lg:border-l ${
               isModalLight ? 'border-neutral-200 bg-white' : 'border-white/10'
             }`}>
               {/* Header */}
@@ -657,7 +655,7 @@ export const Portfolio: React.FC = () => {
                   onChange={(v) => patchActiveProject({ category: v })}
                   label="Kategori project"
                   style={{ color: isModalLight ? theme.accentColor : accentText }}
-                  className="font-semibold"
+                  className="portfolio-modal-accent font-semibold"
                 />
                 <span>·</span>
                 <span>
@@ -689,7 +687,7 @@ export const Portfolio: React.FC = () => {
               />
 
               {/* Quick Specs */}
-              <div className={`grid grid-cols-2 gap-4 p-4 rounded-xl border mb-6 text-xs ${
+              <div className={`portfolio-modal-panel grid grid-cols-2 gap-4 p-4 rounded-xl border mb-6 text-xs ${
                 isModalLight ? 'bg-neutral-50 border-neutral-200' : 'bg-white/[0.03] border-white/5'
               }`}>
                 <div>
@@ -714,7 +712,7 @@ export const Portfolio: React.FC = () => {
                       value={modalProject.metrics}
                       onChange={(v) => patchActiveProject({ metrics: v })}
                       label="Metric project"
-                      className="font-semibold"
+                      className="portfolio-modal-accent font-semibold"
                       style={{ color: isModalLight ? theme.accentColor : accentText }}
                     />
                   </div>
@@ -755,7 +753,7 @@ export const Portfolio: React.FC = () => {
                     onChange={(v) => patchActiveProject({ challenge: v })}
                     label="Deskripsi challenge"
                     multiline
-                    className={`p-4 rounded-xl border ${isModalLight ? 'bg-neutral-50 border-neutral-200' : 'bg-white/[0.02] border-white/5'}`}
+                    className={`portfolio-modal-panel p-4 rounded-xl border ${isModalLight ? 'bg-neutral-50 border-neutral-200' : 'bg-white/[0.02] border-white/5'}`}
                   />
                 </div>
 
@@ -769,13 +767,13 @@ export const Portfolio: React.FC = () => {
                     onChange={(v) => patchActiveProject({ solution: v })}
                     label="Deskripsi solution"
                     multiline
-                    className={`p-4 rounded-xl border ${isModalLight ? 'bg-neutral-50 border-neutral-200' : 'bg-white/[0.02] border-white/5'}`}
+                    className={`portfolio-modal-panel p-4 rounded-xl border ${isModalLight ? 'bg-neutral-50 border-neutral-200' : 'bg-white/[0.02] border-white/5'}`}
                   />
                 </div>
               </div>
 
               {/* Footer with CTA */}
-              <div className={`mt-8 pt-6 border-t flex items-center justify-between gap-4 ${isModalLight ? 'border-neutral-200' : 'border-white/10'}`}>
+              <div className={`portfolio-modal-footer mt-8 pt-6 border-t flex items-center justify-between gap-4 ${isModalLight ? 'border-neutral-200' : 'border-white/10'}`}>
                 <EditableText
                   as="span"
                   value="DIGITARA Archive · Confidential"
@@ -790,7 +788,7 @@ export const Portfolio: React.FC = () => {
                     const el = document.querySelector('#contact');
                     if (el) el.scrollIntoView({ behavior: 'smooth' });
                   }}
-                  className="inline-flex items-center gap-2 px-5 py-3 rounded-xl text-white text-xs font-semibold cursor-pointer hover:brightness-110 hover:scale-[1.03] transition-all shadow-xl active:scale-95 shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/60"
+                  className="portfolio-modal-cta inline-flex items-center gap-2 px-5 py-3 rounded-xl text-white text-xs font-semibold cursor-pointer hover:brightness-110 hover:scale-[1.03] transition-all shadow-xl active:scale-95 shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/60"
                   style={{
                     backgroundColor: theme.accentColor || '#FFFFFF',
                     color: theme.accentColor === '#FFFFFF' ? '#000000' : '#FFFFFF',

@@ -154,10 +154,9 @@ export const Hero: React.FC = () => {
         {/* Floating Showcase Card */}
         {hero.floatingCard && (
           <DraggableBox
-            as="a"
+            as="div"
             id="hero-floating-card"
             label="Kartu showcase hero"
-            href={hero.floatingCard.linkUrl || '#portfolio'}
             className={`group flex items-center gap-3.5 p-2 pr-4 border transition-all duration-300 max-w-xs active:scale-98 ${
               isSwiss
                 ? 'swiss-tint-paper'
@@ -181,7 +180,7 @@ export const Hero: React.FC = () => {
                 }
                 label="Foto kartu showcase"
                 alt={hero.floatingCard.title}
-                className="w-full h-full object-cover grayscale contrast-125 group-hover:scale-105"
+                className="w-full h-full object-cover group-hover:scale-105"
               />
               <div className="absolute inset-0 bg-black/20 pointer-events-none" />
             </div>

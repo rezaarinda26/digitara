@@ -126,7 +126,6 @@ export interface MidBannerData {
   bottomLabel: string;
   ctaText: string;
   bgImageUrl: string;
-  partners: string[];
 }
 
 export interface ProjectItem {
