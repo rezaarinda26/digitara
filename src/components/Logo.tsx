@@ -8,6 +8,8 @@ interface LogoProps {
   variant?: 'brand' | 'white';
   textColor?: string;
   subtextColor?: string;
+  /** Extra classes for the tagline (e.g. hide it on narrow screens). */
+  subtextClassName?: string;
 }
 
 export const Logo: React.FC<LogoProps> = ({
@@ -17,6 +19,7 @@ export const Logo: React.FC<LogoProps> = ({
   variant = 'brand',
   textColor,
   subtextColor,
+  subtextClassName = '',
 }) => {
   const { data } = useCMS();
 
@@ -101,7 +104,7 @@ export const Logo: React.FC<LogoProps> = ({
         </span>
         {showSubtext && (
           <span
-            className={`${subtextSizes[size]} uppercase font-medium mt-[3px] whitespace-nowrap`}
+            className={`${subtextSizes[size]} ${subtextClassName} uppercase font-medium mt-[3px] whitespace-nowrap`}
             style={{ color: subtextColor ?? '#A3A3A3' }}
           >
             {data.config.subtext}

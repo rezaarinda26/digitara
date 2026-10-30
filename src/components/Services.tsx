@@ -372,7 +372,7 @@ export const Services: React.FC = () => {
       )}
 
       {/* Seamless Ribbon Marquee under Services */}
-      <div className={`mt-20 -mx-8 py-5 border-y overflow-hidden flex items-center ${isLight ? 'bg-neutral-100/60 border-neutral-200' : 'bg-black/60 border-white/[0.08]'
+      <div className={`mt-20 -mx-4 sm:-mx-6 lg:-mx-8 py-5 border-y overflow-hidden flex items-center ${isLight ? 'bg-neutral-100/60 border-neutral-200' : 'bg-black/60 border-white/[0.08]'
         }`}>
         <div className="animate-marquee flex items-center gap-12 whitespace-nowrap">
           {[...MARQUEE_ITEMS, ...MARQUEE_ITEMS, ...MARQUEE_ITEMS].map((item, idx) => (

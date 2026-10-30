@@ -1143,19 +1143,22 @@ body.style-swiss .reveal {
   transition-timing-function: cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 
-body.style-swiss .reveal-up {
+body.style-swiss .reveal-up:not(.is-visible) {
   transform: translateY(18px);
 }
 
-body.style-swiss .reveal-down {
+body.style-swiss .reveal-down:not(.is-visible) {
   transform: translateY(-14px);
 }
 
-body.style-swiss .reveal-left {
-  transform: translateX(24px);
+/* The travel offsets must only apply before the reveal fires. Leaving them
+   on after `.is-visible` would keep every column pushed sideways (and clip
+   the cards on the right edge, most visibly on phones). */
+body.style-swiss .reveal-left:not(.is-visible) {
+  transform: translateX(-24px);
 }
 
-body.style-swiss .reveal-right {
+body.style-swiss .reveal-right:not(.is-visible) {
   transform: translateX(24px);
 }
 

@@ -453,7 +453,7 @@ export const Portfolio: React.FC = () => {
       {/* NOTE: this ribbon keeps a DARK background in light mode, so its text
           must not inherit the light-section muted-text remap (text-neutral-*). */}
       <div
-        className={`dark-surface mt-24 -mx-8 py-5 border-y overflow-hidden flex items-center ${
+        className={`dark-surface mt-24 -mx-4 sm:-mx-6 lg:-mx-8 py-5 border-y overflow-hidden flex items-center ${
           isLight ? 'bg-neutral-950 text-white border-neutral-900' : 'bg-black/60 border-white/[0.08]'
         }`}
       >
@@ -513,10 +513,15 @@ export const Portfolio: React.FC = () => {
               <X className="w-5 h-5" />
             </button>
 
-            {/* LEFT: Project Gallery */}
-            <div className={`portfolio-modal-gallery flex-1 flex flex-col min-h-0 lg:h-full ${isModalLight ? 'bg-neutral-100' : 'bg-black'}`}>
-              {/* Main large screenshot */}
-              <div className={`portfolio-modal-stage relative flex-1 min-h-[220px] overflow-hidden ${isModalLight ? 'bg-neutral-200' : 'bg-neutral-950'}`}>
+            {/* LEFT: Project Gallery. On phones/tablets the modal is a
+                vertical stack, so the gallery needs a fixed height (instead of
+                flex-1, which collapses to 0 and lets its content bleed over
+                the text panel below). */}
+            <div className={`portfolio-modal-gallery flex flex-col shrink-0 overflow-hidden h-[42vh] min-h-[240px] lg:h-full lg:min-h-0 lg:flex-1 lg:shrink ${isModalLight ? 'bg-neutral-100' : 'bg-black'}`}>
+              {/* Main large screenshot. The small min-height keeps the strip
+                  and the info panel from clipping each other when the modal is
+                  stacked on very short viewports (e.g. a phone in landscape). */}
+              <div className={`portfolio-modal-stage relative flex-1 min-h-[120px] overflow-hidden ${isModalLight ? 'bg-neutral-200' : 'bg-neutral-950'}`}>
                 <div
                   key={`main-${safeActiveImage}`}
                   className={`w-full h-full ${slideDir === 'right' ? 'animate-slide-in-right' : 'animate-slide-in-left'}`}
@@ -643,8 +648,11 @@ export const Portfolio: React.FC = () => {
               </div>
             </div>
 
-            {/* RIGHT: Project Information */}
-            <div className={`portfolio-modal-info w-full lg:w-[440px] xl:w-[500px] shrink-0 overflow-y-auto lg:h-full p-6 sm:p-8 border-t lg:border-t-0 lg:border-l ${
+            {/* RIGHT: Project Information. It owns the vertical scroll: below
+                `lg` it takes the remaining height of the modal (flex-1 +
+                min-h-0) so its own overflow-y-auto actually scrolls instead
+                of being clipped by the modal's overflow-hidden. */}
+            <div className={`portfolio-modal-info w-full min-h-0 flex-1 overflow-y-auto p-6 sm:p-8 border-t lg:border-t-0 lg:border-l lg:h-full lg:w-[440px] xl:w-[500px] lg:flex-none lg:shrink-0 ${
               isModalLight ? 'border-neutral-200 bg-white' : 'border-white/10'
             }`}>
               {/* Header */}

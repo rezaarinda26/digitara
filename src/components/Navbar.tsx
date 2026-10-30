@@ -92,7 +92,7 @@ export const Navbar: React.FC = () => {
         style={{ backgroundColor: hairline }}
       />
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between gap-8">
+        <div className="flex items-center justify-between gap-3 md:gap-8">
           {/* Zone 1: Single element brand mark */}
           <a
             href="#"
@@ -102,13 +102,15 @@ export const Navbar: React.FC = () => {
             <Logo
               size="md"
               showSubtext={true}
+              subtextClassName="hidden sm:block"
               textColor={useDarkText ? '#0A0A0A' : '#FFFFFF'}
               subtextColor={useDarkText ? '#525252' : '#A3A3A3'}
             />
           </a>
 
-          {/* Zone 2: Navigation Links */}
-          <nav className={`hidden md:flex items-center gap-8 text-sm font-medium ${navLinkText}`}>
+          {/* Zone 2: Navigation Links. The full link row only appears once
+              there is room for it; below `lg` the drawer takes over. */}
+          <nav className={`hidden lg:flex items-center gap-6 xl:gap-8 text-sm font-medium ${navLinkText}`}>
             {navLinks.map((link) => {
               const isActive = activeSection === link.section;
               return (
@@ -142,11 +144,13 @@ export const Navbar: React.FC = () => {
           </nav>
 
           {/* Zone 3: Actions (CTA button + CMS Admin Studio launcher) */}
-          <div className="flex items-center gap-3 shrink-0">
-            {/* Quick CMS Admin Trigger */}
+          <div className="flex items-center gap-2 md:gap-3 min-w-0">
+            {/* Quick CMS Admin Trigger. Hidden on small screens: the mobile
+                drawer and the floating Studio launcher both open the same
+                panel, and keeping it here would squeeze the brand + CTA. */}
             {CMS_ENABLED && <button
               onClick={() => setIsAdminOpen(true)}
-              className={`flex items-center gap-1.5 px-3 py-2 text-xs font-medium border transition-all duration-200 focus-visible:ring-2 focus-visible:ring-white/30 ${
+              className={`hidden md:flex items-center gap-1.5 px-3 py-2 text-xs font-medium border transition-all duration-200 focus-visible:ring-2 focus-visible:ring-white/30 ${
                 isSwiss
                   ? useDarkText
                     ? 'swiss-on-paper swiss-on-paper-soft swiss-rule-paper'
@@ -161,19 +165,21 @@ export const Navbar: React.FC = () => {
               aria-label="Open Headless CMS Admin"
             >
               <Settings2 className="w-3.5 h-3.5" />
-              <span className="hidden lg:inline text-[11px] tracking-wide">
+              <span className="hidden xl:inline text-[11px] tracking-wide">
                 <EditableText as="span" value="CMS Studio" overrideKey="nav.cmsStudio" label="Teks CMS Studio" />
               </span>
             </button>}
 
-            {/* Primary Action CTA */}
+            {/* Primary Action CTA. On phones the label switches to a shorter
+                editable variant so the brand, CTA and menu trigger always fit
+                inside the viewport without clipping. */}
             <a
               href="#contact"
               onClick={(e) => {
                 e.preventDefault();
                 handleNavClick('#contact');
               }}
-              className={`group flex items-center gap-2 px-4 py-2 text-xs font-semibold tracking-wide active:scale-95 transition-all duration-200 whitespace-nowrap ${
+              className={`group flex min-w-0 items-center gap-1.5 px-3 py-2 text-xs font-semibold tracking-wide active:scale-95 transition-all duration-200 whitespace-nowrap sm:gap-2 sm:px-4 ${
                 isSwiss ? 'hover:opacity-85' : 'rounded-lg shadow-sm hover:opacity-90'
               }`}
               style={
@@ -185,14 +191,27 @@ export const Navbar: React.FC = () => {
                     }
               }
             >
-              <EditableText as="span" value="Let's Talk" overrideKey="nav.letsTalk" label="Teks tombol Let's Talk" />
-              <ArrowUpRight className="w-3.5 h-3.5 transition-transform duration-200 group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
+              <EditableText
+                as="span"
+                value="Let's Talk"
+                overrideKey="nav.letsTalk"
+                label="Teks tombol Let's Talk"
+                className="hidden min-w-0 truncate sm:block"
+              />
+              <EditableText
+                as="span"
+                value="Konsultasi"
+                overrideKey="nav.letsTalkShort"
+                label="Teks tombol Let's Talk (mobile)"
+                className="min-w-0 truncate sm:hidden"
+              />
+              <ArrowUpRight className="w-3.5 h-3.5 shrink-0 transition-transform duration-200 group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
             </a>
 
             {/* Mobile Hamburger Toggle */}
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className={`md:hidden p-2 ${isSwiss ? '' : 'rounded-lg'} focus-visible:ring-2 focus-visible:ring-white/20 ${
+              className={`lg:hidden shrink-0 p-2 ${isSwiss ? '' : 'rounded-lg'} focus-visible:ring-2 focus-visible:ring-white/20 ${
                 useDarkText ? 'text-neutral-600 hover:text-black' : 'text-neutral-400 hover:text-white'
               }`}
               aria-label="Toggle Navigation Menu"
@@ -206,7 +225,7 @@ export const Navbar: React.FC = () => {
       {/* Mobile Drawer Menu */}
       {mobileMenuOpen && (
         <div
-          className="md:hidden fixed inset-x-0 top-[65px] border-b px-6 py-6 flex flex-col gap-4 animate-slide-in-top"
+          className="lg:hidden absolute inset-x-0 top-full border-b px-6 py-6 flex flex-col gap-4 animate-slide-in-top"
           style={{ ...glassStyle, borderBottomColor: hairline }}
         >
           <nav className="flex flex-col gap-4">
